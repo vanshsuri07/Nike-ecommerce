@@ -17,12 +17,15 @@
   --color-red: #d33918;
   --color-orange: #d37918;
 
+  /* Font family */
+  --font-jost: "Jost", sans-serif;
+
   /* Heading sizes */
   --text-heading-1: 72px;
   --text-heading-1--line-height: 78px;
   --text-heading-1--font-weight: 700;
 
-  --text-heading-2: 56px;
+  --text-heading-2: 45px;
   --text-heading-2--line-height: 60px;
   --text-heading-2--font-weight: 700;
 
@@ -33,7 +36,7 @@
   /* Lead */
   --text-lead: 20px;
   --text-lead--line-height: 28px;
-  --text-lead--font-weight: 500;
+  --text-lead--font-weight: 400;
 
   /* Body */
   --text-body: 16px;
