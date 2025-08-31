@@ -1,11 +1,57 @@
-import React from 'react'
+import React from 'react';
+import Navbar from '../components/Navbar';
+import Card from '../components/Card';
+import Footer from '../components/Footer';
+import { Product } from '../types';
 
-const page = () => {
+const products: Product[] = [
+  {
+    id: 1,
+    name: "Nike Air Force 1 Mid '07",
+    description: null,
+    price: '98.30',
+    image: '/shoes/shoe-1.jpg',
+    category: "Men's Shoes",
+    colors: '6 Colour',
+    bestseller: true,
+  },
+  {
+    id: 2,
+    name: 'Nike Air Max 90',
+    description: null,
+    price: '130.00',
+    image: '/shoes/shoe-2.webp',
+    category: "Women's Shoes",
+    colors: '4 Colour',
+    bestseller: false,
+  },
+  {
+    id: 3,
+    name: 'Nike Jordan Low',
+    description: null,
+    price: '110.00',
+    image: '/shoes/shoe-3.webp',
+    category: "Kids' Shoes",
+    colors: '8 Colour',
+    bestseller: false,
+  },
+];
+
+const Page = () => {
   return (
-    <h1 className='text-heading-1 font-jost'>
-      Home
-    </h1>
-  )
-}
+    <div className="bg-light-100">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-heading-1 text-dark-900 mb-8">Our Products</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {products.map((product) => (
+            <Card key={product.id} product={product} />
+          ))}
+        </div>
+      </main>
+      <Footer />
+    </div>
+  );
+};
 
-export default page
+export default Page;
