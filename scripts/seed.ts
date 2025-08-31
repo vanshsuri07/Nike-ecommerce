@@ -12,7 +12,8 @@ const main = async () => {
   try {
     console.log('Seeding database...');
 
-    await db.delete(schema.products).values(); // Clear existing data
+    // Clear existing data
+    await db.delete(schema.products);
 
     const nikeProducts = [
       {
