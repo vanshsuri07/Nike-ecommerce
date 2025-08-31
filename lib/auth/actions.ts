@@ -1,11 +1,11 @@
 'use server';
 
-import { createAuth } from 'better-auth';
+import { betterAuth } from 'better-auth';
 import { db } from '@/db';
 import * as schema from '@/db/schema';
 import { cookies } from 'next/headers';
 
-const auth = createAuth({
+const auth = betterAuth({
   db,
   schema,
 });
