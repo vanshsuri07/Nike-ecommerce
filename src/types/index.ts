@@ -4,4 +4,7 @@ export interface Product {
   description: string | null;
   price: string;
   image: string | null;
+  category: string;
+  colors: string;
+  bestseller: boolean;
 }
