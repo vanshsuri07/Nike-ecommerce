@@ -6,7 +6,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="flex min-h-screen">
       <div className="hidden lg:flex lg:w-1/2 bg-dark-900 text-light-100 p-8 flex-col justify-between">
         <div>
-          <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+          <Image src="/logo.svg" alt="Logo" width={40} height={40} className='opacity-50' />
         </div>
         <div>
           <h1 className="text-heading-2">Just Do It</h1>

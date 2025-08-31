@@ -1,19 +1,26 @@
-import React from 'react';
-import { Chrome, Apple } from 'lucide-react';
+import Image from "next/image";
 
-const SocialProviders = () => {
+type Props = { variant?: "sign-in" | "sign-up" };
+
+export default function SocialProviders({ variant = "sign-in" }: Props) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
-      <button className="flex items-center justify-center gap-2 w-full bg-light-100 text-dark-900 py-3 px-4 rounded-md border border-light-400 hover:bg-light-200 transition-colors">
-        <Chrome size={20} />
+    <div className="space-y-3">
+      <button
+        type="button"
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-light-300 bg-light-100 px-4 py-3 text-body-medium text-dark-900 hover:bg-light-200 focus:outline-none focus:ring-2 focus:ring-dark-900/10"
+        aria-label={`${variant === "sign-in" ? "Continue" : "Sign up"} with Google`}
+      >
+        <Image src="/google.png" alt="" width={18} height={18} />
         <span>Continue with Google</span>
       </button>
-      <button className="flex items-center justify-center gap-2 w-full bg-light-100 text-dark-900 py-3 px-4 rounded-md border border-light-400 hover:bg-light-200 transition-colors">
-        <Apple size={20} />
+      <button
+        type="button"
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-light-300 bg-light-100 px-4 py-3 text-body-medium text-dark-900 hover:bg-light-200 focus:outline-none focus:ring-2 focus:ring-dark-900/10"
+        aria-label={`${variant === "sign-in" ? "Continue" : "Sign up"} with Apple`}
+      >
+        <Image src="/apple-logo.png" alt="" width={18} height={18} />
         <span>Continue with Apple</span>
       </button>
     </div>
   );
-};
-
-export default SocialProviders;
+}
