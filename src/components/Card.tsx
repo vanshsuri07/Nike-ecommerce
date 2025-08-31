@@ -10,7 +10,7 @@ const Card: React.FC<CardProps> = ({ product }) => {
   const { name, price, image, category, colors, bestseller } = product;
 
   return (
-    <div className="bg-light-200 rounded-lg overflow-hidden">
+    <article className={`group rounded-xl bg-light-200 ring-1 ring-light-300 transition-colors  hover:ring-dark-500 `}>
       <div className="relative">
         {/* The z-index is added to ensure the tag is on top of the image. */}
         {bestseller && (
@@ -20,7 +20,12 @@ const Card: React.FC<CardProps> = ({ product }) => {
         )}
         {image && (
           <div className="relative h-80 w-full">
-            <Image src={image} alt={name} layout="fill" objectFit="cover" />
+            <Image 
+            src={image} 
+            alt={name} 
+            fill
+            sizes='(min-width: 1280px) 360px, (min-width: 1024px) 300px, (min-width: 640px) 45vw, 90vw' 
+            className="object-fit transition-transform duration-300 group-hover:scale-105" />
           </div>
         )}
       </div>
@@ -34,7 +39,7 @@ const Card: React.FC<CardProps> = ({ product }) => {
           <span className="text-lead text-dark-900">${price}</span>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

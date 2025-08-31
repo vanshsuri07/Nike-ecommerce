@@ -35,6 +35,16 @@ const products: Product[] = [
     colors: '8 Colour',
     bestseller: false,
   },
+  {
+    id: 4,
+    name: 'Nike Air Zoom Pegasus 37',
+    description: null,
+    price: '120.00',
+    image: '/shoes/shoe-4.webp',
+    category: "Men's Shoes",
+    colors: '5 Colour',
+    bestseller: false,
+  }
 ];
 
 const Page = () => {
