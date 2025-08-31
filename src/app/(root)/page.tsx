@@ -1,8 +1,8 @@
 import React from 'react';
-import Navbar from '../components/Navbar';
-import Card from '../components/Card';
-import Footer from '../components/Footer';
-import { Product } from '../types';
+import Navbar from '../../components/Navbar';
+import Card from '../../components/Card';
+import Footer from '../../components/Footer';
+import { Product } from '../../types';
 
 const products: Product[] = [
   {

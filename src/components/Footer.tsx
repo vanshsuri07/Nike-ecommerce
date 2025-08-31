@@ -41,12 +41,12 @@ const Footer: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h4 className="text-body-medium text-light-100">Kids'</h4>
+              <h4 className="text-body-medium text-light-100">Kids&apos;</h4>
               <ul className="mt-4 space-y-2 text-dark-500">
                 <li><Link href="#" className="hover:text-light-100">Infant & Toddler Shoes</Link></li>
-                <li><Link href="#" className="hover:text-light-100">Kids' Shoes</Link></li>
-                <li><Link href="#" className="hover:text-light-100">Kids' Jordan Shoes</Link></li>
-                <li><Link href="#" className="hover:text-light-100">Kids' Basketball Shoes</Link></li>
+                <li><Link href="#" className="hover:text-light-100">Kids&apos; Shoes</Link></li>
+                <li><Link href="#" className="hover:text-light-100">Kids&apos; Jordan Shoes</Link></li>
+                <li><Link href="#" className="hover:text-light-100">Kids&apos; Basketball Shoes</Link></li>
               </ul>
             </div>
           </div>
