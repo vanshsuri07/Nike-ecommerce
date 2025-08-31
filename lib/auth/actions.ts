@@ -1,18 +1,14 @@
 'use server';
 
-import { betterAuth } from 'better-auth';
-import { db } from '@/db';
-import * as schema from '@/db/schema';
+import { auth } from '.';
+import { db, schema } from '../../src/db';
 import { cookies } from 'next/headers';
-
-const auth = betterAuth({
-  db,
-  schema,
-});
 
 import { signInSchema, signUpSchema } from './validation';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'better-auth/errors';
+
+import { and, eq } from 'drizzle-orm';
 
 export async function signUp(data: FormData) {
   const formData = Object.fromEntries(data);
@@ -27,7 +23,11 @@ export async function signUp(data: FormData) {
   const { email, password } = parsed.data;
 
   try {
-    await auth.createUser({ email, password });
+    const guest = await getGuestSession();
+    const user = await auth.email.signUp({ email, password });
+    if (guest && user) {
+      await mergeGuestCartWithUserCart(user.id, guest.id);
+    }
   } catch (error) {
     if (error instanceof AuthError) {
       return {
@@ -53,7 +53,11 @@ export async function signIn(data: FormData) {
   const { email, password } = parsed.data;
 
   try {
-    await auth.signIn('credentials', { email, password });
+    const guest = await getGuestSession();
+    const user = await auth.email.signIn({ email, password });
+    if (guest && user) {
+      await mergeGuestCartWithUserCart(user.id, guest.id);
+    }
   } catch (error) {
     if (error instanceof AuthError) {
       return {
@@ -86,11 +90,15 @@ export async function getGuestSession() {
   return guest;
 }
 
+import { v4 as uuidv4 } from 'uuid';
+
 export async function createGuestSession() {
+  const sessionToken = uuidv4();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
   const [guest] = await db
     .insert(schema.guests)
-    .values({ expiresAt })
+    .values({ sessionToken, expiresAt })
     .returning();
 
   cookies().set('guest_session', guest.sessionToken, {
@@ -104,15 +112,55 @@ export async function createGuestSession() {
   return guest;
 }
 
-export async function mergeGuestCartWithUserCart() {
-  // This function is a placeholder.
-  // The cart functionality is not implemented in this task.
-  // To implement this, you would need to:
-  // 1. Get the guest session.
-  // 2. Get the user session.
-  // 3. Find the guest's cart.
-  // 4. Find the user's cart.
-  // 5. Merge the guest's cart into the user's cart.
-  // 6. Delete the guest's cart.
-  // 7. Delete the guest session.
+export async function mergeGuestCartWithUserCart(userId: string, guestId: string) {
+  const guestCart = await db.query.carts.findFirst({
+    where: eq(schema.carts.guestId, guestId),
+    with: {
+      items: true,
+    },
+  });
+
+  if (!guestCart) {
+    await db.delete(schema.guests).where(eq(schema.guests.id, guestId));
+    cookies().delete('guest_session');
+    return;
+  }
+
+  const userCart = await db.query.carts.findFirst({
+    where: eq(schema.carts.userId, userId),
+  });
+
+  if (userCart) {
+    for (const guestItem of guestCart.items) {
+      const userItem = await db.query.cartItems.findFirst({
+        where: and(
+          eq(schema.cartItems.cartId, userCart.id),
+          eq(schema.cartItems.productId, guestItem.productId)
+        ),
+      });
+
+      if (userItem) {
+        await db
+          .update(schema.cartItems)
+          .set({ quantity: userItem.quantity + guestItem.quantity })
+          .where(eq(schema.cartItems.id, userItem.id));
+      } else {
+        await db.insert(schema.cartItems).values({
+          cartId: userCart.id,
+          productId: guestItem.productId,
+          quantity: guestItem.quantity,
+        });
+      }
+    }
+    await db.delete(schema.cartItems).where(eq(schema.cartItems.cartId, guestCart.id));
+    await db.delete(schema.carts).where(eq(schema.carts.id, guestCart.id));
+  } else {
+    await db
+      .update(schema.carts)
+      .set({ userId: userId, guestId: null })
+      .where(eq(schema.carts.id, guestCart.id));
+  }
+
+  await db.delete(schema.guests).where(eq(schema.guests.id, guestId));
+  cookies().delete('guest_session');
 }
