@@ -1,24 +1,24 @@
-import { pgTable, uuid, integer, timestamp } from 'drizzle-orm/pg-core';
-import { users } from './user';
+import { pgTable, uuid, integer, timestamp, text } from 'drizzle-orm/pg-core';
+import { user } from './user';
 import { guests } from './guest';
-import { products } from './product';
+import { product } from './product';
 
-export const carts = pgTable('carts', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: uuid('userId').references(() => users.id, { onDelete: 'cascade' }),
-  guestId: uuid('guestId').references(() => guests.id, { onDelete: 'cascade' }),
+export const cart = pgTable('cart', {
+  id: text('id').primaryKey(),
+  userId: text('userId').references(() => user.id, { onDelete: 'cascade' }),
+  guestId: text('guestId').references(() => guests.id, { onDelete: 'cascade' }),
   createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const cartItems = pgTable('cart_items', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  cartId: uuid('cartId')
+  id: text('id').primaryKey(),
+  cartId: text('cartId')
     .notNull()
-    .references(() => carts.id, { onDelete: 'cascade' }),
+    .references(() => cart.id, { onDelete: 'cascade' }),
   productId: integer('productId')
     .notNull()
-    .references(() => products.id, { onDelete: 'cascade' }),
+    .references(() => product.id, { onDelete: 'cascade' }),
   quantity: integer('quantity').notNull().default(1),
   createdAt: timestamp('createdAt', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).notNull().defaultNow(),

@@ -1,18 +1,33 @@
+"use client"
 import React from 'react';
 import Link from 'next/link';
 import SocialProviders from './SocialProviders';
+import  {useRouter} from 'next/navigation';
 
 interface AuthFormProps {
   type: 'signIn' | 'signUp';
+  onSubmit: (data: FormData) => Promise<void>;
 }
 
-const AuthForm = ({ type }: AuthFormProps) => {
+const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
   const title = type === 'signIn' ? 'Welcome back' : 'Join Nike Today!';
   const subtitle =
     type === 'signIn'
       ? 'Please enter your details to sign in to your account'
       : 'Create your account to start your fitness journey';
   const buttonText = type === 'signIn' ? 'Sign In' : 'Sign Up';
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+   try {
+    await onSubmit(formData);
+    router.push('/');
+  } catch (e) {
+    console.log(e);
+  }
+  };
 
   return (
     <div className="space-y-6">
@@ -39,18 +54,19 @@ const AuthForm = ({ type }: AuthFormProps) => {
         <hr className="h-px w-full border-0 bg-light-300" />
       </div>
 
-      <form 
-       className='space-y-4'
+      <form
+        className="space-y-4"
+        onSubmit={handleSubmit}
       >
             {type === 'signUp' && (
           <div className="mb-4">
             <label htmlFor="name" className="block text-body text-dark-900 mb-2">
-                  Full Name
+                  Name
             </label>
             <input
               type="text"
-                  id="name"
-                  placeholder="Enter your full name"
+              name="name"
+              placeholder="Enter your name"
               className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green"
             />
           </div>
@@ -61,7 +77,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           </label>
           <input
             type="email"
-                id="email"
+            name="email"
             placeholder="johndoe@gmail.com"
             className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green"
           />
@@ -75,7 +91,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           </label>
             <input
                 type="password"
-              id="password"
+              name="password"
               placeholder="minimum 8 characters"
             className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green"
               />
