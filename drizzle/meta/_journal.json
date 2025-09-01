@@ -22,6 +22,20 @@
       "when": 1756717829683,
       "tag": "0002_young_shriek",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1756745420365,
+      "tag": "0003_next_william_stryker",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1756747851490,
+      "tag": "0004_brave_maestro",
+      "breakpoints": true
     }
   ]
 }
