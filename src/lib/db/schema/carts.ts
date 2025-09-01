@@ -4,11 +4,12 @@ import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { users } from './user';
 import { productVariants } from './variants';
+import { guests } from './guest';
 
 export const carts = pgTable('carts', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
-  guestId: text('guest_id'),
+  guestId: uuid('guest_id').references(() => guests.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -24,6 +25,10 @@ export const cartsRelations = relations(carts, ({ one, many }) => ({
   user: one(users, {
     fields: [carts.userId],
     references: [users.id],
+  }),
+  guest: one(guests, {
+    fields: [carts.guestId],
+    references: [guests.id],
   }),
   items: many(cartItems),
 }));

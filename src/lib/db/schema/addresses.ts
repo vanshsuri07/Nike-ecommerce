@@ -3,7 +3,7 @@ import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { users } from './user';
-// import { orders } from './orders';
+import { orders } from './orders';
 
 export const addressTypeEnum = pgEnum('address_type', ['billing', 'shipping']);
 
@@ -25,8 +25,8 @@ export const addressesRelations = relations(addresses, ({ one, many }) => ({
     fields: [addresses.userId],
     references: [users.id],
   }),
-  // shippingOrders: many(orders, { relationName: 'shipping_address' }),
-  // billingOrders: many(orders, { relationName: 'billing_address' }),
+  shippingOrders: many(orders, { relationName: 'shipping_address' }),
+  billingOrders: many(orders, { relationName: 'billing_address' }),
 }));
 
 export const AddressInsertSchema = createInsertSchema(addresses);

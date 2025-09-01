@@ -5,9 +5,9 @@ import { z } from 'zod';
 import { products } from './products';
 import { colors } from './filters/colors';
 import { sizes } from './filters/sizes';
-// import { orderItems } from './orders';
-// import { cartItems } from './carts';
-// import { productImages } from './product-images';
+import { orderItems } from './orders';
+import { cartItems } from './carts';
+import { productImages } from './product-images';
 
 export const productVariants = pgTable('product_variants', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
@@ -36,9 +36,9 @@ export const productVariantsRelations = relations(productVariants, ({ one, many 
     fields: [productVariants.sizeId],
     references: [sizes.id],
   }),
-  // orderItems: many(orderItems),
-  // cartItems: many(cartItems),
-  // images: many(productImages),
+  orderItems: many(orderItems),
+  cartItems: many(cartItems),
+  images: many(productImages),
 }));
 
 export const ProductVariantInsertSchema = createInsertSchema(productVariants);
