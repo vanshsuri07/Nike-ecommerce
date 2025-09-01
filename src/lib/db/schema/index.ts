@@ -11,6 +11,7 @@ export * from './collections';
 export * from './coupons';
 export * from './orders';
 export * from './payments';
+export * from './product-images';
 export * from './product-collections';
 export * from './products';
 export * from './reviews';
