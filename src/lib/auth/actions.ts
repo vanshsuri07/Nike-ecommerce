@@ -1,15 +1,14 @@
 'use server';
 
 import { auth } from './index';
-import { db, schema } from '../../src/db';
+import { db } from '@/db';
+import * as schema from '@/lib/db/schema';
 import { cookies, headers } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 import { signInSchema, signUpSchema } from './validation';
 import { redirect } from 'next/navigation';
 import { BetterAuthError } from 'better-auth';
 import { and, eq } from 'drizzle-orm';
-
-
 
 export async function signUp(data: FormData) {
   const formData = Object.fromEntries(data);
@@ -23,7 +22,7 @@ export async function signUp(data: FormData) {
 
   try {
     const guest = await getGuestSession();
-    
+
     // Create user
     await auth.api.signUpEmail({
       body: {
@@ -41,7 +40,7 @@ export async function signUp(data: FormData) {
       },
     });
 
-    console.log("User signed in:", session);
+    console.log('User signed in:', session);
 
     if (guest && session?.user) {
       await mergeGuestCartWithUserCart(session.user.id, guest.id);
@@ -57,7 +56,6 @@ export async function signUp(data: FormData) {
 
   redirect('/');
 }
-
 
 export async function signIn(data: FormData) {
   const formData = Object.fromEntries(data);
@@ -86,7 +84,7 @@ export async function signIn(data: FormData) {
     throw error;
   }
 
-   redirect('/');
+  redirect('/');
 }
 
 export async function signOut() {
@@ -100,8 +98,8 @@ export async function getGuestSession() {
   if (!guestSessionToken) return null;
 
   const guest = await db.query.guests.findFirst({
-  where: eq(schema.guests.sessionToken, guestSessionToken),
-});
+    where: eq(schema.guests.sessionToken, guestSessionToken),
+  });
 
   if (!guest || guest.expiresAt < new Date()) {
     return null;
@@ -114,10 +112,10 @@ export async function getCurrentUser() {
     const session = await auth.api.getSession({
       headers: new Headers(),
     });
-    console.log("Full session object:", session);
+    console.log('Full session object:', session);
     return session?.user || null;
   } catch (e) {
-    console.error("Error getting current user:", e);
+    console.error('Error getting current user:', e);
     return null;
   }
 }
@@ -127,7 +125,7 @@ export async function createGuestSession() {
 
   const [guest] = await db
     .insert(schema.guests)
-    .values({ id: uuidv4(), sessionToken, expiresAt })
+    .values({ sessionToken, expiresAt })
     .returning();
 
   const cookieStore = await cookies();
@@ -142,9 +140,12 @@ export async function createGuestSession() {
   return guest;
 }
 
-export async function mergeGuestCartWithUserCart(userId: string, guestId: string) {
-  const guestCart = await db.query.cart.findFirst({
-    where: eq(schema.cart.guestId, guestId),
+export async function mergeGuestCartWithUserCart(
+  userId: string,
+  guestId: string,
+) {
+  const guestCart = await db.query.carts.findFirst({
+    where: eq(schema.carts.guestId, guestId),
     with: {
       items: true,
     },
@@ -157,8 +158,8 @@ export async function mergeGuestCartWithUserCart(userId: string, guestId: string
     return;
   }
 
-  const userCart = await db.query.cart.findFirst({
-    where: eq(schema.cart.userId, userId),
+  const userCart = await db.query.carts.findFirst({
+    where: eq(schema.carts.userId, userId),
   });
 
   if (userCart) {
@@ -167,7 +168,10 @@ export async function mergeGuestCartWithUserCart(userId: string, guestId: string
       const userItem = await db.query.cartItems.findFirst({
         where: and(
           eq(schema.cartItems.cartId, userCart.id),
-          eq(schema.cartItems.productId, guestItem.productId)
+          eq(
+            schema.cartItems.productVariantId,
+            guestItem.productVariantId,
+          ),
         ),
       });
 
@@ -180,23 +184,24 @@ export async function mergeGuestCartWithUserCart(userId: string, guestId: string
       } else {
         // Add new item to user cart
         await db.insert(schema.cartItems).values({
-          id: uuidv4(),
           cartId: userCart.id,
-          productId: guestItem.productId,
+          productVariantId: guestItem.productVariantId,
           quantity: guestItem.quantity,
         });
       }
     }
-    
+
     // Clean up guest cart and items
-    await db.delete(schema.cartItems).where(eq(schema.cartItems.cartId, guestCart.id));
-    await db.delete(schema.cart).where(eq(schema.cart.id, guestCart.id));
+    await db
+      .delete(schema.cartItems)
+      .where(eq(schema.cartItems.cartId, guestCart.id));
+    await db.delete(schema.carts).where(eq(schema.carts.id, guestCart.id));
   } else {
     // Transfer guest cart to user
     await db
-      .update(schema.cart)
+      .update(schema.carts)
       .set({ userId: userId, guestId: null })
-      .where(eq(schema.cart.id, guestCart.id));
+      .where(eq(schema.carts.id, guestCart.id));
   }
 
   // Clean up guest session

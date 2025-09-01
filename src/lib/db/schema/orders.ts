@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { users } from './user';
 import { addresses } from './addresses';
 import { productVariants } from './variants';
-// import { payments } from './payments';
+import { payments } from './payments';
 
 export const orderStatusEnum = pgEnum('order_status', ['pending', 'paid', 'shipped', 'delivered', 'cancelled']);
 
@@ -43,7 +43,7 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
     relationName: 'billing_address',
   }),
   items: many(orderItems),
-  // payments: many(payments),
+  payments: many(payments),
 }));
 
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({

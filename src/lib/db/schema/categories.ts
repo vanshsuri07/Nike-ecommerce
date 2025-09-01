@@ -2,7 +2,7 @@ import { pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-// import { products } from './products';
+import { products } from './products';
 
 export const categories = pgTable('categories', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
@@ -20,7 +20,7 @@ export const categoriesRelations = relations(categories, ({ one, many }) => ({
   children: many(categories, {
     relationName: 'parent_category',
   }),
-  // products: many(products),
+  products: many(products),
 }));
 
 export const CategoryInsertSchema = createInsertSchema(categories);

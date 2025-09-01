@@ -5,11 +5,11 @@ import { z } from 'zod';
 import { categories } from './categories';
 import { genders } from './filters/genders';
 import { brands } from './brands';
-// import { productVariants } from './variants';
-// import { reviews } from './reviews';
-// import { productImages } from './product-images';
-// import { productCollections } from './product-collections';
-// import { wishlists } from './wishlists';
+import { productVariants } from './variants';
+import { reviews } from './reviews';
+import { productImages } from './product-images';
+import { productCollections } from './product-collections';
+import { wishlists } from './wishlists';
 
 
 export const products = pgTable('products', {
@@ -20,7 +20,7 @@ export const products = pgTable('products', {
   genderId: uuid('gender_id').references(() => genders.id, { onDelete: 'set null' }),
   brandId: uuid('brand_id').references(() => brands.id, { onDelete: 'set null' }),
   isPublished: boolean('is_published').default(false).notNull(),
-  defaultVariantId: uuid('default_variant_id'), // can't add fk to product_variants yet
+  defaultVariantId: uuid('default_variant_id').references(() => productVariants.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -38,15 +38,15 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     fields: [products.brandId],
     references: [brands.id],
   }),
-  // defaultVariant: one(productVariants, {
-  //   fields: [products.defaultVariantId],
-  //   references: [productVariants.id],
-  // }),
-  // variants: many(productVariants),
-  // reviews: many(reviews),
-  // images: many(productImages),
-  // productCollections: many(productCollections),
-  // wishlists: many(wishlists),
+  defaultVariant: one(productVariants, {
+    fields: [products.defaultVariantId],
+    references: [productVariants.id],
+  }),
+  variants: many(productVariants),
+  reviews: many(reviews),
+  images: many(productImages),
+  productCollections: many(productCollections),
+  wishlists: many(wishlists),
 }));
 
 export const ProductInsertSchema = createInsertSchema(products);
