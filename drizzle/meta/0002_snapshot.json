@@ -1,19 +1,18 @@
 {
-  "id": "94f20029-b212-4917-9f8a-e6456b328b73",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "e6257cca-0943-4195-b2e1-d588a2923b7b",
+  "prevId": "6ac8cf9f-bacf-43d8-aab8-0ff18ecbead1",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.users": {
-      "name": "users",
+    "public.user": {
+      "name": "user",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "name": {
           "name": "name",
@@ -59,8 +58,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "users_email_unique": {
-          "name": "users_email_unique",
+        "user_email_unique": {
+          "name": "user_email_unique",
           "nullsNotDistinct": false,
           "columns": [
             "email"
@@ -77,14 +76,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "userId": {
           "name": "userId",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -159,10 +157,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "accounts_userId_users_id_fk": {
-          "name": "accounts_userId_users_id_fk",
+        "accounts_userId_user_id_fk": {
+          "name": "accounts_userId_user_id_fk",
           "tableFrom": "accounts",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "userId"
           ],
@@ -185,14 +183,13 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "userId": {
           "name": "userId",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -237,10 +234,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "sessions_userId_users_id_fk": {
-          "name": "sessions_userId_users_id_fk",
+        "sessions_userId_user_id_fk": {
+          "name": "sessions_userId_user_id_fk",
           "tableFrom": "sessions",
-          "tableTo": "users",
+          "tableTo": "user",
           "columnsFrom": [
             "userId"
           ],
@@ -271,10 +268,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "identifier": {
           "name": "identifier",
@@ -323,10 +319,9 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "sessionToken": {
           "name": "sessionToken",
@@ -407,20 +402,91 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.cart": {
+      "name": "cart",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "guestId": {
+          "name": "guestId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cart_userId_user_id_fk": {
+          "name": "cart_userId_user_id_fk",
+          "tableFrom": "cart",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "cart_guestId_guests_id_fk": {
+          "name": "cart_guestId_guests_id_fk",
+          "tableFrom": "cart",
+          "tableTo": "guests",
+          "columnsFrom": [
+            "guestId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.cart_items": {
       "name": "cart_items",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
+          "notNull": true
         },
         "cartId": {
           "name": "cartId",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -454,10 +520,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "cart_items_cartId_carts_id_fk": {
-          "name": "cart_items_cartId_carts_id_fk",
+        "cart_items_cartId_cart_id_fk": {
+          "name": "cart_items_cartId_cart_id_fk",
           "tableFrom": "cart_items",
-          "tableTo": "carts",
+          "tableTo": "cart",
           "columnsFrom": [
             "cartId"
           ],
@@ -473,79 +539,6 @@
           "tableTo": "products",
           "columnsFrom": [
             "productId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.carts": {
-      "name": "carts",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "userId": {
-          "name": "userId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "guestId": {
-          "name": "guestId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updatedAt": {
-          "name": "updatedAt",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "carts_userId_users_id_fk": {
-          "name": "carts_userId_users_id_fk",
-          "tableFrom": "carts",
-          "tableTo": "users",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "carts_guestId_guests_id_fk": {
-          "name": "carts_guestId_guests_id_fk",
-          "tableFrom": "carts",
-          "tableTo": "guests",
-          "columnsFrom": [
-            "guestId"
           ],
           "columnsTo": [
             "id"
