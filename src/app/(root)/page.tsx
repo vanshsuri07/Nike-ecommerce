@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar';
 import Card from '../../components/Card';
 import Footer from '../../components/Footer';
 import { Product } from '../../types';
+import { getCurrentUser } from 'lib/auth/actions';
 
 const products: Product[] = [
   {
@@ -47,7 +48,9 @@ const products: Product[] = [
   }
 ];
 
-const Page = () => {
+const Page = async () => {
+  const currentUser = await getCurrentUser();
+  console.log('Current User:', currentUser);
   return (
     <div className="bg-light-100">
       <Navbar />
