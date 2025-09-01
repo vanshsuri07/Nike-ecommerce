@@ -1,14 +1,15 @@
 'use server';
 
-import { auth } from '.';
+import { auth } from './index';
 import { db, schema } from '../../src/db';
-import { cookies } from 'next/headers';
-
+import { cookies, headers } from 'next/headers';
+import { v4 as uuidv4 } from 'uuid';
 import { signInSchema, signUpSchema } from './validation';
 import { redirect } from 'next/navigation';
-import { AuthError } from 'better-auth/errors';
-
+import { BetterAuthError } from 'better-auth';
 import { and, eq } from 'drizzle-orm';
+
+
 
 export async function signUp(data: FormData) {
   const formData = Object.fromEntries(data);
@@ -20,16 +21,33 @@ export async function signUp(data: FormData) {
     };
   }
 
-  const { email, password } = parsed.data;
-
   try {
     const guest = await getGuestSession();
-    const user = await auth.email.signUp({ email, password });
-    if (guest && user) {
-      await mergeGuestCartWithUserCart(user.id, guest.id);
+    
+    // Create user
+    await auth.api.signUpEmail({
+      body: {
+        name: parsed.data.name,
+        email: parsed.data.email,
+        password: parsed.data.password,
+      },
+    });
+
+    // Sign them in immediately
+    const session = await auth.api.signInEmail({
+      body: {
+        email: parsed.data.email,
+        password: parsed.data.password,
+      },
+    });
+
+    console.log("User signed in:", session);
+
+    if (guest && session?.user) {
+      await mergeGuestCartWithUserCart(session.user.id, guest.id);
     }
   } catch (error) {
-    if (error instanceof AuthError) {
+    if (error instanceof BetterAuthError) {
       return {
         error: { _errors: [error.message] },
       };
@@ -37,8 +55,9 @@ export async function signUp(data: FormData) {
     throw error;
   }
 
-  return redirect('/');
+  redirect('/');
 }
+
 
 export async function signIn(data: FormData) {
   const formData = Object.fromEntries(data);
@@ -54,12 +73,12 @@ export async function signIn(data: FormData) {
 
   try {
     const guest = await getGuestSession();
-    const user = await auth.email.signIn({ email, password });
+    const user = await auth.api.signInEmail({ body: { email, password } });
     if (guest && user) {
-      await mergeGuestCartWithUserCart(user.id, guest.id);
+      await mergeGuestCartWithUserCart(user.user.id, guest.id);
     }
   } catch (error) {
-    if (error instanceof AuthError) {
+    if (error instanceof BetterAuthError) {
       return {
         error: { _errors: [error.message] },
       };
@@ -67,21 +86,22 @@ export async function signIn(data: FormData) {
     throw error;
   }
 
-  return redirect('/');
+   redirect('/');
 }
 
 export async function signOut() {
-  await auth.signOut();
+  await auth.api.signOut({ headers: {} });
   return redirect('/');
 }
 
 export async function getGuestSession() {
-  const guestSessionToken = cookies().get('guest_session')?.value;
+  const cookieStore = await cookies();
+  const guestSessionToken = cookieStore.get('guest_session')?.value;
   if (!guestSessionToken) return null;
 
   const guest = await db.query.guests.findFirst({
-    where: (guests, { eq }) => eq(guests.sessionToken, guestSessionToken),
-  });
+  where: eq(schema.guests.sessionToken, guestSessionToken),
+});
 
   if (!guest || guest.expiresAt < new Date()) {
     return null;
@@ -89,19 +109,29 @@ export async function getGuestSession() {
 
   return guest;
 }
-
-import { v4 as uuidv4 } from 'uuid';
-
+export async function getCurrentUser() {
+  try {
+    const session = await auth.api.getSession({
+      headers: new Headers(),
+    });
+    console.log("Full session object:", session);
+    return session?.user || null;
+  } catch (e) {
+    console.error("Error getting current user:", e);
+    return null;
+  }
+}
 export async function createGuestSession() {
   const sessionToken = uuidv4();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
   const [guest] = await db
     .insert(schema.guests)
-    .values({ sessionToken, expiresAt })
+    .values({ id: uuidv4(), sessionToken, expiresAt })
     .returning();
 
-  cookies().set('guest_session', guest.sessionToken, {
+  const cookieStore = await cookies();
+  cookieStore.set('guest_session', guest.sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
@@ -113,8 +143,8 @@ export async function createGuestSession() {
 }
 
 export async function mergeGuestCartWithUserCart(userId: string, guestId: string) {
-  const guestCart = await db.query.carts.findFirst({
-    where: eq(schema.carts.guestId, guestId),
+  const guestCart = await db.query.cart.findFirst({
+    where: eq(schema.cart.guestId, guestId),
     with: {
       items: true,
     },
@@ -122,15 +152,17 @@ export async function mergeGuestCartWithUserCart(userId: string, guestId: string
 
   if (!guestCart) {
     await db.delete(schema.guests).where(eq(schema.guests.id, guestId));
-    cookies().delete('guest_session');
+    const cookieStore = await cookies();
+    cookieStore.delete('guest_session');
     return;
   }
 
-  const userCart = await db.query.carts.findFirst({
-    where: eq(schema.carts.userId, userId),
+  const userCart = await db.query.cart.findFirst({
+    where: eq(schema.cart.userId, userId),
   });
 
   if (userCart) {
+    // Merge guest cart items into user cart
     for (const guestItem of guestCart.items) {
       const userItem = await db.query.cartItems.findFirst({
         where: and(
@@ -140,27 +172,35 @@ export async function mergeGuestCartWithUserCart(userId: string, guestId: string
       });
 
       if (userItem) {
+        // Update existing item quantity
         await db
           .update(schema.cartItems)
           .set({ quantity: userItem.quantity + guestItem.quantity })
           .where(eq(schema.cartItems.id, userItem.id));
       } else {
+        // Add new item to user cart
         await db.insert(schema.cartItems).values({
+          id: uuidv4(),
           cartId: userCart.id,
           productId: guestItem.productId,
           quantity: guestItem.quantity,
         });
       }
     }
+    
+    // Clean up guest cart and items
     await db.delete(schema.cartItems).where(eq(schema.cartItems.cartId, guestCart.id));
-    await db.delete(schema.carts).where(eq(schema.carts.id, guestCart.id));
+    await db.delete(schema.cart).where(eq(schema.cart.id, guestCart.id));
   } else {
+    // Transfer guest cart to user
     await db
-      .update(schema.carts)
+      .update(schema.cart)
       .set({ userId: userId, guestId: null })
-      .where(eq(schema.carts.id, guestCart.id));
+      .where(eq(schema.cart.id, guestCart.id));
   }
 
+  // Clean up guest session
   await db.delete(schema.guests).where(eq(schema.guests.id, guestId));
-  cookies().delete('guest_session');
+  const cookieStore = await cookies();
+  cookieStore.delete('guest_session');
 }
