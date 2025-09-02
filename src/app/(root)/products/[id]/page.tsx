@@ -13,8 +13,8 @@ interface ProductPageProps {
   };
 }
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const productId = parseInt(params.id, 10);
+export default async function ProductPage({ params }: ProductPageProps) {
+  const productId = await parseInt(params.id, 10);
   const product = products.find((p) => p.id === productId);
 
   if (!product) {
