@@ -38,3 +38,42 @@ export const removeKeysFromQuery = ({ params, keysToRemove }: RemoveUrlQueryPara
     { skipNull: true },
   );
 };
+
+// New code for product filtering
+
+export interface ProductFilters {
+  search?: string;
+  category?: string[];
+  brand?: string[];
+  gender?: string[];
+  color?: string[];
+  size?: string[];
+  priceMin?: number;
+  priceMax?: number;
+  sortBy?: 'latest' | 'price_asc' | 'price_desc';
+  page: number;
+  limit: number;
+}
+
+export const parseFilterParams = (
+  searchParams: { [key:string]: string | string[] | undefined }
+): ProductFilters => {
+  const getValues = (value: string | string[] | undefined) =>
+    value ? (Array.isArray(value) ? value : value.split(',')) : undefined;
+
+  const priceRange = searchParams.price ? String(searchParams.price).split('-') : [];
+
+  return {
+    search: searchParams.search ? String(searchParams.search) : undefined,
+    category: getValues(searchParams.category),
+    brand: getValues(searchParams.brand),
+    gender: getValues(searchParams.gender),
+    color: getValues(searchParams.color),
+    size: getValues(searchParams.size),
+    priceMin: searchParams.priceMin ? Number(searchParams.priceMin) : (priceRange[0] ? Number(priceRange[0]) : undefined),
+    priceMax: searchParams.priceMax ? Number(searchParams.priceMax) : (priceRange[1] ? Number(priceRange[1]) : undefined),
+    sortBy: (searchParams.sortBy as ProductFilters['sortBy']) || 'latest',
+    page: searchParams.page ? parseInt(String(searchParams.page), 10) : 1,
+    limit: searchParams.limit ? parseInt(String(searchParams.limit), 10) : 12,
+  };
+};
