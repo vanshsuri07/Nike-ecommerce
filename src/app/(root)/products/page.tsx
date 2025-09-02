@@ -103,8 +103,10 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
 
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {fetchedProducts.map((product, index) => (
-                <Card key={product.id} product={products[index]} />
+              {products.map((product) => (
+                <Link href={`/products/${product.id}`} key={product.id}>
+                  <Card product={product} />
+                </Link>
               ))}
             </div>
           ) : (
