@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1756673358415,
-      "tag": "0000_violet_lady_mastermind",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1756717274138,
-      "tag": "0001_broad_toad_men",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1756717829683,
-      "tag": "0002_young_shriek",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1756745420365,
-      "tag": "0003_next_william_stryker",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1756747851490,
-      "tag": "0004_brave_maestro",
+      "when": 1756821364663,
+      "tag": "0000_perpetual_psylocke",
       "breakpoints": true
     }
   ]

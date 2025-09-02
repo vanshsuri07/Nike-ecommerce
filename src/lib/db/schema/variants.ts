@@ -11,6 +11,7 @@ import { productImages } from './product-images';
 
 export const productVariants = pgTable('product_variants', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   productId: uuid('product_id').notNull().references((): any => products.id, { onDelete: 'cascade' }),
   sku: text('sku').notNull().unique(),
   price: numeric('price', { precision: 10, scale: 2 }).notNull(),
