@@ -8,8 +8,7 @@ const Sort = () => {
   const searchParams = useSearchParams();
 
   const sortOptions = [
-    { label: 'Featured', value: 'featured' },
-    { label: 'Newest', value: 'newest' },
+    { label: 'Newest', value: 'latest' },
     { label: 'Price: High to Low', value: 'price_desc' },
     { label: 'Price: Low to High', value: 'price_asc' },
   ];
@@ -17,13 +16,13 @@ const Sort = () => {
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newUrl = formUrlQuery({
       params: searchParams.toString(),
-      key: 'sort',
+      key: 'sortBy',
       value: e.target.value,
     });
     router.push(newUrl, { scroll: false });
   };
 
-  const currentSort = searchParams.get('sort') || 'featured';
+  const currentSort = searchParams.get('sortBy') || 'latest';
 
   return (
     <div className="flex items-center gap-2">
