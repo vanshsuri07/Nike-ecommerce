@@ -10,7 +10,14 @@ type ProductsPageProps = {
 };
 
 const ProductsPage = ({ searchParams }: ProductsPageProps) => {
-  const productsData = getProducts(searchParams);
+  // Safely extract params for the data fetching function
+  const filterParams = {
+    gender: searchParams.gender,
+    size: searchParams.size,
+    color: searchParams.color,
+    sort: searchParams.sort,
+  };
+  const productsData = getProducts(filterParams);
 
   // Adapt the data to what the Card component expects
   const products: CardProduct[] = productsData.map(p => ({
@@ -24,20 +31,36 @@ const ProductsPage = ({ searchParams }: ProductsPageProps) => {
     bestseller: p.isBestSeller,
   }));
 
-  const activeFilters = Object.entries(searchParams).filter(([key]) => key !== 'sort');
+  // Safely generate active filters from the plain object
+  const activeFilters = Object.entries(filterParams)
+    .filter(([key, value]) => key !== 'sort' && value)
+    .flatMap(([key, value]) => {
+      const values = Array.isArray(value) ? value : String(value).split(',');
+      return values.map(v => ({ key, value: v }));
+    });
 
-  const createRemoveFilterHref = (keyToRemove: string, valueToRemove?: string) => {
-    const newParams = new URLSearchParams(searchParams as any);
-    const currentValue = newParams.get(keyToRemove);
-
-    if (currentValue && valueToRemove) {
-      const values = currentValue.split(',').filter(v => v !== valueToRemove);
-      if (values.length > 0) {
-        newParams.set(keyToRemove, values.join(','));
-      } else {
-        newParams.delete(keyToRemove);
+  const createRemoveFilterHref = (keyToRemove: string, valueToRemove: string) => {
+    // Create a mutable URLSearchParams instance from the incoming searchParams
+    const newParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(searchParams)) {
+      if (Array.isArray(value)) {
+        value.forEach(v => newParams.append(key, v));
+      } else if (value) {
+        newParams.set(key, value);
       }
     }
+
+    // Get the current values for the key we're modifying
+    const currentValues = newParams.getAll(keyToRemove);
+    // Filter out the value to remove
+    const newValues = currentValues.filter(v => v !== valueToRemove);
+
+    // Delete the key entirely to clear it
+    newParams.delete(keyToRemove);
+
+    // Add back the remaining values
+    newValues.forEach(v => newParams.append(keyToRemove, v));
+
     return `/products?${newParams.toString()}`;
   };
 
@@ -62,17 +85,14 @@ const ProductsPage = ({ searchParams }: ProductsPageProps) => {
           {activeFilters.length > 0 && (
             <div className="flex items-center flex-wrap gap-2 mb-4">
               <span className="text-body-medium">Active Filters:</span>
-              {activeFilters.flatMap(([key, value]) => {
-                const values = typeof value === 'string' ? value.split(',') : (Array.isArray(value) ? value : [value]);
-                return values.map(v => v && (
-                  <div key={`${key}-${v}`} className="flex items-center gap-1 px-3 py-1 bg-light-300 rounded-full text-caption">
-                    <span>{v}</span>
-                    <Link href={createRemoveFilterHref(key, v)} className="text-dark-500 hover:text-dark-900">
+              {activeFilters.map(({ key, value }) => (
+                  <div key={`${key}-${value}`} className="flex items-center gap-1 px-3 py-1 bg-light-300 rounded-full text-caption">
+                    <span>{value}</span>
+                    <Link href={createRemoveFilterHref(key, value)} className="text-dark-500 hover:text-dark-900">
                       &times;
                     </Link>
                   </div>
-                ));
-              })}
+              ))}
               <Link href="/products" className="text-caption text-red underline hover:text-dark-900">
                 Clear All
               </Link>
