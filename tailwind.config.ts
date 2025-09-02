@@ -19,6 +19,10 @@ const config: Config = {
         'green': 'var(--color-green)',
         'red': 'var(--color-red)',
         'orange': 'var(--color-orange)',
+        'product-red': 'var(--color-product-red)',
+        'product-blue': 'var(--color-product-blue)',
+        'product-green': 'var(--color-product-green)',
+        'product-orange': 'var(--color-product-orange)',
       },
       fontSize: {
         'heading-1': ['var(--text-heading-1)', {
