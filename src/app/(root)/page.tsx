@@ -8,7 +8,7 @@ import { getCurrentUser } from "../../lib/auth/actions"
 
 const products: Product[] = [
   {
-    id: 1,
+    id: '7c9a62a6-3c2a-48d2-b6f4-3d7353f2c01a',
     name: "Nike Air Force 1 Mid '07",
     description: null,
     price: '98.30',
@@ -18,7 +18,7 @@ const products: Product[] = [
     bestseller: true,
   },
   {
-    id: 2,
+    id: 'd8f7b7c2-8e1a-4f6f-8a9a-3d7353f2c01a',
     name: 'Nike Air Max 90',
     description: null,
     price: '130.00',
@@ -28,7 +28,7 @@ const products: Product[] = [
     bestseller: false,
   },
   {
-    id: 3,
+    id: 'a3e9c3e2-1b3a-4e7e-9d1c-3d7353f2c01a',
     name: 'Nike Jordan Low',
     description: null,
     price: '110.00',
@@ -38,7 +38,7 @@ const products: Product[] = [
     bestseller: false,
   },
   {
-    id: 4,
+    id: 'f5f2c5a0-9b3a-4b7c-8f3a-3d7353f2c01a',
     name: 'Nike Air Zoom Pegasus 37',
     description: null,
     price: '120.00',
