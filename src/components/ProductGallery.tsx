@@ -29,7 +29,7 @@ export default function ProductGallery({ variants, mainImages }: ProductGalleryP
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Determine the set of images to display
-  const galleryImages = activeVariantIndex !== null && variants[activeVariantIndex].images.length > 0
+  const galleryImages = activeVariantIndex !== null
     ? variants[activeVariantIndex].images
     : mainImages;
 
