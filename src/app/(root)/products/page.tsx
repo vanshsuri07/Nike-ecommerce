@@ -16,7 +16,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   const { products: fetchedProducts, totalCount } = await getAllProducts(filters);
 
   const products: CardProduct[] = fetchedProducts.map((p: ProductWithDetails) => ({
-    id: parseInt(p.id.substring(0, 8), 16),
+    id: p.id,
     name: p.name,
     description: p.description,
     price: p.minPrice || '0',
