@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { formUrlQuery } from '@/lib/utils/query';
-import { GENDERS, SIZES, COLORS } from '@/lib/data';
+import { GENDERS, SIZES, COLORS, PRICES } from '@/lib/data';
 import { X, SlidersHorizontal } from 'lucide-react';
 
 const FilterGroup = ({ title, children }: { title: string, children: React.ReactNode }) => {
@@ -62,15 +62,15 @@ const Filters = () => {
         </div>
       </FilterGroup>
       <FilterGroup title="Size">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           {SIZES.map((size) => (
-            <label key={size} className="flex items-center justify-center p-2 border rounded-md cursor-pointer has-[:checked]:bg-dark-900 has-[:checked]:text-light-100">
+            <label key={size} className="inline-flex items-center gap-2">
               <input
                 type="checkbox"
                 value={size}
                 checked={searchParams.get('size')?.split(',').includes(String(size)) || false}
                 onChange={() => handleFilterChange('size', String(size))}
-                className="sr-only"
+                className="h-4 w-4 accent-dark-900"
               />
               {size}
             </label>
@@ -78,17 +78,33 @@ const Filters = () => {
         </div>
       </FilterGroup>
       <FilterGroup title="Color">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {COLORS.map((color) => (
-            <label key={color} className="flex items-center justify-center p-2 border rounded-full cursor-pointer has-[:checked]:ring-2 has-[:checked]:ring-offset-1 has-[:checked]:ring-red" style={{ backgroundColor: color, color: color.toLowerCase() === 'white' ? 'black' : 'white' }}>
+            <label key={color} className="flex items-center gap-2">
               <input
                 type="checkbox"
                 value={color}
                 checked={searchParams.get('color')?.split(',').includes(color) || false}
                 onChange={() => handleFilterChange('color', color)}
-                className="sr-only"
+                className="h-4 w-4 accent-dark-900"
               />
-              <span className="sr-only">{color}</span>
+              <span className="">{color}</span>
+            </label>
+          ))}
+        </div>
+      </FilterGroup>
+      <FilterGroup title="Price">
+        <div className="grid grid-cols-2 gap-2">
+          {PRICES.map((price) => (
+            <label key={price.id} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                value={price.id}
+                checked={searchParams.get('price')?.split(',').includes(price.id) || false}
+                onChange={() => handleFilterChange('price', price.id)}
+                className="h-4 w-4 accent-dark-900"
+              />
+              <span className="">{price.label}</span>
             </label>
           ))}
         </div>

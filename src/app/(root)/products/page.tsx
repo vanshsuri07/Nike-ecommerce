@@ -15,7 +15,7 @@ const ProductsPage = ({ searchParams }: ProductsPageProps) => {
     gender: searchParams.gender,
     size: searchParams.size,
     color: searchParams.color,
-    sort: searchParams.sort,
+    sort: Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort,
   };
   const productsData = getProducts(filterParams);
 
