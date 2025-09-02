@@ -2,7 +2,7 @@ import { pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-// import { productVariants } from '../variants';
+import { productVariants } from '../variants';
 
 export const colors = pgTable('colors', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
@@ -12,7 +12,7 @@ export const colors = pgTable('colors', {
 });
 
 export const colorsRelations = relations(colors, ({ many }) => ({
-  // productVariants: many(productVariants),
+  productVariants: many(productVariants),
 }));
 
 export const ColorInsertSchema = createInsertSchema(colors);

@@ -8,7 +8,8 @@ export const categories = pgTable('categories', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
-  parentId: uuid('parent_id').references(() => categories.id, { onDelete: 'set null' }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parentId: uuid('parent_id').references((): any => categories.id, { onDelete: 'set null' }),
 });
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({

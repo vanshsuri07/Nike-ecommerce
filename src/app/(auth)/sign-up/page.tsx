@@ -1,9 +1,15 @@
+"use client"
+
 import React from 'react';
 import AuthForm from '../../../components/AuthForm';
-import { signIn } from "../../../lib/auth/actions";
+import { signUp } from "../../../lib/auth/actions";
 
 const SignUpPage = () => {
-  return <AuthForm type="signUp" onSubmit={signUp} />;
+  const handleSignUp = async (data: FormData) => {
+    await signUp(data);
+  };
+  
+  return <AuthForm type="signUp" onSubmit={handleSignUp} />;
 };
 
 export default SignUpPage;
