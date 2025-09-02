@@ -1,3 +1,5 @@
+import { N } from "node_modules/tailwindcss/dist/resolve-config-QUZ9b-Gn.mjs";
+
 export type Product = {
   id: string;
   name: string;
@@ -6,7 +8,7 @@ export type Product = {
   gender: 'Men' | 'Women' | 'Unisex';
   category: 'Lifestyle' | 'Running' | 'Basketball';
   colors: string[];
-  sizes: number[];
+  sizes: string[];
   isNew: boolean;
   isBestSeller: boolean;
   createdAt: Date;
@@ -21,7 +23,7 @@ export const mockProducts: Product[] = [
     gender: 'Men',
     category: 'Lifestyle',
     colors: ['Black', 'White', 'Red'],
-    sizes: [8, 9, 10, 11],
+    sizes: ['M', 'L', 'XL', 'XXL'],
     isNew: true,
     isBestSeller: true,
     createdAt: new Date('2024-07-20T10:00:00Z'),
@@ -34,7 +36,7 @@ export const mockProducts: Product[] = [
     gender: 'Unisex',
     category: 'Lifestyle',
     colors: ['White', 'Black'],
-    sizes: [7, 8, 9, 10, 11, 12],
+    sizes: ['M', 'L', 'XL', 'XXL'],
     isNew: false,
     isBestSeller: false,
     createdAt: new Date('2024-06-15T10:00:00Z'),
@@ -47,7 +49,7 @@ export const mockProducts: Product[] = [
     gender: 'Women',
     category: 'Running',
     colors: ['Blue', 'Green'],
-    sizes: [6, 7, 8, 9],
+    sizes: ['S', 'M', 'L', 'XL', 'XS'],
     isNew: true,
     isBestSeller: false,
     createdAt: new Date('2024-07-22T10:00:00Z'),
@@ -60,7 +62,7 @@ export const mockProducts: Product[] = [
     gender: 'Unisex',
     category: 'Lifestyle',
     colors: ['Gray', 'White'],
-    sizes: [8, 9, 10],
+    sizes: ['M', 'L', 'XL'],
     isNew: false,
     isBestSeller: true,
     createdAt: new Date('2024-05-10T10:00:00Z'),
@@ -73,7 +75,7 @@ export const mockProducts: Product[] = [
     gender: 'Men',
     category: 'Basketball',
     colors: ['Black', 'Red'],
-    sizes: [10, 11, 12, 13],
+    sizes: ['M', 'L', 'XL'],
     isNew: true,
     isBestSeller: false,
     createdAt: new Date('2024-07-18T10:00:00Z'),
@@ -86,7 +88,7 @@ export const mockProducts: Product[] = [
     gender: 'Women',
     category: 'Running',
     colors: ['White', 'Pink'],
-    sizes: [7, 8, 9],
+    sizes: ['S', 'M', 'L'],
     isNew: false,
     isBestSeller: true,
     createdAt: new Date('2024-04-01T10:00:00Z'),
@@ -99,7 +101,7 @@ export const mockProducts: Product[] = [
     gender: 'Unisex',
     category: 'Lifestyle',
     colors: ['White', 'Blue'],
-    sizes: [8, 9, 10, 11],
+    sizes: ['M', 'L', 'XL', 'XXL'],
     isNew: false,
     isBestSeller: false,
     createdAt: new Date('2024-03-12T10:00:00Z'),
@@ -112,7 +114,7 @@ export const mockProducts: Product[] = [
     gender: 'Men',
     category: 'Basketball',
     colors: ['Green', 'Black'],
-    sizes: [9, 10, 11],
+    sizes: ['M', 'L', 'XL'],
     isNew: true,
     isBestSeller: false,
     createdAt: new Date('2024-07-25T10:00:00Z'),
@@ -120,15 +122,21 @@ export const mockProducts: Product[] = [
 ];
 
 export const GENDERS = ['Men', 'Women', 'Unisex'];
-export const SIZES = [6, 7, 8, 9, 10, 11, 12, 13];
+export const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 export const COLORS = ['Black', 'White', 'Red', 'Blue', 'Green', 'Gray', 'Pink'];
 export const CATEGORIES = ['Lifestyle', 'Running', 'Basketball'];
-
+export const PRICES = [
+  { id: "0-50", label: "$0 - $50" },
+  { id: "50-100", label: "$50 - $100" },
+  { id: "100-150", label: "$100 - $150" },
+  { id: "150-", label: "Over $150" },
+] as const;
 interface GetProductsParams {
   gender?: string | string[];
   size?: string | string[];
   color?: string | string[];
   sort?: string;
+  price?: string | string[];
 }
 
 export const getProducts = (params: GetProductsParams) => {
@@ -144,9 +152,27 @@ export const getProducts = (params: GetProductsParams) => {
     products = products.filter(p => p.colors.some(c => colors.includes(c)));
   }
   if (params.size) {
-    const sizes = (Array.isArray(params.size) ? params.size : params.size.split(',')).map(Number);
+    const sizes = Array.isArray(params.size) ? params.size : params.size.split(',');
     products = products.filter(p => p.sizes.some(s => sizes.includes(s)));
   }
+if (params.price) {
+  const ranges = Array.isArray(params.price)
+    ? params.price
+    : params.price.split(','); // handle multiple ranges
+
+  products = products.filter((p) =>
+    ranges.some((range) => {
+      const [minStr, maxStr] = range.split('-');
+
+      // Parse to numbers
+      const min = Number(minStr) || 0;
+      const max = maxStr ? Number(maxStr) : Infinity;
+
+      return p.price >= min && p.price <= max;
+    })
+  );
+}
+
 
   // Sorting
   switch (params.sort) {

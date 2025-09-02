@@ -3,7 +3,7 @@ import Navbar from '../../components/Navbar';
 import Card from '../../components/Card';
 import Footer from '../../components/Footer';
 import { Product } from '../../types';
-import { getCurrentUser } from 'lib/auth/actions';
+import { getCurrentUser } from "../../lib/auth/actions"
 
 const products: Product[] = [
   {
