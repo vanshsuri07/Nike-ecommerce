@@ -17,8 +17,8 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
           <div className="hidden md:flex md:items-center md:space-x-8">
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Men</Link>
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Women</Link>
+            <Link href="/products?gender=Men" className="text-dark-900 hover:text-green text-body">Men</Link>
+            <Link href="/products?gender=Women" className="text-dark-900 hover:text-green text-body">Women</Link>
             <Link href="#" className="text-dark-900 hover:text-green text-body">Kids</Link>
             <Link href="#" className="text-dark-900 hover:text-green text-body">Collections</Link>
             <Link href="#" className="text-dark-900 hover:text-green text-body">Contact</Link>
@@ -55,8 +55,8 @@ const Navbar: React.FC = () => {
       {isOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md md:hidden">
           <ul className="flex flex-col p-4 space-y-2">
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Men</Link>
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Women</Link>
+            <Link href="/products?gender=Men" className="text-dark-900 hover:text-green text-body">Men</Link>
+            <Link href="/products?gender=Women" className="text-dark-900 hover:text-green text-body">Women</Link>
             <Link href="#" className="text-dark-900 hover:text-green text-body">Kids</Link>
             <Link href="#" className="text-dark-900 hover:text-green text-body">Collections</Link>
             <Link href="#" className="text-dark-900 hover:text-green text-body">Contact</Link>
