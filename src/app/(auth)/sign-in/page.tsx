@@ -3,11 +3,7 @@ import AuthForm from '../../../components/AuthForm';
 import { signIn } from "../../../lib/auth/actions";
 
 const SignInPage = () => {
-  const handleSignIn = async (data: FormData) => {
-    await signIn(data);
-  };
-  
-  return <AuthForm type="signIn" onSubmit={handleSignIn} />;
+  return <AuthForm type="signIn" onSubmit={signIn} />;
 };
 
 export default SignInPage;

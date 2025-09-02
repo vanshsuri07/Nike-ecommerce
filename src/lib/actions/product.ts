@@ -47,7 +47,7 @@ export async function getAllProducts(filters: ProductFilters): Promise<{ product
         conditions.push(inArray(schema.products.brandId, brandIds));
     }
     if (filters.gender?.length) {
-        const genderIds = db.select({ id: schema.genders.id }).from(schema.genders).where(inArray(schema.genders.label, filters.gender));
+        const genderIds = db.select({ id: schema.genders.id }).from(schema.genders).where(inArray(schema.genders.name, filters.gender));
         conditions.push(inArray(schema.products.genderId, genderIds));
     }
 
@@ -155,7 +155,7 @@ export async function getAllProducts(filters: ProductFilters): Promise<{ product
     }, {} as Record<string, (typeof images)>);
 
     const finalProducts = finalProductsData.map(p => {
-        const prices: number[] = p.variants.map((v: ProductVariant) => parseFloat(v.price));
+        const prices = p.variants.map(v => parseFloat(v.price));
         const minPrice = prices.length ? Math.min(...prices) : 0;
         const maxPrice = prices.length ? Math.max(...prices) : 0;
         return {
