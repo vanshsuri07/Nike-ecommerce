@@ -14,6 +14,34 @@ CREATE TABLE "users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
+CREATE TABLE "accounts" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"account_id" text NOT NULL,
+	"provider_id" text NOT NULL,
+	"access_token" text,
+	"refresh_token" text,
+	"access_token_expires_at" timestamp with time zone,
+	"refresh_token_expires_at" timestamp with time zone,
+	"scope" text,
+	"id_token" text,
+	"password" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "sessions" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"user_id" uuid NOT NULL,
+	"token" text NOT NULL,
+	"ip_address" text,
+	"user_agent" text,
+	"expires_at" timestamp with time zone NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "sessions_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
 CREATE TABLE "verifications" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"identifier" text NOT NULL,
@@ -21,6 +49,14 @@ CREATE TABLE "verifications" (
 	"expires_at" timestamp with time zone NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "guests" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"session_token" text NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "guests_session_token_unique" UNIQUE("session_token")
 );
 --> statement-breakpoint
 CREATE TABLE "addresses" (
@@ -42,6 +78,13 @@ CREATE TABLE "brands" (
 	"slug" text NOT NULL,
 	"logo_url" text,
 	CONSTRAINT "brands_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
+CREATE TABLE "cart_items" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"cart_id" uuid NOT NULL,
+	"product_variant_id" uuid NOT NULL,
+	"quantity" integer DEFAULT 1 NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "carts" (
@@ -106,10 +149,32 @@ CREATE TABLE "payments" (
 	"transaction_id" text
 );
 --> statement-breakpoint
+CREATE TABLE "product_images" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"product_id" uuid NOT NULL,
+	"variant_id" uuid,
+	"url" text NOT NULL,
+	"sort_order" integer DEFAULT 0 NOT NULL,
+	"is_primary" boolean DEFAULT false NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "product_collections" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"product_id" uuid NOT NULL,
 	"collection_id" uuid NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "products" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"name" text NOT NULL,
+	"description" text,
+	"category_id" uuid,
+	"gender_id" uuid,
+	"brand_id" uuid,
+	"is_published" boolean DEFAULT false NOT NULL,
+	"default_variant_id" uuid,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "reviews" (
@@ -166,60 +231,11 @@ CREATE TABLE "sizes" (
 	CONSTRAINT "sizes_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
-ALTER TABLE "user" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "verification" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "cart" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DROP TABLE "user" CASCADE;--> statement-breakpoint
-DROP TABLE "verification" CASCADE;--> statement-breakpoint
-DROP TABLE "cart" CASCADE;--> statement-breakpoint
-ALTER TABLE "guests" DROP CONSTRAINT "guests_sessionToken_unique";--> statement-breakpoint
-ALTER TABLE "accounts" DROP CONSTRAINT "accounts_userId_user_id_fk";
---> statement-breakpoint
-ALTER TABLE "sessions" DROP CONSTRAINT "sessions_userId_user_id_fk";
---> statement-breakpoint
-ALTER TABLE "cart_items" DROP CONSTRAINT "cart_items_cartId_cart_id_fk";
---> statement-breakpoint
-ALTER TABLE "cart_items" DROP CONSTRAINT "cart_items_productId_products_id_fk";
---> statement-breakpoint
-ALTER TABLE "accounts" ALTER COLUMN "id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "accounts" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
-ALTER TABLE "sessions" ALTER COLUMN "id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "sessions" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
-ALTER TABLE "guests" ALTER COLUMN "id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "guests" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
-ALTER TABLE "products" ALTER COLUMN "id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "products" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
-ALTER TABLE "cart_items" ALTER COLUMN "id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "cart_items" ALTER COLUMN "id" SET DEFAULT gen_random_uuid();--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "user_id" uuid NOT NULL;--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "account_id" text NOT NULL;--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "provider_id" text NOT NULL;--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "access_token" text;--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "refresh_token" text;--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "access_token_expires_at" timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "refresh_token_expires_at" timestamp with time zone;--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "id_token" text;--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "created_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "accounts" ADD COLUMN "updated_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "sessions" ADD COLUMN "user_id" uuid NOT NULL;--> statement-breakpoint
-ALTER TABLE "sessions" ADD COLUMN "ip_address" text;--> statement-breakpoint
-ALTER TABLE "sessions" ADD COLUMN "user_agent" text;--> statement-breakpoint
-ALTER TABLE "sessions" ADD COLUMN "expires_at" timestamp with time zone NOT NULL;--> statement-breakpoint
-ALTER TABLE "sessions" ADD COLUMN "created_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "sessions" ADD COLUMN "updated_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "guests" ADD COLUMN "session_token" text NOT NULL;--> statement-breakpoint
-ALTER TABLE "guests" ADD COLUMN "expires_at" timestamp with time zone NOT NULL;--> statement-breakpoint
-ALTER TABLE "guests" ADD COLUMN "created_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "products" ADD COLUMN "category_id" uuid;--> statement-breakpoint
-ALTER TABLE "products" ADD COLUMN "gender_id" uuid;--> statement-breakpoint
-ALTER TABLE "products" ADD COLUMN "brand_id" uuid;--> statement-breakpoint
-ALTER TABLE "products" ADD COLUMN "is_published" boolean DEFAULT false NOT NULL;--> statement-breakpoint
-ALTER TABLE "products" ADD COLUMN "default_variant_id" uuid;--> statement-breakpoint
-ALTER TABLE "products" ADD COLUMN "created_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "products" ADD COLUMN "updated_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "cart_items" ADD COLUMN "cart_id" uuid NOT NULL;--> statement-breakpoint
-ALTER TABLE "cart_items" ADD COLUMN "product_variant_id" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "addresses" ADD CONSTRAINT "addresses_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_cart_id_carts_id_fk" FOREIGN KEY ("cart_id") REFERENCES "public"."carts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_product_variant_id_product_variants_id_fk" FOREIGN KEY ("product_variant_id") REFERENCES "public"."product_variants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "carts" ADD CONSTRAINT "carts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "carts" ADD CONSTRAINT "carts_guest_id_guests_id_fk" FOREIGN KEY ("guest_id") REFERENCES "public"."guests"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "categories" ADD CONSTRAINT "categories_parent_id_categories_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -229,46 +245,18 @@ ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_users_id_fk" FOREIGN KEY ("u
 ALTER TABLE "orders" ADD CONSTRAINT "orders_shipping_address_id_addresses_id_fk" FOREIGN KEY ("shipping_address_id") REFERENCES "public"."addresses"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_billing_address_id_addresses_id_fk" FOREIGN KEY ("billing_address_id") REFERENCES "public"."addresses"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "payments" ADD CONSTRAINT "payments_order_id_orders_id_fk" FOREIGN KEY ("order_id") REFERENCES "public"."orders"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_images" ADD CONSTRAINT "product_images_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "product_images" ADD CONSTRAINT "product_images_variant_id_product_variants_id_fk" FOREIGN KEY ("variant_id") REFERENCES "public"."product_variants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_collections" ADD CONSTRAINT "product_collections_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_collections" ADD CONSTRAINT "product_collections_collection_id_collections_id_fk" FOREIGN KEY ("collection_id") REFERENCES "public"."collections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "products" ADD CONSTRAINT "products_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "products" ADD CONSTRAINT "products_gender_id_genders_id_fk" FOREIGN KEY ("gender_id") REFERENCES "public"."genders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "products" ADD CONSTRAINT "products_brand_id_brands_id_fk" FOREIGN KEY ("brand_id") REFERENCES "public"."brands"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "products" ADD CONSTRAINT "products_default_variant_id_product_variants_id_fk" FOREIGN KEY ("default_variant_id") REFERENCES "public"."product_variants"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_variants" ADD CONSTRAINT "product_variants_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_variants" ADD CONSTRAINT "product_variants_color_id_colors_id_fk" FOREIGN KEY ("color_id") REFERENCES "public"."colors"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "product_variants" ADD CONSTRAINT "product_variants_size_id_sizes_id_fk" FOREIGN KEY ("size_id") REFERENCES "public"."sizes"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "wishlists" ADD CONSTRAINT "wishlists_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "wishlists" ADD CONSTRAINT "wishlists_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "products" ADD CONSTRAINT "products_category_id_categories_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."categories"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "products" ADD CONSTRAINT "products_gender_id_genders_id_fk" FOREIGN KEY ("gender_id") REFERENCES "public"."genders"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "products" ADD CONSTRAINT "products_brand_id_brands_id_fk" FOREIGN KEY ("brand_id") REFERENCES "public"."brands"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "products" ADD CONSTRAINT "products_default_variant_id_product_variants_id_fk" FOREIGN KEY ("default_variant_id") REFERENCES "public"."product_variants"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_cart_id_carts_id_fk" FOREIGN KEY ("cart_id") REFERENCES "public"."carts"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "cart_items" ADD CONSTRAINT "cart_items_product_variant_id_product_variants_id_fk" FOREIGN KEY ("product_variant_id") REFERENCES "public"."product_variants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "userId";--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "accountId";--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "providerId";--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "accessToken";--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "refreshToken";--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "accessTokenExpiresAt";--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "refreshTokenExpiresAt";--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "idToken";--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "createdAt";--> statement-breakpoint
-ALTER TABLE "accounts" DROP COLUMN "updatedAt";--> statement-breakpoint
-ALTER TABLE "sessions" DROP COLUMN "userId";--> statement-breakpoint
-ALTER TABLE "sessions" DROP COLUMN "ipAddress";--> statement-breakpoint
-ALTER TABLE "sessions" DROP COLUMN "userAgent";--> statement-breakpoint
-ALTER TABLE "sessions" DROP COLUMN "expiresAt";--> statement-breakpoint
-ALTER TABLE "sessions" DROP COLUMN "createdAt";--> statement-breakpoint
-ALTER TABLE "sessions" DROP COLUMN "updatedAt";--> statement-breakpoint
-ALTER TABLE "guests" DROP COLUMN "sessionToken";--> statement-breakpoint
-ALTER TABLE "guests" DROP COLUMN "createdAt";--> statement-breakpoint
-ALTER TABLE "guests" DROP COLUMN "expiresAt";--> statement-breakpoint
-ALTER TABLE "products" DROP COLUMN "price";--> statement-breakpoint
-ALTER TABLE "products" DROP COLUMN "image";--> statement-breakpoint
-ALTER TABLE "cart_items" DROP COLUMN "cartId";--> statement-breakpoint
-ALTER TABLE "cart_items" DROP COLUMN "productId";--> statement-breakpoint
-ALTER TABLE "cart_items" DROP COLUMN "createdAt";--> statement-breakpoint
-ALTER TABLE "cart_items" DROP COLUMN "updatedAt";--> statement-breakpoint
-ALTER TABLE "guests" ADD CONSTRAINT "guests_session_token_unique" UNIQUE("session_token");
+ALTER TABLE "wishlists" ADD CONSTRAINT "wishlists_product_id_products_id_fk" FOREIGN KEY ("product_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;

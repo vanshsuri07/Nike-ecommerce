@@ -47,7 +47,7 @@ export async function getAllProducts(filters: ProductFilters): Promise<{ product
         conditions.push(inArray(schema.products.brandId, brandIds));
     }
     if (filters.gender?.length) {
-        const genderIds = db.select({ id: schema.genders.id }).from(schema.genders).where(inArray(schema.genders.name, filters.gender));
+        const genderIds = db.select({ id: schema.genders.id }).from(schema.genders).where(inArray(schema.genders.label, filters.gender));
         conditions.push(inArray(schema.products.genderId, genderIds));
     }
 
@@ -124,27 +124,33 @@ export async function getAllProducts(filters: ProductFilters): Promise<{ product
         }
     });
 
-    let imagesQuery;
-    if (filters.color?.length) {
-        const colorIds = await db.select({ id: schema.colors.id }).from(schema.colors).where(inArray(schema.colors.name, filters.color));
-        const variantIds = await db.select({ id: schema.productVariants.id }).from(schema.productVariants).where(and(
-            inArray(schema.productVariants.productId, ids),
-            inArray(schema.productVariants.colorId, colorIds.map(c => c.id))
-        ));
-        imagesQuery = db.select().from(schema.productImages).where(
-            and(
-                inArray(schema.productImages.productId, ids),
-                inArray(schema.productImages.variantId, variantIds.map(v => v.id))
-            )
-        ).orderBy(schema.productImages.sortOrder);
-    } else {
-        imagesQuery = db.select().from(schema.productImages).where(
-            and(
-                inArray(schema.productImages.productId, ids),
-                isNull(schema.productImages.variantId)
-            )
-        ).orderBy(schema.productImages.sortOrder);
-    }
+   // Replace your imagesQuery section with this:
+
+let imagesQuery;
+if (filters.color?.length) {
+    const colorIds = await db.select({ id: schema.colors.id }).from(schema.colors).where(inArray(schema.colors.name, filters.color));
+    const variantIds = await db.select({ id: schema.productVariants.id }).from(schema.productVariants).where(and(
+        inArray(schema.productVariants.productId, ids),
+        inArray(schema.productVariants.colorId, colorIds.map(c => c.id))
+    ));
+    
+    // Get both variant-specific images AND main product images
+    imagesQuery = db.select().from(schema.productImages).where(
+        and(
+            inArray(schema.productImages.productId, ids),
+            // Get images for the matching color variants OR main product images (null variantId)
+            sql`(${schema.productImages.variantId} IN ${variantIds.map(v => v.id)} OR ${schema.productImages.variantId} IS NULL)`
+        )
+    ).orderBy(schema.productImages.sortOrder);
+} else {
+    // When no color filter, get main product images only
+    imagesQuery = db.select().from(schema.productImages).where(
+        and(
+            inArray(schema.productImages.productId, ids),
+            isNull(schema.productImages.variantId)
+        )
+    ).orderBy(schema.productImages.sortOrder);
+}
     const images = await imagesQuery;
     const imagesByProductId = images.reduce((acc, image) => {
         if (!acc[image.productId]) {
@@ -155,7 +161,7 @@ export async function getAllProducts(filters: ProductFilters): Promise<{ product
     }, {} as Record<string, (typeof images)>);
 
     const finalProducts = finalProductsData.map(p => {
-        const prices = p.variants.map(v => parseFloat(v.price));
+        const prices: number[] = p.variants.map((v: ProductVariant) => parseFloat(v.price));
         const minPrice = prices.length ? Math.min(...prices) : 0;
         const maxPrice = prices.length ? Math.max(...prices) : 0;
         return {
