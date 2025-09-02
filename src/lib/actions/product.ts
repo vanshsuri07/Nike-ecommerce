@@ -136,7 +136,20 @@ export async function getAllProducts(filters: ProductFilters) {
         const minPrice = prices.length ? Math.min(...prices) : 0;
         const maxPrice = prices.length ? Math.max(...prices) : 0;
         return {
-            ...p,
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            categoryId: p.categoryId,
+            genderId: p.genderId,
+            brandId: p.brandId,
+            isPublished: p.isPublished,
+            defaultVariantId: p.defaultVariantId,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt,
+            brand: p.brand,
+            category: p.category,
+            gender: p.gender,
+            variants: p.variants,
             minPrice: minPrice.toString(),
             maxPrice: maxPrice.toString(),
             images: imagesByProductId[p.id] || [],
