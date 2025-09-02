@@ -6,20 +6,22 @@ import Sort from '@/components/Sort';
 import Link from 'next/link';
 import { Product as CardProduct } from '@/types';
 
-// @ts-expect-error - searchParams is not a promise, this is likely a bug in Next.js/React types for async pages.
-export default async function ProductsPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-  const filters = parseFilterParams(searchParams);
+type SearchParamsType = Promise<Record<string, string | string[] | undefined>>;
+
+export default async function ProductsPage({ searchParams }: { searchParams: SearchParamsType }) {
+  const resolvedParams = await searchParams; // ✅ Await the searchParams
+  const filters = parseFilterParams(resolvedParams);
   const { products: fetchedProducts, totalCount } = await getAllProducts(filters);
 
   const products: CardProduct[] = fetchedProducts.map((p: ProductWithDetails) => ({
-    id: parseInt(p.id.substring(0, 8), 16), // Using a portion of the UUID as a temporary numeric ID for the prop.
+    id: parseInt(p.id.substring(0, 8), 16),
     name: p.name,
     description: p.description,
     price: p.minPrice || '0',
     image: p.images[0]?.url || null,
     category: p.category?.name || 'N/A',
     colors: p.variants.map(v => v.color.name).slice(0, 3).join(', '),
-    bestseller: false, // 'bestseller' is not a field in the new schema.
+    bestseller: false,
   }));
 
   const activeFilters = Object.entries(filters)
@@ -32,14 +34,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: { [
       (Array.isArray(value) ? value : String(value).split(',')).map(v => ({ key, value: v }))
     );
 
-  // Add price range to active filters if it exists
   if (filters.priceMin !== undefined || filters.priceMax !== undefined) {
     activeFilters.push({ key: 'price', value: `${filters.priceMin || '0'}-${filters.priceMax || ''}` });
   }
 
   const createRemoveFilterHref = (keyToRemove: string, valueToRemove: string) => {
     const currentParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(searchParams)) {
+    for (const [key, value] of Object.entries(resolvedParams)) {
       if (Array.isArray(value)) {
         value.forEach(v => currentParams.append(key, v));
       } else if (value) {
@@ -73,7 +74,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: { [
         <section className="w-full md:w-3/4 lg:w-4/5">
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-heading-2">New Arrivals</h1>
-            <div className='flex items-center gap-4'>
+            <div className="flex items-center gap-4">
               <p className="text-body text-dark-700">{totalCount} Results</p>
               <Sort />
             </div>
