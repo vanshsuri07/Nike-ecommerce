@@ -2,10 +2,33 @@
 
 import { db } from '@/db';
 import * as schema from '@/lib/db/schema';
-import { and, asc, desc, eq, gte, lte, inArray, sql, count, min, SQL, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, lte, inArray, sql, count, min, SQL, isNull, InferSelectModel } from 'drizzle-orm';
 import { ProductFilters } from '@/lib/utils/query';
 
-export async function getAllProducts(filters: ProductFilters) {
+// Explicit type for the returned product structure to ensure type safety
+type Product = InferSelectModel<typeof schema.products>;
+type Brand = InferSelectModel<typeof schema.brands>;
+type Category = InferSelectModel<typeof schema.categories>;
+type Gender = InferSelectModel<typeof schema.genders>;
+type ProductVariant = InferSelectModel<typeof schema.productVariants>;
+type Color = InferSelectModel<typeof schema.colors>;
+type Size = InferSelectModel<typeof schema.sizes>;
+type ProductImage = InferSelectModel<typeof schema.productImages>;
+
+export type ProductWithDetails = Product & {
+    brand: Brand | null;
+    category: Category | null;
+    gender: Gender | null;
+    variants: (ProductVariant & {
+        color: Color;
+        size: Size;
+    })[];
+    images: ProductImage[];
+    minPrice: string;
+    maxPrice: string;
+};
+
+export async function getAllProducts(filters: ProductFilters): Promise<{ products: ProductWithDetails[], totalCount: number }> {
     const { page, limit, sortBy } = filters;
 
     const conditions: (SQL | undefined)[] = [eq(schema.products.isPublished, true)];

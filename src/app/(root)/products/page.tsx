@@ -1,4 +1,4 @@
-import { getAllProducts } from '@/lib/actions/product';
+import { getAllProducts, type ProductWithDetails } from '@/lib/actions/product';
 import { parseFilterParams } from '@/lib/utils/query';
 import Card from '@/components/Card';
 import Filters from '@/components/Filters';
@@ -11,7 +11,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: { [
   const filters = parseFilterParams(searchParams);
   const { products: fetchedProducts, totalCount } = await getAllProducts(filters);
 
-  const products: CardProduct[] = fetchedProducts.map((p) => ({
+  const products: CardProduct[] = fetchedProducts.map((p: ProductWithDetails) => ({
     id: parseInt(p.id.substring(0, 8), 16), // Using a portion of the UUID as a temporary numeric ID for the prop.
     name: p.name,
     description: p.description,
