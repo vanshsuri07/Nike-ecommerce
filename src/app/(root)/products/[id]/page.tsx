@@ -1,78 +1,58 @@
-import { products } from '@/lib/product-data';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
+import { Suspense } from 'react';
+import { getProduct } from '@/lib/actions/product';
 import ProductGallery from '@/components/ProductGallery';
 import SizePicker from '@/components/SizePicker';
 import CollapsibleSection from '@/components/CollapsibleSection';
-import Card from '@/components/Card';
-import { Heart, ShoppingBag, Star } from 'lucide-react';
+import { Heart, ShoppingBag } from 'lucide-react';
+import ProductNotFound from './ProductNotFound';
+import { ReviewsList } from './_components/ReviewsList';
+import { RecommendedProductsGrid } from './_components/RecommendedProductsGrid';
+import { RecommendedSkeleton } from './_components/RecommendedSkeleton';
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const productId = await parseInt(params.id, 10);
-  const product = products.find((p) => p.id === productId);
+  // Await the params Promise
+  const { id } = await params;
+  const product = await getProduct(id);
 
   if (!product) {
-    notFound();
+    return <ProductNotFound />;
   }
 
-  const allProductsForCards = products.map(p => ({
-      id: p.id,
-      name: p.name,
-      description: p.description,
-      price: String(p.price),
-      image: p.variants[0].images[0] as string, // Or a placeholder
-      category: 'Lifestyle', // Add a category if available
-      colors: `${p.variants.length} Colors`,
-      bestseller: p.reviews.rating > 4.5
-  }));
+  const uniqueSizes = [...new Set(product.variants.map(v => v.size.name))].sort();
 
-  const relatedProducts = allProductsForCards.filter(p => p.id !== productId);
-
-  // Shuffle the array
-  for (let i = relatedProducts.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [relatedProducts[i], relatedProducts[j]] = [relatedProducts[j], relatedProducts[i]];
-  }
+  // A more robust solution would be to find the price of the default variant
+  // or the minimum price, but this is fine for now.
+  const displayPrice = product.variants[0]?.price || '0.00';
 
   return (
     <div className="bg-light-100">
       <main className="container mx-auto px-4 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12">
-          {/* Product Gallery */}
           <div className="lg:sticky top-24 self-start">
-            <ProductGallery variants={product.variants} />
+            <ProductGallery variants={product.variants} mainImages={product.mainImages} />
           </div>
 
-          {/* Product Info */}
           <div className="mt-8 lg:mt-0">
-            <h1 className="text-heading-2 text-dark-900">{product.name}</h1>
-            <div className="flex items-center mt-2">
-              <p className="text-heading-3 text-dark-900">${product.price}</p>
-              {product.originalPrice && (
-                <p className="text-lead text-dark-500 line-through ml-4">${product.originalPrice}</p>
-              )}
-              {product.discount && (
-                <span className="ml-4 bg-red-100 text-red-600 text-caption font-medium px-2 py-1 rounded-md">{product.discount}</span>
-              )}
-            </div>
+            <p className="text-body text-dark-700">{product.brand.name}</p>
+            <h1 className="text-heading-2 text-dark-900 mt-1">{product.name}</h1>
 
             <div className="flex items-center mt-4">
-                <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-5 h-5 ${i < Math.round(product.reviews.rating) ? 'text-orange-400 fill-orange-400' : 'text-dark-500'}`} />
-                    ))}
-                </div>
-                <p className="ml-2 text-body text-dark-700">({product.reviews.count} Reviews)</p>
+              <p className="text-heading-3 text-dark-900">${displayPrice}</p>
+              {/* Compare at price logic can be added here from variant salePrice */}
             </div>
 
+            <Suspense fallback={<div className="mt-4 h-24" />}>
+              <ReviewsList productId={product.id} />
+            </Suspense>
+
             <div className="mt-8">
-              <SizePicker sizes={product.sizes} />
+              <SizePicker sizes={uniqueSizes} />
             </div>
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -87,34 +67,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
 
             <div className="mt-12">
-                <p className="text-body text-dark-700">{product.description}</p>
-            </div>
-
-            <div className="mt-12">
-              <CollapsibleSection title="Product Details" isOpen={true}>
-                <p className="text-body text-dark-700 whitespace-pre-line">{product.specs}</p>
-              </CollapsibleSection>
-              <CollapsibleSection title="Shipping & Returns">
-                <p className="text-body text-dark-700">Free standard shipping on orders over $50. Returns accepted within 30 days of purchase.</p>
-              </CollapsibleSection>
-              <CollapsibleSection title="Reviews">
-                 <p className="text-body text-dark-700">No reviews yet.</p>
-              </CollapsibleSection>
+                <CollapsibleSection title="Description" isOpen={true}>
+                    <div className="prose text-body text-dark-700">
+                        {product.description}
+                    </div>
+                </CollapsibleSection>
+                <CollapsibleSection title="Shipping & Returns">
+                    <p className="text-body text-dark-700">Free standard shipping on orders over $50. Returns accepted within 30 days of purchase.</p>
+                </CollapsibleSection>
             </div>
           </div>
         </div>
 
-        {/* You Might Also Like */}
-        <div className="mt-24">
-            <h2 className="text-heading-2 text-dark-900 mb-8">You Might Also Like</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                {relatedProducts.slice(0, 4).map((product) => (
-                    <Link href={`/products/${product.id}`} key={product.id}>
-                        <Card product={product} />
-                    </Link>
-                ))}
-            </div>
-        </div>
+        <Suspense fallback={<RecommendedSkeleton />}>
+          <RecommendedProductsGrid productId={product.id} />
+        </Suspense>
       </main>
     </div>
   );

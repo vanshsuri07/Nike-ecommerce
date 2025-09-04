@@ -2,7 +2,7 @@
 
 import { db } from '@/db';
 import * as schema from '@/lib/db/schema';
-import { and, asc, desc, eq, gte, lte, inArray, sql, count, min, SQL, isNull, InferSelectModel } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, lte, inArray, sql, count, min, SQL, isNull, InferSelectModel, not, or } from 'drizzle-orm';
 import { ProductFilters } from '@/lib/utils/query';
 
 // Explicit type for the returned product structure to ensure type safety
@@ -195,23 +195,177 @@ if (filters.color?.length) {
     return { products: sortedFinalProducts, totalCount };
 }
 
-export async function getProduct(productId: string) {
-    const product = await db.query.products.findFirst({
-        where: eq(schema.products.id, productId),
+// Define the structured return type for a single product page
+export type ProductDetails = Product & {
+  brand: Brand;
+  category: Category;
+  gender: Gender;
+  variants: (ProductVariant & {
+    color: Color;
+    size: Size;
+    images: ProductImage[]; // Images specific to this variant
+  })[];
+  mainImages: ProductImage[]; // Images not tied to a specific variant
+};
+
+export async function getProduct(productId: string): Promise<ProductDetails | null> {
+  // Fetch the product with all its relations in one go
+  const productData = await db.query.products.findFirst({
+    where: and(
+      eq(schema.products.id, productId),
+      eq(schema.products.isPublished, true)
+    ),
+    with: {
+      brand: true,
+      category: true,
+      gender: true,
+      variants: {
         with: {
-            brand: true,
-            category: true,
-            gender: true,
-            variants: {
-                with: {
-                    color: true,
-                    size: true,
-                }
-            },
-            images: {
-                orderBy: schema.productImages.sortOrder,
-            },
-        }
-    });
-    return product;
+          color: true,
+          size: true,
+        },
+        // Order variants if needed, e.g., by color or size name
+        orderBy: (variants, { asc }) => [asc(variants.id)],
+      },
+      images: {
+        orderBy: (images, { asc }) => [asc(images.sortOrder)],
+      },
+    },
+  });
+
+  // If no product is found or essential relations are missing, return null
+  if (!productData || !productData.brand || !productData.category || !productData.gender) {
+    return null;
+  }
+
+  // Separate images into main images and variant-specific images
+  const mainImages = productData.images.filter((img) => !img.variantId);
+  const variantImages = productData.images.filter((img) => img.variantId);
+
+  // Create a map for easy lookup of images by variantId
+  const imagesByVariant = variantImages.reduce((acc, image) => {
+    if (!image.variantId) return acc;
+    if (!acc[image.variantId]) {
+      acc[image.variantId] = [];
+    }
+    acc[image.variantId].push(image);
+    return acc;
+  }, {} as Record<string, ProductImage[]>);
+
+  // Enhance variants with their specific images
+  const variantsWithImages = productData.variants.map((variant) => ({
+    ...variant,
+    images: imagesByVariant[variant.id] || [],
+  }));
+
+  // Construct the final, well-structured product object
+  const product: ProductDetails = {
+    ...productData,
+    // Non-null assertions because we checked them above
+    brand: productData.brand!,
+    category: productData.category!,
+    gender: productData.gender!,
+    variants: variantsWithImages,
+    mainImages: mainImages,
+  };
+
+  return product;
+}
+
+export type Review = {
+  id: string;
+  author: string;
+  rating: number;
+  title: string | null;
+  content: string;
+  createdAt: string;
+};
+
+export async function getProductReviews(productId: string): Promise<Review[]> {
+  const reviewsData = await db
+    .select({
+      id: schema.reviews.id,
+      rating: schema.reviews.rating,
+      comment: schema.reviews.comment,
+      createdAt: schema.reviews.createdAt,
+      author: schema.users.name,
+    })
+    .from(schema.reviews)
+    .innerJoin(schema.users, eq(schema.reviews.userId, schema.users.id))
+    .where(eq(schema.reviews.productId, productId))
+    .orderBy(desc(schema.reviews.createdAt));
+
+  if (!reviewsData) {
+    return [];
+  }
+
+  return reviewsData.map((r) => ({
+    id: r.id,
+    author: r.author || 'Anonymous',
+    rating: r.rating,
+    title: null, // No title field in the database schema
+    content: r.comment || '',
+    createdAt: r.createdAt.toISOString(),
+  }));
+}
+
+export type RecommendedProduct = {
+  id: string;
+  name: string;
+  price: string;
+  image: string;
+};
+
+export async function getRecommendedProducts(productId: string): Promise<RecommendedProduct[]> {
+  // Step 1: Fetch the current product's details for recommendations
+  const currentProduct = await db.query.products.findFirst({
+    where: eq(schema.products.id, productId),
+    columns: {
+      categoryId: true,
+      brandId: true,
+      genderId: true,
+    },
+  });
+
+  if (!currentProduct) {
+    return [];
+  }
+
+  // Step 2: Find related products
+  const recommendedProductsData = await db
+    .select({
+      id: schema.products.id,
+      name: schema.products.name,
+      price: sql<string>`MIN(${schema.productVariants.price})`.as('price'),
+      image: sql<string>`(
+        SELECT url FROM ${schema.productImages}
+        WHERE product_id = ${schema.products.id}
+        ORDER BY sort_order
+        LIMIT 1
+      )`.as('image'),
+    })
+    .from(schema.products)
+    .leftJoin(schema.productVariants, eq(schema.products.id, schema.productVariants.productId))
+    .where(
+      and(
+        eq(schema.products.isPublished, true),
+        not(eq(schema.products.id, productId)),
+        or(
+          currentProduct.categoryId ? eq(schema.products.categoryId, currentProduct.categoryId) : sql`false`,
+          currentProduct.brandId ? eq(schema.products.brandId, currentProduct.brandId) : sql`false`
+        )
+      )
+    )
+    .groupBy(schema.products.id)
+    .limit(4);
+
+  // Filter out any products that didn't have a valid image URL or price
+  const validRecommendedProducts = recommendedProductsData.filter(p => p.image && p.price);
+
+  return validRecommendedProducts.map(p => ({
+      id: p.id,
+      name: p.name,
+      price: p.price!,
+      image: p.image!,
+  }));
 }
