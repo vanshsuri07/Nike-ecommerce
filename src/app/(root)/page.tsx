@@ -1,10 +1,12 @@
+"use client";
 import React from 'react';
 import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Card from '../../components/Card';
 import Footer from '../../components/Footer';
 import { Product } from '../../types';
-import { getCurrentUser } from "../../lib/auth/actions"
+import HeroSection from '@/components/HeroSection';
+
 
 const products: Product[] = [
   {
@@ -50,11 +52,10 @@ const products: Product[] = [
 ];
 
 const Page = async () => {
-  const currentUser = await getCurrentUser();
-  console.log('Current User:', currentUser);
   return (
     <div className="bg-light-100">
       <Navbar />
+      <HeroSection />
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-heading-1 text-dark-900 mb-8">Our Products</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

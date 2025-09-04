@@ -7,17 +7,18 @@ import { Heart, ShoppingBag } from 'lucide-react';
 import ProductNotFound from './ProductNotFound';
 import { ReviewsList } from './_components/ReviewsList';
 import { RecommendedProductsGrid } from './_components/RecommendedProductsGrid';
-import { ReviewsSkeleton } from './_components/ReviewsSkeleton';
 import { RecommendedSkeleton } from './_components/RecommendedSkeleton';
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProduct(params.id);
+  // Await the params Promise
+  const { id } = await params;
+  const product = await getProduct(id);
 
   if (!product) {
     return <ProductNotFound />;
@@ -47,7 +48,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
 
             <Suspense fallback={<div className="mt-4 h-24" />}>
-              {/* @ts-expect-error Server Component */}
               <ReviewsList productId={product.id} />
             </Suspense>
 
@@ -80,7 +80,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
 
         <Suspense fallback={<RecommendedSkeleton />}>
-          {/* @ts-expect-error Server Component */}
           <RecommendedProductsGrid productId={product.id} />
         </Suspense>
       </main>
