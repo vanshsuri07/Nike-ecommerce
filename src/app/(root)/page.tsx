@@ -1,11 +1,11 @@
 
 import React from 'react';
-import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import Card from '../../components/Card';
 import Footer from '../../components/Footer';
 import { Product } from '../../types';
 import HeroSection from '@/components/HeroSection';
+import UpcomingProducts from '@/components/UpcomingProducts';
 
 
 const products: Product[] = [
@@ -67,6 +67,7 @@ const Page = async () => {
     <div className="bg-light-100">
       <Navbar />
       <HeroSection />
+      <UpcomingProducts />
       <main className="container mx-auto px-4 py-8 ">
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 auto-rows-fr mt-17">
