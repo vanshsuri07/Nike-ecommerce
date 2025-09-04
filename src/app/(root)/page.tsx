@@ -69,7 +69,7 @@ const Page = async () => {
       <HeroSection />
       <main className="container mx-auto px-4 py-8 ">
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 auto-rows-fr mt-28">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 auto-rows-fr mt-17">
   {products.map(product => (
     <Card key={product.id} product={product} />
   ))}

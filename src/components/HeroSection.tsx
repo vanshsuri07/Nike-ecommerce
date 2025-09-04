@@ -1,10 +1,10 @@
 "use client";
-"use client";
+
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { motion } from 'framer-motion';
 import Model from './Model';
-import { OrbitControls } from '@react-three/drei';
+import { Float, OrbitControls, PresentationControls, Sparkles } from '@react-three/drei';
 import Loader from './Loader';
 
 const HeroSection = () => {
@@ -17,7 +17,7 @@ const HeroSection = () => {
       transition: {
         delay: i * 0.2,
         duration: 0.5,
-        ease: 'easeOut',
+        ease: [0.25, 0.1, 0.25, 1],
       },
     }),
   };
@@ -59,21 +59,21 @@ const HeroSection = () => {
           >
             <motion.span
               className="block text-3xl sm:text-4xl md:text-5xl lg:text-8xl"
-              variants={headingVariants}
+              variants={headingVariants as any}
               custom={0}
             >
               Unleash
             </motion.span>
             <motion.span
               className="block text-3xl sm:text-4xl md:text-5xl lg:text-8xl"
-              variants={headingVariants}
+              variants={headingVariants as any}
               custom={1}
             >
               Your
             </motion.span>
             <motion.span
               className="block text-3xl sm:text-4xl md:text-5xl lg:text-8xl text-green-500"
-              variants={headingVariants}
+              variants={headingVariants as any}
               custom={2}
             >
               Speed
@@ -103,7 +103,26 @@ const HeroSection = () => {
               <ambientLight intensity={1.5} />
               <directionalLight position={[5, 5, 5]} intensity={2} />
               <Suspense fallback={<Loader />}>
-                <Model />
+              <>
+  {/* Background small sparkles */}
+  <Sparkles count={150} scale={4} size={0.6} speed={1.2} color="#fff" opacity={0.6} />
+  
+  {/* Foreground bigger slow sparkles */}
+  <Sparkles count={40} scale={3.5} size={1.4} speed={0.5} color="#d4af37" opacity={0.9} />
+</>
+
+
+               <Float floatIntensity={2} speed={2}>
+  <PresentationControls
+  global
+  snap
+  rotation={[0, 0.3, 0]}
+  polar={[-0.4, 0.4]}
+  azimuth={[-1, 1]}
+>
+  <Model />
+</PresentationControls>
+</Float>
               </Suspense>
             </Canvas>
           </div>
