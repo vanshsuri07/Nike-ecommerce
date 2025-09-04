@@ -1,12 +1,24 @@
 "use client";
 import React, { useRef } from "react";
-import { useGLTF } from "@react-three/drei";
+import { useGLTF, Sparkles } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { GLTF } from "three-stdlib";
+
+type GLTFResult = GLTF & {
+  nodes: {
+    Travis_x_Scott_Cactus_Jack_x_Air_Jordan_4_High_Retro_mat_00_mat_0003_0: THREE.Mesh;
+  };
+  materials: {
+    ["mat_0.003"]: THREE.MeshStandardMaterial;
+  };
+};
 
 const Model: React.FC = (props) => {
   const group = useRef<THREE.Group>(null);
-  const { nodes, materials } = useGLTF("/Model/shoemodel.glb") as any;
+  const { nodes, materials } = useGLTF(
+    "/Model/shoemodel.glb"
+  ) as unknown as GLTFResult;
 
   // Continuous rotation + floating
   useFrame((state, delta) => {
@@ -37,7 +49,14 @@ const Model: React.FC = (props) => {
             .geometry
         }
         material={materials["mat_0.003"]}
-      /> 
+      />
+      <Sparkles
+        count={100}
+        scale={2}
+        size={1}
+        speed={0.4}
+        color="#fff"
+      />
     </group>
   );
 };
