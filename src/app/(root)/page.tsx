@@ -48,6 +48,17 @@ const products: Product[] = [
     category: "Men's Shoes",
     colors: '5 Colour',
     bestseller: false,
+
+  },
+  {
+    id: 'f5f2c5a0-9b3a-4b7c-8f3a-3d7353f2c01a',
+    name: 'Nike Air Zoom Pegasus 37',
+    description: null,
+    price: '120.00',
+    image: '/shoes/shoe-4.webp',
+    category: "Men's Shoes",
+    colors: '5 Colour',
+    bestseller: false,
   }
 ];
 
@@ -56,15 +67,14 @@ const Page = async () => {
     <div className="bg-light-100">
       <Navbar />
       <HeroSection />
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-heading-1 text-dark-900 mb-8">Our Products</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product) => (
-            <Link href={`/products/${product.id}`} key={product.id}>
-              <Card product={product} />
-            </Link>
-          ))}
-        </div>
+      <main className="container mx-auto px-4 py-8 ">
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 auto-rows-fr mt-28">
+  {products.map(product => (
+    <Card key={product.id} product={product} />
+  ))}
+</div>
+
       </main>
       <Footer />
     </div>
