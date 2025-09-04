@@ -5,8 +5,6 @@ import Filters from '@/components/Filters';
 import Sort from '@/components/Sort';
 import Link from 'next/link';
 import { Product as CardProduct } from '@/types';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 
 type SearchParamsType = Promise<Record<string, string | string[] | undefined>>;
 
@@ -16,7 +14,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   const { products: fetchedProducts, totalCount } = await getAllProducts(filters);
 
   const products: CardProduct[] = fetchedProducts.map((p: ProductWithDetails) => ({
-    id: parseInt(p.id.substring(0, 8), 16),
+    id: p.id,
     name: p.name,
     description: p.description,
     price: p.minPrice || '0',
@@ -65,9 +63,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   };
 
   return (
-    <div>
-      <Navbar />
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row gap-8">
         <aside className="w-full md:w-1/4 lg:w-1/5">
           <div className="sticky top-24">
@@ -121,8 +117,6 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
           )}
         </section>
       </div>
-    </main>
-    <Footer />
     </div>
   );
 }

@@ -8,30 +8,30 @@ const Navbar: React.FC = () => {
 
 
   return (
-    <header className="bg-light-100">
+    <header className="bg-black">
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex-shrink-0">
-            <Link href="/" passHref className="text-dark-900">
-              <Image src="/logo.svg" alt="Logo" width={60} height={30} />
+            <Link href="/" passHref className="text-light-100">
+              <Image src="/nikelogo.jpg" alt="Logo" width={90} height={40} />
             </Link>
           </div>
           <div className="hidden md:flex md:items-center md:space-x-8">
-            <Link href="/products?gender=Men" className="text-dark-900 hover:text-green text-body">Men</Link>
-            <Link href="/products?gender=Women" className="text-dark-900 hover:text-green text-body">Women</Link>
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Kids</Link>
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Collections</Link>
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Contact</Link>
+            <Link href="/products?gender=Men" className="text-light-100 hover:text-green text-body">Men</Link>
+            <Link href="/products?gender=Women" className="text-light-100 hover:text-green text-body">Women</Link>
+            <Link href="#" className="text-light-100 hover:text-green text-body">Kids</Link>
+            <Link href="#" className="text-light-100 hover:text-green text-body">Collections</Link>
+            <Link href="#" className="text-light-100 hover:text-green text-body">Contact</Link>
           </div>
           <div className="hidden md:flex md:items-center md:space-x-8">
-            <span className="text-dark-900 text-body">Search</span>
-            <span className="text-dark-900 text-body">My Cart (2)</span>
+            <span className="text-light-100 text-body">Search</span>
+            <span className="text-light-100 text-body">My Cart (2)</span>
           </div>
          
       {/* Mobile Menu Button */}
       <div className="md:hidden flex items-center">
         <button
-          className="text-dark-900 focus:outline-none"
+          className="text-light-100 focus:outline-none"
           onClick={() => setIsOpen(!isOpen)}
         >
           <svg
@@ -55,11 +55,11 @@ const Navbar: React.FC = () => {
       {isOpen && (
         <div className="absolute top-16 left-0 w-full bg-white shadow-md md:hidden">
           <ul className="flex flex-col p-4 space-y-2">
-            <Link href="/products?gender=Men" className="text-dark-900 hover:text-green text-body">Men</Link>
-            <Link href="/products?gender=Women" className="text-dark-900 hover:text-green text-body">Women</Link>
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Kids</Link>
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Collections</Link>
-            <Link href="#" className="text-dark-900 hover:text-green text-body">Contact</Link>
+            <Link href="/products?gender=Men" className="text-light-100 hover:text-green text-body">Men</Link>
+            <Link href="/products?gender=Women" className="text-light-100 hover:text-green text-body">Women</Link>
+            <Link href="#" className="text-light-100 hover:text-green text-body">Kids</Link>
+            <Link href="#" className="text-light-100 hover:text-green text-body">Collections</Link>
+            <Link href="#" className="text-light-100 hover:text-green text-body">Contact</Link>
           </ul>
         </div>
       )}
