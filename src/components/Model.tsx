@@ -1,6 +1,6 @@
 "use client";
 import React, { useRef } from "react";
-import { useGLTF, Sparkles } from "@react-three/drei";
+import { useGLTF} from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { GLTF } from "three-stdlib";
@@ -50,13 +50,7 @@ const Model: React.FC = (props) => {
         }
         material={materials["mat_0.003"]}
       />
-      <Sparkles
-        count={100}
-        scale={2}
-        size={1}
-        speed={0.4}
-        color="#fff"
-      />
+     
     </group>
   );
 };
