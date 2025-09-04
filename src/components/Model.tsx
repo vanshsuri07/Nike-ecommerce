@@ -10,22 +10,33 @@ const Model: React.FC = (props) => {
 
   useFrame((state, delta) => {
     if (group.current) {
-      group.current.rotation.y += delta * 0.5; // Slow rotation
+      // Only rotate on Y-axis (horizontal spin)
+      group.current.rotation.y -= delta * 0.8;
+      
+      // Gentle floating
+      group.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
     }
   });
 
   return (
-    <group ref={group} {...props} dispose={null} scale={2} position={[0, -1.5, 0]}>
-        <mesh
+    <group 
+      ref={group} 
+      {...props} 
+      dispose={null} 
+      scale={10}
+      position={[0, 0, 0]}
+      rotation={[0.6, 0, 3.14]} // Keep this exact position you have now
+    >
+      <mesh
         castShadow
         receiveShadow
         geometry={
-            nodes
+          nodes
             .Travis_x_Scott_Cactus_Jack_x_Air_Jordan_4_High_Retro_mat_00_mat_0003_0
             .geometry
         }
         material={materials["mat_0.003"]}
-        />
+      />
     </group>
   );
 };
