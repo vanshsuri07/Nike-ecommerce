@@ -8,24 +8,25 @@ const Model: React.FC = (props) => {
   const group = useRef<THREE.Group>(null);
   const { nodes, materials } = useGLTF("/Model/shoemodel.glb") as any;
 
+  // Continuous rotation + floating
   useFrame((state, delta) => {
     if (group.current) {
-      // Only rotate on Y-axis (horizontal spin)
-      group.current.rotation.y -= delta * 0.8;
-      
-      // Gentle floating
-      group.current.position.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1;
+      // Spin on Y-axis
+      group.current.rotation.y += delta * 0.6;
+
+      // Gentle floating up & down
+      group.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
     }
   });
 
   return (
-    <group 
-      ref={group} 
-      {...props} 
-      dispose={null} 
+    <group
+      ref={group}
+      {...props}
+      dispose={null}
       scale={10}
       position={[0, 0, 0]}
-      rotation={[0.6, 0, 3.14]} // Keep this exact position you have now
+      rotation={[0.4, 0.9, 3.14]} // angled side view like in your image
     >
       <mesh
         castShadow
@@ -36,7 +37,7 @@ const Model: React.FC = (props) => {
             .geometry
         }
         material={materials["mat_0.003"]}
-      />
+      /> 
     </group>
   );
 };
