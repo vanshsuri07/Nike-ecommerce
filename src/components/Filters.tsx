@@ -10,10 +10,10 @@ const FilterGroup = ({ title, children }: { title: string, children: React.React
   const [isOpen, setIsOpen] = useState(true);
 
   return (
-    <div className="border-b border-light-300 py-4">
+    <div className="border-b border-light-300 py-4 pl-4 ">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center text-left"
+        className="w-full flex justify-between items-center pr-4 text-left"
       >
         <h3 className="text-body-medium">{title}</h3>
         <span>{isOpen ? '−' : '+'}</span>
@@ -46,7 +46,7 @@ const Filters = () => {
   const renderFilters = () => (
     <>
       <FilterGroup title="Gender">
-        <div className="space-y-2">
+        <div className="space-y-2 ">
           {GENDERS.map((gender) => (
             <label key={gender} className="flex items-center gap-2">
               <input
@@ -54,7 +54,7 @@ const Filters = () => {
                 value={gender}
                 checked={searchParams.get('gender')?.split(',').includes(gender) || false}
                 onChange={() => handleFilterChange('gender', gender)}
-                className="h-4 w-4 rounded border-gray-300 text-red focus:ring-red"
+                className="h-4 w-4 rounded accent-dark-900 border-gray-300 text-red focus:ring-red"
               />
               {gender}
             </label>
@@ -62,7 +62,7 @@ const Filters = () => {
         </div>
       </FilterGroup>
       <FilterGroup title="Size">
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {SIZES.map((size) => (
             <label key={size} className="inline-flex items-center gap-2">
               <input
@@ -144,10 +144,14 @@ const Filters = () => {
       )}
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <h2 className="text-heading-3 mb-4">Filters</h2>
-        {renderFilters()}
-      </div>
+   <div className="hidden md:block -mt-4 sticky top-20 self-start">
+  <h2 className="text-heading-3 text-white bg-black w-full mb-3 px-4 py-2 rounded-lg">
+    Filters
+  </h2>
+  {renderFilters()}
+</div>
+
+
     </>
   );
 };
