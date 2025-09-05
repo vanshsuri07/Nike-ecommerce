@@ -38,7 +38,7 @@ export default function Cart({ initialCart, user }: CartProps) {
 
   const handleCheckout = () => {
     if (!user) {
-      router.push('/sign-in');
+      router.push('/sign-in?redirect_url=/checkout');
     } else {
       // Proceed to checkout
       router.push('/checkout');
