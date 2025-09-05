@@ -86,7 +86,7 @@ export default function Cart({ initialCart, user }: CartProps) {
                     {item.productVariant.product.name}
                   </h3>
                   <p className="text-caption text-dark-700">
-                    {item.productVariant.name}
+                    {item.productVariant.product.name}
                   </p>
                   <p className="text-body text-dark-900">
                     ${parseFloat(item.productVariant.price).toFixed(2)}

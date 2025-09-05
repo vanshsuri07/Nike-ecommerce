@@ -1,5 +1,5 @@
 import { getRecommendedProducts } from '@/lib/actions/product';
-import Link from 'next/link';
+
 import Card from '@/components/Card';
 
 interface RecommendedProductsGridProps {

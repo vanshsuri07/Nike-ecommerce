@@ -288,10 +288,10 @@ export async function getProductReviews(productId: string): Promise<Review[]> {
       rating: schema.reviews.rating,
       comment: schema.reviews.comment,
       createdAt: schema.reviews.createdAt,
-      author: schema.users.name,
+      author: schema.user.name,
     })
     .from(schema.reviews)
-    .innerJoin(schema.users, eq(schema.reviews.userId, schema.users.id))
+    .innerJoin(schema.user, eq(schema.reviews.userId, schema.user.id))
     .where(eq(schema.reviews.productId, productId))
     .orderBy(desc(schema.reviews.createdAt));
 
