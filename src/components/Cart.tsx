@@ -6,8 +6,8 @@ import { CartWithItems } from '@/types/cart';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { TUser } from '@/lib/db/schema';
+import CartSummary from './CartSummary';
 
 interface CartProps {
   initialCart: CartWithItems | null;
@@ -15,7 +15,6 @@ interface CartProps {
 }
 
 export default function Cart({ initialCart, user }: CartProps) {
-  const router = useRouter();
   const { items, loading, getCart, updateCartItem, removeCartItem } =
     useCartStore();
 
@@ -35,22 +34,6 @@ export default function Cart({ initialCart, user }: CartProps) {
   const handleRemoveItem = (itemId: string) => {
     removeCartItem(itemId);
   };
-
-  const handleCheckout = () => {
-    if (!user) {
-      router.push('/sign-in?redirect_url=/checkout');
-    } else {
-      // Proceed to checkout
-      router.push('/checkout');
-    }
-  };
-
-  const subtotal = items.reduce(
-    (acc, item) => acc + parseFloat(item.productVariant.price) * item.quantity,
-    0,
-  );
-  const shipping = 5.0;
-  const total = subtotal + shipping;
 
   if (loading) {
     return <div>Loading...</div>;
@@ -119,25 +102,7 @@ export default function Cart({ initialCart, user }: CartProps) {
         </div>
       </div>
       <div className="lg:col-span-1">
-        <div className="p-6 border rounded-lg space-y-4">
-          <h2 className="text-heading-3 text-dark-900">Order Summary</h2>
-          <div className="flex justify-between">
-            <p className="text-body text-dark-700">Subtotal</p>
-            <p className="text-body text-dark-900">${subtotal.toFixed(2)}</p>
-          </div>
-          <div className="flex justify-between">
-            <p className="text-body text-dark-700">Shipping</p>
-            <p className="text-body text-dark-900">${shipping.toFixed(2)}</p>
-          </div>
-          <hr />
-          <div className="flex justify-between">
-            <p className="text-body-medium text-dark-900">Total</p>
-            <p className="text-body-medium text-dark-900">${total.toFixed(2)}</p>
-          </div>
-          <Button onClick={handleCheckout} className="w-full">
-            Checkout
-          </Button>
-        </div>
+        <CartSummary user={user} />
       </div>
     </div>
   );

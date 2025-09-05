@@ -8,6 +8,7 @@ import ProductNotFound from './ProductNotFound';
 import { ReviewsList } from './_components/ReviewsList';
 import { RecommendedProductsGrid } from './_components/RecommendedProductsGrid';
 import { RecommendedSkeleton } from './_components/RecommendedSkeleton';
+import AddToCartForm from '@/components/AddToCartForm';
 
 interface ProductPageProps {
   params: Promise<{
@@ -51,20 +52,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <ReviewsList productId={product.id} />
             </Suspense>
 
-            <div className="mt-8">
-              <SizePicker sizes={uniqueSizes} />
-            </div>
-
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button className="w-full bg-dark-900 text-light-100 py-4 px-8 rounded-full text-body-medium flex items-center justify-center hover:bg-dark-700 transition-colors">
-                <ShoppingBag className="w-6 h-6 mr-2" />
-                Add to Bag
-              </button>
-              <button className="w-full bg-light-200 text-dark-900 py-4 px-8 rounded-full text-body-medium flex items-center justify-center ring-1 ring-light-400 hover:ring-dark-900 transition-colors">
-                <Heart className="w-6 h-6 mr-2" />
-                Favorite
-              </button>
-            </div>
+            <AddToCartForm product={product} />
 
             <div className="mt-12">
                 <CollapsibleSection title="Description" isOpen={true}>
