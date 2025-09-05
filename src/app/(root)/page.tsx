@@ -6,76 +6,43 @@ import Footer from '../../components/Footer';
 import { Product } from '../../types';
 import HeroSection from '@/components/HeroSection';
 import UpcomingProducts from '@/components/UpcomingProducts';
-
-
-const products: Product[] = [
-  {
-    id: '7c9a62a6-3c2a-48d2-b6f4-3d7353f2c01a',
-    name: "Nike Air Force 1 Mid '07",
-    description: null,
-    price: '98.30',
-    image: '/shoes/shoe-1.jpg',
-    category: "Men's Shoes",
-    colors: '6 Colour',
-    bestseller: true,
-  },
-  {
-    id: 'd8f7b7c2-8e1a-4f6f-8a9a-3d7353f2c01a',
-    name: 'Nike Air Max 90',
-    description: null,
-    price: '130.00',
-    image: '/shoes/shoe-2.webp',
-    category: "Women's Shoes",
-    colors: '4 Colour',
-    bestseller: false,
-  },
-  {
-    id: 'a3e9c3e2-1b3a-4e7e-9d1c-3d7353f2c01a',
-    name: 'Nike Jordan Low',
-    description: null,
-    price: '110.00',
-    image: '/shoes/shoe-3.webp',
-    category: "Kids' Shoes",
-    colors: '8 Colour',
-    bestseller: false,
-  },
-  {
-    id: 'f5f2c5a0-9b3a-4b7c-8f3a-3d7353f2c01a',
-    name: 'Nike Air Zoom Pegasus 37',
-    description: null,
-    price: '120.00',
-    image: '/shoes/shoe-4.webp',
-    category: "Men's Shoes",
-    colors: '5 Colour',
-    bestseller: false,
-
-  },
-  {
-    id: 'f5f2c5a0-9b3a-4b7c-8f3a-3d7353f2c01a',
-    name: 'Nike Air Zoom Pegasus 37',
-    description: null,
-    price: '120.00',
-    image: '/shoes/shoe-4.webp',
-    category: "Men's Shoes",
-    colors: '5 Colour',
-    bestseller: false,
-  }
-];
+import { getAllProducts, ProductWithDetails } from '@/lib/actions/product';
 
 const Page = async () => {
+  const { products: fetchedProducts } = await getAllProducts({
+    page: 1,
+    limit: 8,
+    sortBy: 'createdAt_desc',
+  });
+
+  const products: Product[] = fetchedProducts.map((p: ProductWithDetails) => ({
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    price: p.minPrice,
+    image: p.images[0]?.url || '/shoes/shoe-placeholder.png',
+    category: p.category?.name || 'Uncategorized',
+    colors: `${p.variants.length} ${p.variants.length === 1 ? 'Colour' : 'Colours'}`,
+    bestseller: false, // This field is not available in the new data structure
+  }));
+
   return (
     <div className="bg-light-100">
       <Navbar />
       <HeroSection />
       
       <main className="container mx-auto px-4 py-8 ">
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 auto-rows-fr mt-17">
-  {products.map(product => (
-    <Card key={product.id} product={product} />
-  ))}
-</div>
-<UpcomingProducts />
+        <div className="text-center mb-12 mt-12">
+          <h2 className="text-4xl font-extrabold text-gray-900">Featured Products</h2>
+          <p className="text-lg text-gray-600 mt-2">
+            Check out our latest and greatest selection of footwear.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 auto-rows-fr">
+          {products.map(product => (
+            <Card key={product.id} product={product} />
+          ))}
+        </div>
       </main>
       <Footer />
     </div>
