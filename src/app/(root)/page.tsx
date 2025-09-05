@@ -12,7 +12,7 @@ const Page = async () => {
   const { products: fetchedProducts } = await getAllProducts({
     page: 1,
     limit: 8,
-    sortBy: 'createdAt_desc',
+    sortBy: 'latest',
   });
 
   const products: Product[] = fetchedProducts.map((p: ProductWithDetails) => ({
@@ -43,6 +43,7 @@ const Page = async () => {
             <Card key={product.id} product={product} />
           ))}
         </div>
+        <UpcomingProducts />
       </main>
       <Footer />
     </div>
