@@ -288,10 +288,10 @@ export async function getProductReviews(productId: string): Promise<Review[]> {
       rating: schema.reviews.rating,
       comment: schema.reviews.comment,
       createdAt: schema.reviews.createdAt,
-      author: schema.users.name,
+      author: schema.user.name,
     })
     .from(schema.reviews)
-    .innerJoin(schema.users, eq(schema.reviews.userId, schema.users.id))
+    .innerJoin(schema.user, eq(schema.reviews.userId, schema.user.id))
     .where(eq(schema.reviews.productId, productId))
     .orderBy(desc(schema.reviews.createdAt));
 
@@ -314,6 +314,7 @@ export type RecommendedProduct = {
   name: string;
   price: string;
   image: string;
+  defaultVariantId?: string;
 };
 
 export async function getRecommendedProducts(productId: string): Promise<RecommendedProduct[]> {
@@ -336,6 +337,7 @@ export async function getRecommendedProducts(productId: string): Promise<Recomme
     .select({
       id: schema.products.id,
       name: schema.products.name,
+      defaultVariantId: schema.products.defaultVariantId,
       price: sql<string>`MIN(${schema.productVariants.price})`.as('price'),
       image: sql<string>`(
         SELECT url FROM ${schema.productImages}
@@ -367,5 +369,6 @@ export async function getRecommendedProducts(productId: string): Promise<Recomme
       name: p.name,
       price: p.price!,
       image: p.image!,
+      defaultVariantId: p.defaultVariantId || undefined,
   }));
 }

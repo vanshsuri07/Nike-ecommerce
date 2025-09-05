@@ -1,5 +1,5 @@
 import { getRecommendedProducts } from '@/lib/actions/product';
-import Link from 'next/link';
+
 import Card from '@/components/Card';
 
 interface RecommendedProductsGridProps {
@@ -22,6 +22,7 @@ export async function RecommendedProductsGrid({ productId }: RecommendedProducts
     category: 'Related', // Placeholder
     colors: '', // Not available
     bestseller: false, // Not available
+    defaultVariantId: p.defaultVariantId,
   }));
 
   return (
@@ -29,9 +30,7 @@ export async function RecommendedProductsGrid({ productId }: RecommendedProducts
       <h2 className="text-heading-2 text-dark-900 mb-8">You Might Also Like</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
         {allProductsForCards.map((product) => (
-          <Link href={`/products/${product.id}`} key={product.id}>
-            <Card product={product} />
-          </Link>
+          <Card key={product.id} product={product} />
         ))}
       </div>
     </div>
