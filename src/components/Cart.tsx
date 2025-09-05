@@ -46,7 +46,7 @@ export default function Cart({ initialCart, user }: CartProps) {
   };
 
   const subtotal = items.reduce(
-    (acc, item) => acc + item.productVariant.product.price * item.quantity,
+    (acc, item) => acc + parseFloat(item.productVariant.price) * item.quantity,
     0,
   );
   const shipping = 5.0;
@@ -75,7 +75,7 @@ export default function Cart({ initialCart, user }: CartProps) {
             >
               <div className="flex items-center space-x-4">
                 <Image
-                  src={item.productVariant.product.thumbnail || '/shoe-placeholder.png'}
+                  src={item.productVariant.product.images[0]?.url || '/shoe-placeholder.png'}
                   alt={item.productVariant.product.name}
                   width={80}
                   height={80}
@@ -89,7 +89,7 @@ export default function Cart({ initialCart, user }: CartProps) {
                     {item.productVariant.name}
                   </p>
                   <p className="text-body text-dark-900">
-                    ${item.productVariant.product.price.toFixed(2)}
+                    ${parseFloat(item.productVariant.price).toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export default function Cart({ initialCart, user }: CartProps) {
                   min="1"
                 />
                 <p className="text-body-medium text-dark-900">
-                  ${(item.productVariant.product.price * item.quantity).toFixed(2)}
+                  ${(parseFloat(item.productVariant.price) * item.quantity).toFixed(2)}
                 </p>
                 <Button
                   variant="ghost"

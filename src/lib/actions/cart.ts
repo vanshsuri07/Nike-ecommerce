@@ -30,7 +30,11 @@ export async function getCart() {
         with: {
           productVariant: {
             with: {
-              product: true,
+              product: {
+                with: {
+                  images: true,
+                },
+              },
             },
           },
         },
