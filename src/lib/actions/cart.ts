@@ -2,7 +2,7 @@
 
 import { db } from '@/db';
 import * as schema from '@/lib/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import {
   getCurrentUser,
   getGuestSession,

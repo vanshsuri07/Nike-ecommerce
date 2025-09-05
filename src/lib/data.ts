@@ -1,4 +1,4 @@
-import { N } from "node_modules/tailwindcss/dist/resolve-config-QUZ9b-Gn.mjs";
+
 
 export type Product = {
   id: string;
