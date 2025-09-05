@@ -9,8 +9,6 @@ dotenv.config({ path: '.env' });
 // Configure WebSocket for persistent connection
 neonConfig.webSocketConstructor = ws;
 
-const sql = neon(process.env.DATABASE_URL!, {
-  ssl: true,
-});
+const sql = neon(process.env.DATABASE_URL!);
 export const db = drizzle(sql, { schema });
 export { schema };
