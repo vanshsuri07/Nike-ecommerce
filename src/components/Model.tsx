@@ -29,7 +29,9 @@ const Model: React.FC = (props) => {
       dispose={null}
       scale={14}
       position={[0, 0, 0]}
-      rotation={[0.65, -1.45, 3.14]} // angled side view like in your image
+     rotation={[0.15, -1.4, 3.14]}
+
+ // angled side view like in your image
     >
       <mesh
         castShadow
