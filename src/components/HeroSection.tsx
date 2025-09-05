@@ -4,7 +4,7 @@ import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { motion } from 'framer-motion';
 import Model from './Model';
-import { Float, OrbitControls, PresentationControls, Sparkles } from '@react-three/drei';
+import { Float, OrbitControls, PresentationControls } from '@react-three/drei';
 import Loader from './Loader';
 
 const HeroSection = () => {

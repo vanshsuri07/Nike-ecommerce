@@ -1,8 +1,8 @@
-import { pgTable, text, uuid, integer, numeric, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, integer, numeric, timestamp, pgEnum } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
-import { users } from './user';
+import { user } from './user';
 import { addresses } from './addresses';
 import { productVariants } from './variants';
 import { payments } from './payments';
@@ -11,7 +11,7 @@ export const orderStatusEnum = pgEnum('order_status', ['pending', 'paid', 'shipp
 
 export const orders = pgTable('orders', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   status: orderStatusEnum('status').notNull().default('pending'),
   totalAmount: numeric('total_amount', { precision: 10, scale: 2 }).notNull(),
   shippingAddressId: uuid('shipping_address_id').notNull().references(() => addresses.id, { onDelete: 'set null' }),
@@ -28,9 +28,9 @@ export const orderItems = pgTable('order_items', {
 });
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({
-  user: one(users, {
+  user: one(user, {
     fields: [orders.userId],
-    references: [users.id],
+    references: [user.id],
   }),
   shippingAddress: one(addresses, {
     fields: [orders.shippingAddressId],

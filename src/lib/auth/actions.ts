@@ -3,7 +3,7 @@
 import { auth } from './index';
 import { db } from '@/db';
 import * as schema from '@/lib/db/schema';
-import { cookies, headers } from 'next/headers';
+import { cookies} from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 import { signInSchema, signUpSchema } from './validation';
 import { redirect } from 'next/navigation';
@@ -22,7 +22,7 @@ export async function signUp(data: FormData) {
 
   try {
     const guest = await getGuestSession();
-
+    
     // Create user
     await auth.api.signUpEmail({
       body: {
@@ -40,7 +40,7 @@ export async function signUp(data: FormData) {
       },
     });
 
-    console.log('User signed in:', session);
+    console.log("User signed in:", session);
 
     if (guest && session?.user) {
       await mergeGuestCartWithUserCart(session.user.id, guest.id);
@@ -56,9 +56,9 @@ export async function signUp(data: FormData) {
 
   redirect('/');
 }
-
 export async function signIn(data: FormData) {
   const formData = Object.fromEntries(data);
+  const redirectUrl = (data.get('redirectUrl') as string) || '/';
   const parsed = signInSchema.safeParse(formData);
 
   if (!parsed.success) {
@@ -77,6 +77,14 @@ export async function signIn(data: FormData) {
     }
   } catch (error) {
     if (error instanceof BetterAuthError) {
+      if (error.message.includes('user') && error.message.includes('not found')) {
+        const url = new URLSearchParams();
+        url.append('email', email);
+        if (redirectUrl) {
+          url.append('redirect_url', redirectUrl);
+        }
+        redirect(`/sign-up?${url.toString()}`);
+      }
       return {
         error: { _errors: [error.message] },
       };
@@ -84,7 +92,7 @@ export async function signIn(data: FormData) {
     throw error;
   }
 
-  redirect('/');
+  redirect(redirectUrl);
 }
 
 export async function signOut() {

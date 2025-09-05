@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
+import CartIndicator from './CartIndicator';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +28,7 @@ const Navbar: React.FC = () => {
 
       <div className="hidden md:flex md:items-center md:space-x-8">
         <span className="text-light-100 text-body">Search</span>
-        <span className="text-light-100 text-body">My Cart (2)</span>
+        <CartIndicator />
       </div>
 
       {/* Mobile Menu Button */}
