@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useCartStore } from '@/store/cart.store';
-import { TCart } from '@/lib/db/schema/carts';
+import { CartWithItems } from '@/types/cart';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { TUser } from '@/lib/db/schema';
 
 interface CartProps {
-  initialCart: TCart | null;
+  initialCart: CartWithItems | null;
   user: TUser | null;
 }
 
