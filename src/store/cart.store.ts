@@ -5,10 +5,10 @@ import {
   updateCartItem,
   removeCartItem,
 } from '@/lib/actions/cart';
-import { TCartItem } from '@/lib/db/schema/carts';
+import { CartItemWithProduct } from '@/types/cart';
 
 interface CartState {
-  items: TCartItem[];
+  items: CartItemWithProduct[];
   loading: boolean;
   error: string | null;
   getCart: () => Promise<void>;
