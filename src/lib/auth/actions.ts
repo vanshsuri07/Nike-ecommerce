@@ -1,5 +1,6 @@
 'use server';
 
+
 import { auth } from './index';
 import { db } from '@/db';
 import * as schema from '@/lib/db/schema';
@@ -9,6 +10,7 @@ import { signInSchema, signUpSchema } from './validation';
 import { redirect } from 'next/navigation';
 import { BetterAuthError } from 'better-auth';
 import { and, eq } from 'drizzle-orm';
+
 
 export async function signUp(data: FormData) {
   console.log('Attempting to sign up...');
@@ -63,7 +65,8 @@ export async function signUp(data: FormData) {
   }
 
   console.log('Sign-up successful. Redirecting...');
-  redirect('/');
+  
+  redirect('/sign-in');
 }
 export async function signIn(data: FormData) {
   console.log('Attempting to sign in...');
@@ -111,6 +114,7 @@ export async function signIn(data: FormData) {
   }
 
   console.log('Sign-in successful. Redirecting...');
+  
   redirect(redirectUrl);
 }
 

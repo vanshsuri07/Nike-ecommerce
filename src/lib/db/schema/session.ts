@@ -2,7 +2,7 @@ import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { user } from './user';
 import { sql } from 'drizzle-orm';
 
-export const sessions = pgTable('sessions', {
+export const session = pgTable('sessions', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid('user_id')
     .notNull()
