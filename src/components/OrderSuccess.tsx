@@ -20,7 +20,7 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
             Thank you for your order!
           </h1>
           <p className="text-body text-dark-700 mb-8">
-            Your order has been confirmed. You'll receive a confirmation email
+            Your order has been confirmed. You&apos;ll receive a confirmation email
             shortly.
           </p>
         </div>
@@ -36,7 +36,7 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
           </div>
           <hr />
           <div className="space-y-4">
-            {order.items.map((item) => (
+            {order?.items?.map((item) => (
               <div
                 key={item.id}
                 className="flex items-center justify-between"
@@ -61,9 +61,8 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
                     </p>
                   </div>
                 </div>
-                <p className="text-body text-dark-900">
-                  ${((item.price * item.quantity) / 100).toFixed(2)}
-                </p>
+                <p>Total: ${Number(order.totalAmount).toFixed(2)}</p>
+
               </div>
             ))}
           </div>

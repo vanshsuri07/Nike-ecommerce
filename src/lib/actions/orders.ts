@@ -42,21 +42,24 @@ export async function createOrder(
     throw new Error(`Cart with id ${cartId} not found`);
   }
 
-  const [newOrder] = await db
-    .insert(schema.orders)
-    .values({
-      userId: userId || sessionUserId,
-      total: session.amount_total!,
-      status: 'paid',
-      stripePaymentIntentId: paymentIntentId,
-    })
-    .returning();
+const [newOrder] = await db
+  .insert(schema.orders)
+  .values({
+    userId: userId || sessionUserId || '', // Use provided userId or session userId
+    totalAmount: ((session.amount_total ?? 0) / 100).toString(), // ✅ convert cents to dollars
+    status: 'paid',
+    stripePaymentIntentId: paymentIntentId,
+    shippingAddressId: '', // Add required field - update with actual address ID
+    billingAddressId: '', // Add required field - update with actual address ID
+  })
+  .returning();
 
   const orderItems = cart.items.map((item) => ({
     orderId: newOrder.id,
     productVariantId: item.productVariantId,
     quantity: item.quantity,
-    price: Math.round(parseFloat(item.productVariant.price) * 100),
+    priceAtPurchase: item.productVariant.price
+
   }));
 
   await db.insert(schema.orderItems).values(orderItems);
@@ -70,7 +73,7 @@ export async function getOrderByStripeSessionId(sessionId: string) {
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   const paymentIntentId = session.payment_intent as string;
 
-  const order = await db.query.orders.findFirst({
+  const order = db.query.orders.findFirst({
     where: eq(schema.orders.stripePaymentIntentId, paymentIntentId),
     with: {
       items: {

@@ -14,13 +14,20 @@ export async function createStripeCheckoutSession() {
     throw new Error('Cart is empty');
   }
 
+  const headersList = await headers(); // ✅ Await it
+  const origin = headersList.get('origin'); // ✅ Use for absolute URLs
+
   const line_items = cart.items.map((item) => {
+    const imageUrls = item.productVariant.product.images.map((img) =>
+      img.url.startsWith('http') ? img.url : `${origin}${img.url}`
+    );
+
     return {
       price_data: {
         currency: 'usd',
         product_data: {
           name: item.productVariant.product.name,
-          images: item.productVariant.product.images.map((img) => img.url),
+          images: imageUrls, // ✅ Fixed here
         },
         unit_amount: Math.round(parseFloat(item.productVariant.price) * 100),
       },
@@ -28,7 +35,6 @@ export async function createStripeCheckoutSession() {
     };
   });
 
-  const origin = headers().get('origin')!;
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     line_items,

@@ -7,17 +7,22 @@ export default async function CheckoutSuccessPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const sessionId = searchParams.session_id as string;
+  if (!searchParams.session_id || typeof searchParams.session_id !== 'string') {
+  return notFound();
+}
+
+const sessionId = await searchParams.session_id;
+
 
   if (!sessionId) {
     return notFound();
   }
 
-  const order = await getOrderByStripeSessionId(sessionId);
+  const order = getOrderByStripeSessionId(sessionId);
 
   if (!order) {
     return notFound();
   }
 
-  return <OrderSuccess order={order} />;
+  return <OrderSuccess order={order as any} />;
 }

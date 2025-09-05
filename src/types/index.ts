@@ -17,3 +17,17 @@ export type TProductWithVariants = TProduct & {
         size: TSize;
     })[];
 };
+export type TOrder = import('@/lib/db/schema/orders').TOrder;
+export type TOrderItem = import('@/lib/db/schema/orders').TOrderItem;
+
+export type TOrderItemWithProduct = TOrderItem & {
+    productVariant: TProductVariant & {
+        product: TProduct & {
+            images: TProductImage[];
+        };
+    };
+};
+
+export type TOrderWithItems = TOrder & {
+    items: TOrderItemWithProduct[];
+};
