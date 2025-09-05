@@ -209,3 +209,60 @@ export async function mergeGuestCartWithUserCart(
   const cookieStore = await cookies();
   cookieStore.delete('guest_session');
 }
+
+export async function signInOrUp(data: FormData) {
+  const formData = Object.fromEntries(data);
+  const parsed = signUpSchema.safeParse(formData); // Use signUpSchema as it includes name
+  const redirectUrl = (formData.redirectUrl as string) || '/';
+
+  if (!parsed.success) {
+    return {
+      error: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  const { name, email, password } = parsed.data;
+
+  try {
+    const guest = await getGuestSession();
+    const existingUser = await db.query.users.findFirst({
+      where: eq(schema.users.email, email),
+    });
+
+    let session;
+
+    if (existingUser) {
+      // User exists, try to sign in
+      try {
+        session = await auth.api.signInEmail({ body: { email, password } });
+      } catch (error) {
+        if (error instanceof BetterAuthError && error.message.includes('password')) {
+          return { error: { _errors: ['Invalid password.'] } };
+        }
+        throw error;
+      }
+    } else {
+      // User does not exist, sign them up
+      await auth.api.signUpEmail({
+        body: { name, email, password },
+      });
+      // Sign them in immediately
+      session = await auth.api.signInEmail({ body: { email, password } });
+    }
+
+    if (guest && session?.user) {
+      await mergeGuestCartWithUserCart(session.user.id, guest.id);
+    }
+  } catch (error) {
+    if (error instanceof BetterAuthError) {
+      return {
+        error: { _errors: [error.message] },
+      };
+    }
+    // For unexpected errors
+    console.error('Unexpected error in signInOrUp:', error);
+    return { error: { _errors: ['An unexpected error occurred. Please try again.'] } };
+  }
+
+  redirect(redirectUrl);
+}
