@@ -4,6 +4,7 @@ import Link from 'next/link';
 import SocialProviders from './SocialProviders';
 import { useSearchParams } from 'next/navigation';
 import { signUp, signIn } from '@/lib/auth/actions'; // Import your server actions
+import { toast } from 'sonner';
 
 interface AuthFormProps {
   type: 'signIn' | 'signUp';
@@ -28,26 +29,59 @@ const AuthForm = ({ type }: AuthFormProps) => {
     setError(null);
     setIsPending(true);
     
-    try {
-      const formData = new FormData(e.currentTarget);
-      if (redirectUrl) {
-        formData.append('redirectUrl', redirectUrl);
-      }
-      
-      // Call the appropriate server action directly
-      const result = type === 'signUp' ? await signUp(formData) : await signIn(formData);
-      
-      if (result?.error) {
-        const errorMessages = Object.values(result.error).flat();
-        setError(errorMessages.join(' '));
-      }
-      // If no error and no redirect happened, the action was successful
-    } catch (err) {
-      console.error('Auth error:', err);
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsPending(false);
+// Helper function to get appropriate error message
+const getErrorMessage = (type: string, errorMessage: string) => {
+  const lowerError = errorMessage.toLowerCase();
+  
+  if (type === 'signUp') {
+    if (lowerError.includes('email') || lowerError.includes('already') || 
+        lowerError.includes('exists') || lowerError.includes('duplicate')) {
+      return 'Email already exists. Please use a different email.';
     }
+    return 'Failed to create account. Please try again.';
+  } else {
+    if (lowerError.includes('email') || lowerError.includes('password') ||
+        lowerError.includes('invalid') || lowerError.includes('credentials')) {
+      return 'Email or password is incorrect.';
+    }
+    return 'Failed to sign in. Please try again.';
+  }
+};
+
+// Main try-catch block
+try {
+  const formData = new FormData(e.currentTarget);
+  if (redirectUrl) {
+    formData.append('redirectUrl', redirectUrl);
+  }
+
+  const result =
+    type === 'signUp' ? await signUp(formData) : await signIn(formData);
+
+  if (result?.error) {
+    const errorMessages = Object.values(result.error).flat();
+    const errorMessage = errorMessages.join(' ');
+    setError(errorMessage);
+    
+  } else {
+    toast(
+      type === 'signUp'
+        ? 'Account created successfully!'
+        : 'Signed in successfully!'
+    );
+    setError('');
+  }
+} catch (err) {
+  console.error('Auth error:', err);
+  const errorMessage = (err as Error)?.message || 'An unexpected error occurred';
+  const formattedError = getErrorMessage(type, errorMessage);
+  setError(formattedError);
+  
+  
+} finally {
+  setIsPending(false);
+}
+
   };
 
   return (
@@ -117,18 +151,24 @@ const AuthForm = ({ type }: AuthFormProps) => {
         <div className="mb-6">
           <label
             htmlFor="password"
-            className="block text-body text-dark-900 mb-2"
+            className=" text-caption text-dark-900"
           >
             Password
           </label>
-            <input
-                type="password"
-              name="password"
-              placeholder="minimum 8 characters"
-              required
-              disabled={isPending}
-            className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green disabled:opacity-50"
-              />
+            
+<input
+  type="password"
+  name="password"
+  placeholder="minimum 8 characters"
+  required
+  disabled={isPending}
+  className="w-full rounded-xl border border-light-300 bg-light-100 px-4 py-3 pr-12 text-2xl text-dark-900 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-dark-900/10"
+/>
+
+
+
+
+
             </div>
             {type === 'signIn' && (
           <div className="text-right mb-6">
