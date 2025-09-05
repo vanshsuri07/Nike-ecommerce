@@ -12,6 +12,7 @@ import { and, eq } from 'drizzle-orm';
 
 export async function signUp(data: FormData) {
   const formData = Object.fromEntries(data);
+  const redirectUrl = (formData.get('redirectUrl') as string) || '/';
   const parsed = signUpSchema.safeParse(formData);
 
   if (!parsed.success) {
@@ -40,8 +41,6 @@ export async function signUp(data: FormData) {
       },
     });
 
-    console.log('User signed in:', session);
-
     if (guest && session?.user) {
       await mergeGuestCartWithUserCart(session.user.id, guest.id);
     }
@@ -54,11 +53,12 @@ export async function signUp(data: FormData) {
     throw error;
   }
 
-  redirect('/');
+  redirect(redirectUrl);
 }
 
 export async function signIn(data: FormData) {
   const formData = Object.fromEntries(data);
+  const redirectUrl = (formData.get('redirectUrl') as string) || '/';
   const parsed = signInSchema.safeParse(formData);
 
   if (!parsed.success) {
@@ -77,6 +77,14 @@ export async function signIn(data: FormData) {
     }
   } catch (error) {
     if (error instanceof BetterAuthError) {
+      if (error.message.includes('user') && error.message.includes('not found')) {
+        const url = new URLSearchParams();
+        url.append('email', email);
+        if (redirectUrl) {
+          url.append('redirect_url', redirectUrl);
+        }
+        redirect(`/sign-up?${url.toString()}`);
+      }
       return {
         error: { _errors: [error.message] },
       };
@@ -84,7 +92,7 @@ export async function signIn(data: FormData) {
     throw error;
   }
 
-  redirect('/');
+  redirect(redirectUrl);
 }
 
 export async function signOut() {
@@ -208,61 +216,4 @@ export async function mergeGuestCartWithUserCart(
   await db.delete(schema.guests).where(eq(schema.guests.id, guestId));
   const cookieStore = await cookies();
   cookieStore.delete('guest_session');
-}
-
-export async function signInOrUp(data: FormData) {
-  const formData = Object.fromEntries(data);
-  const parsed = signUpSchema.safeParse(formData); // Use signUpSchema as it includes name
-  const redirectUrl = (formData.redirectUrl as string) || '/';
-
-  if (!parsed.success) {
-    return {
-      error: parsed.error.flatten().fieldErrors,
-    };
-  }
-
-  const { name, email, password } = parsed.data;
-
-  try {
-    const guest = await getGuestSession();
-    const existingUser = await db.query.users.findFirst({
-      where: eq(schema.users.email, email),
-    });
-
-    let session;
-
-    if (existingUser) {
-      // User exists, try to sign in
-      try {
-        session = await auth.api.signInEmail({ body: { email, password } });
-      } catch (error) {
-        if (error instanceof BetterAuthError && error.message.includes('password')) {
-          return { error: { _errors: ['Invalid password.'] } };
-        }
-        throw error;
-      }
-    } else {
-      // User does not exist, sign them up
-      await auth.api.signUpEmail({
-        body: { name, email, password },
-      });
-      // Sign them in immediately
-      session = await auth.api.signInEmail({ body: { email, password } });
-    }
-
-    if (guest && session?.user) {
-      await mergeGuestCartWithUserCart(session.user.id, guest.id);
-    }
-  } catch (error) {
-    if (error instanceof BetterAuthError) {
-      return {
-        error: { _errors: [error.message] },
-      };
-    }
-    // For unexpected errors
-    console.error('Unexpected error in signInOrUp:', error);
-    return { error: { _errors: ['An unexpected error occurred. Please try again.'] } };
-  }
-
-  redirect(redirectUrl);
 }
