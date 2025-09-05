@@ -5,6 +5,8 @@ import Filters from '@/components/Filters';
 import Sort from '@/components/Sort';
 import Link from 'next/link';
 import { Product as CardProduct } from '@/types';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 type SearchParamsType = Promise<Record<string, string | string[] | undefined>>;
 
@@ -63,17 +65,19 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   };
 
   return (
+  <div>
+   <Navbar />
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row gap-8">
         <aside className="w-full md:w-1/4 lg:w-1/5">
-          <div className="sticky top-24">
+          <div className="sticky top-24 bg-zinc-200  rounded-lg">
             <Filters />
           </div>
         </aside>
 
         <section className="w-full md:w-3/4 lg:w-4/5">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-heading-2">New Arrivals</h1>
+            <h1 className="text-heading-2">Step Into Style</h1>
             <div className="flex items-center gap-4">
               <p className="text-body text-dark-700">{totalCount} Results</p>
               <Sort />
@@ -117,6 +121,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
           )}
         </section>
       </div>
+    </div>
+    <Footer />
     </div>
   );
 }
