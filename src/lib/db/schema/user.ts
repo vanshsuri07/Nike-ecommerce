@@ -8,12 +8,12 @@ import { carts } from './carts';
 import { orders } from './orders';
 import { wishlists } from './wishlists';
 
-export const users = pgTable('users', {
+export const user = pgTable('users', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   name: text('name'),
   email: text('email').notNull().unique(),
   emailVerified: timestamp('email_verified', {
-    mode: 'date',
+    mode: 'string',
     withTimezone: true,
   }),
   image: text('image'),
@@ -25,12 +25,12 @@ export const users = pgTable('users', {
     .defaultNow(),
 });
 
-export const UserInsertSchema = createInsertSchema(users);
-export const UserSelectSchema = createSelectSchema(users);
+export const UserInsertSchema = createInsertSchema(user);
+export const UserSelectSchema = createSelectSchema(user);
 export type TUser = z.infer<typeof UserSelectSchema>;
 export type TNewUser = z.infer<typeof UserInsertSchema>;
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
   addresses: many(addresses),
   reviews: many(reviews),
   carts: many(carts),

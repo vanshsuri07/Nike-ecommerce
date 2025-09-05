@@ -3,13 +3,13 @@ import React from 'react';
 import Link from 'next/link';
 import SocialProviders from './SocialProviders';
 import { useSearchParams } from 'next/navigation';
+import { signUp, signIn } from '@/lib/auth/actions'; // Import your server actions
 
 interface AuthFormProps {
   type: 'signIn' | 'signUp';
-  onSubmit: (data: FormData) => Promise<any>;
 }
 
-const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
+const AuthForm = ({ type }: AuthFormProps) => {
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get('redirect_url');
   const email = searchParams.get('email');
@@ -21,18 +21,32 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
       : 'Create your account to start your fitness journey';
   const buttonText = type === 'signIn' ? 'Sign In' : 'Sign Up';
   const [error, setError] = React.useState<string | null>(null);
+  const [isPending, setIsPending] = React.useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    const formData = new FormData(e.currentTarget);
-    if (redirectUrl) {
-      formData.append('redirectUrl', redirectUrl);
-    }
-    const result = await onSubmit(formData);
-    if (result?.error) {
-      const errorMessages = Object.values(result.error).flat();
-      setError(errorMessages.join(' '));
+    setIsPending(true);
+    
+    try {
+      const formData = new FormData(e.currentTarget);
+      if (redirectUrl) {
+        formData.append('redirectUrl', redirectUrl);
+      }
+      
+      // Call the appropriate server action directly
+      const result = type === 'signUp' ? await signUp(formData) : await signIn(formData);
+      
+      if (result?.error) {
+        const errorMessages = Object.values(result.error).flat();
+        setError(errorMessages.join(' '));
+      }
+      // If no error and no redirect happened, the action was successful
+    } catch (err) {
+      console.error('Auth error:', err);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsPending(false);
     }
   };
 
@@ -66,7 +80,11 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
         onSubmit={handleSubmit}
       >
             <input type="hidden" name="redirectUrl" value={redirectUrl || ''} />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
             {type === 'signUp' && (
           <div className="mb-4">
             <label htmlFor="name" className="block text-body text-dark-900 mb-2">
@@ -77,7 +95,8 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
               name="name"
               placeholder="Enter your name"
               required
-              className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green"
+              disabled={isPending}
+              className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green disabled:opacity-50"
             />
           </div>
         )}
@@ -91,7 +110,8 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
             placeholder="johndoe@gmail.com"
             defaultValue={email || ''}
             required
-            className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green"
+            disabled={isPending}
+            className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green disabled:opacity-50"
           />
         </div>
         <div className="mb-6">
@@ -106,7 +126,8 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
               name="password"
               placeholder="minimum 8 characters"
               required
-            className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green"
+              disabled={isPending}
+            className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green disabled:opacity-50"
               />
             </div>
             {type === 'signIn' && (
@@ -118,9 +139,10 @@ const AuthForm = ({ type, onSubmit }: AuthFormProps) => {
             )}
             <button
           type="submit"
-          className="mt-2 w-full rounded-full bg-dark-900 px-6 py-3 text-body-medium text-light-100 hover:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-dark-900/20"
+          disabled={isPending}
+          className="mt-2 w-full rounded-full bg-dark-900 px-6 py-3 text-body-medium text-light-100 hover:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-dark-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {buttonText}
+          {isPending ? (type === 'signUp' ? 'Creating Account...' : 'Signing In...') : buttonText}
         </button>
           </form>
       <p className="text-footnote text-dark-500 mt-6 text-center">

@@ -12,4 +12,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+ advanced: {
+    generateId: () => {
+      // Generate proper UUID v4
+      return crypto.randomUUID();
+    }
+  }
 });
