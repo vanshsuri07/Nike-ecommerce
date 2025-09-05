@@ -67,7 +67,7 @@ const Page = async () => {
     <div className="bg-light-100">
       <Navbar />
       <HeroSection />
-      <UpcomingProducts />
+      
       <main className="container mx-auto px-4 py-8 ">
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 auto-rows-fr mt-17">
@@ -75,7 +75,7 @@ const Page = async () => {
     <Card key={product.id} product={product} />
   ))}
 </div>
-
+<UpcomingProducts />
       </main>
       <Footer />
     </div>
