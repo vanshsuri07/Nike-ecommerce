@@ -314,6 +314,7 @@ export type RecommendedProduct = {
   name: string;
   price: string;
   image: string;
+  defaultVariantId?: string;
 };
 
 export async function getRecommendedProducts(productId: string): Promise<RecommendedProduct[]> {
@@ -336,6 +337,7 @@ export async function getRecommendedProducts(productId: string): Promise<Recomme
     .select({
       id: schema.products.id,
       name: schema.products.name,
+      defaultVariantId: schema.products.defaultVariantId,
       price: sql<string>`MIN(${schema.productVariants.price})`.as('price'),
       image: sql<string>`(
         SELECT url FROM ${schema.productImages}
@@ -367,5 +369,6 @@ export async function getRecommendedProducts(productId: string): Promise<Recomme
       name: p.name,
       price: p.price!,
       image: p.image!,
+      defaultVariantId: p.defaultVariantId || undefined,
   }));
 }

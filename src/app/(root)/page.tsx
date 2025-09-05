@@ -24,6 +24,7 @@ const Page = async () => {
     category: p.category?.name || 'Uncategorized',
     colors: `${p.variants.length} ${p.variants.length === 1 ? 'Colour' : 'Colours'}`,
     bestseller: false, // This field is not available in the new data structure
+    defaultVariantId: p.defaultVariantId || undefined,
   }));
 
   return (

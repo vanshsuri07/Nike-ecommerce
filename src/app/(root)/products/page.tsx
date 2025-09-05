@@ -24,6 +24,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
     category: p.category?.name || 'N/A',
     colors: p.variants.map(v => v.color.name).slice(0, 3).join(', '),
     bestseller: false,
+    defaultVariantId: p.defaultVariantId || undefined,
   }));
 
   const activeFilters = Object.entries(filters)
@@ -104,9 +105,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map((product) => (
-                <Link href={`/products/${product.id}`} key={product.id}>
-                  <Card product={product} />
-                </Link>
+                <Card key={product.id} product={product} />
               ))}
             </div>
           ) : (
