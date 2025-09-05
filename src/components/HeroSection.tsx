@@ -26,18 +26,19 @@ const HeroSection = () => {
     <div className="relative w-full h-[450px] overflow-hidden">
       {/* Video Background */}
       <video
-        ref={(video) => {
-          if (video) video.playbackRate = 2.0;
-        }}
-        className="absolute inset-0 w-full h-full object-cover"
-        autoPlay
-        loop
-        muted
-        playsInline
-      >
-        <source src="/herosection.mp4" type="video/mp4" />
-      </video>
-
+  ref={(video) => {
+    if (video) video.playbackRate = 1.0;
+  }}
+  className="absolute inset-0 w-full h-full object-fill"
+  autoPlay
+  loop
+  muted
+  playsInline
+>
+  <source src="/Streamflow2.mp4" type="video/mp4" />
+</video>
+ 
+ 
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/40" />
 
@@ -46,7 +47,7 @@ const HeroSection = () => {
         {/* Left Side: Text */}
         <div className="flex flex-col justify-center items-center md:items-start text-white pb-25 ml-16">
           <motion.h1
-            className="font-extrabold leading-tight text-center md:text-left"
+            className="font-semibold leading-tight text-center md:text-left"
             initial="hidden"
             animate="visible"
             variants={{
@@ -103,16 +104,10 @@ const HeroSection = () => {
               <ambientLight intensity={1.5} />
               <directionalLight position={[5, 5, 5]} intensity={2} />
               <Suspense fallback={<Loader />}>
-              <>
-  {/* Background small sparkles */}
-  <Sparkles count={150} scale={4} size={0.6} speed={1.2} color="#fff" opacity={0.6} />
-  
-  {/* Foreground bigger slow sparkles */}
-  <Sparkles count={40} scale={3.5} size={1.4} speed={0.5} color="#d4af37" opacity={0.9} />
-</>
+ 
 
 
-               <Float floatIntensity={2} speed={2}>
+               <Float floatIntensity={1} speed={1}>
   <PresentationControls
   global
   snap
