@@ -11,7 +11,7 @@ export default async function CheckoutSuccessPage({
   return notFound();
 }
 
-const sessionId = await searchParams.session_id;
+const sessionId = searchParams.session_id;
 
 
   if (!sessionId) {
