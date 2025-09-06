@@ -5,24 +5,19 @@ import { notFound } from 'next/navigation';
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: { [key:string]: string | string[] | undefined };
 }) {
-  if (!searchParams.session_id || typeof searchParams.session_id !== 'string') {
-  return notFound();
-}
+  const sessionId = searchParams.session_id;
 
-const sessionId = searchParams.session_id;
-
-
-  if (!sessionId) {
+  if (!sessionId || typeof sessionId !== 'string') {
     return notFound();
   }
 
-  const order = getOrderByStripeSessionId(sessionId);
+  const order = await getOrderByStripeSessionId(sessionId);
 
   if (!order) {
     return notFound();
   }
 
-  return <OrderSuccess order={order as any} />;
+  return <OrderSuccess order={order} />;
 }

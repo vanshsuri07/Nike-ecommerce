@@ -71,7 +71,7 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
                     </p>
                   </div>
                 </div>
-                <p>Total: ${Number(item.priceAtPurchase).toFixed(2)}</p>
+                <p>${Number(item.priceAtPurchase).toFixed(2)}</p>
               </div>
             ))}
           </div>
