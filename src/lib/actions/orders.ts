@@ -94,3 +94,13 @@ export async function getOrderByStripeSessionId(sessionId: string) {
 
   return order;
 }
+
+export async function fulfillOrder(sessionId: string) {
+  const order = await getOrderByStripeSessionId(sessionId);
+
+  if (order) {
+    return order;
+  }
+
+  return createOrder(sessionId);
+}

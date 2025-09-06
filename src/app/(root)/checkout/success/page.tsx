@@ -1,4 +1,4 @@
-import { getOrderByStripeSessionId } from '@/lib/actions/orders';
+import { fulfillOrder } from '@/lib/actions/orders';
 import OrderSuccess from '@/components/OrderSuccess';
 import { notFound } from 'next/navigation';
 
@@ -13,7 +13,7 @@ export default async function CheckoutSuccessPage({
     return notFound();
   }
 
-  const order = await getOrderByStripeSessionId(sessionId);
+  const order = await fulfillOrder(sessionId);
 
   if (!order) {
     return notFound();
