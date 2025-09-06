@@ -4,16 +4,26 @@ import { TOrderWithItems } from '@/types';
 import Image from 'next/image';
 import { Button } from './ui/button';
 import Link from 'next/link';
+import Confetti from 'react-confetti';
+import { useCartStore } from '@/store/cart.store';
+import { useEffect } from 'react';
 
 interface OrderSuccessProps {
   order: TOrderWithItems;
 }
 
 export default function OrderSuccess({ order }: OrderSuccessProps) {
-  const total = (order.total / 100).toFixed(2);
+  const { clearCart } = useCartStore();
+
+  useEffect(() => {
+    clearCart();
+  }, [clearCart]);
+
+  const total = (Number(order.totalAmount) / 100).toFixed(2);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Confetti />
       <div className="max-w-2xl mx-auto">
         <div className="text-center">
           <h1 className="text-heading-2 text-dark-900 mb-2">
@@ -61,8 +71,7 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
                     </p>
                   </div>
                 </div>
-                <p>Total: ${Number(order.totalAmount).toFixed(2)}</p>
-
+                <p>Total: ${Number(item.priceAtPurchase).toFixed(2)}</p>
               </div>
             ))}
           </div>

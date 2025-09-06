@@ -73,7 +73,7 @@ export async function getOrderByStripeSessionId(sessionId: string) {
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   const paymentIntentId = session.payment_intent as string;
 
-  const order = db.query.orders.findFirst({
+  const order = await db.query.orders.findFirst({
     where: eq(schema.orders.stripePaymentIntentId, paymentIntentId),
     with: {
       items: {
