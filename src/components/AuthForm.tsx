@@ -162,7 +162,9 @@ try {
   placeholder="minimum 8 characters"
   required
   disabled={isPending}
-  className="w-full rounded-xl border border-light-300 bg-light-100 px-4 py-3 pr-12 text-lg text-dark-900 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-dark-900/10"
+
+  className="w-full rounded-xl border border-light-300 bg-light-100 px-4 py-3 pr-12 text-body text-dark-900 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-dark-900/10"
+
 />
 
 

@@ -1,14 +1,11 @@
-'use client';
+"use client"
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import AuthForm from '../../../components/AuthForm';
+import { signIn } from "../../../lib/auth/actions";
 
 const SignInPage = () => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <AuthForm type="signIn" />
-    </Suspense>
-  );
+  return <AuthForm type="signIn" onSubmit={signIn} />;
 };
 
 export default SignInPage;
