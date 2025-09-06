@@ -24,65 +24,80 @@ const AuthForm = ({ type }: AuthFormProps) => {
   const [error, setError] = React.useState<string | null>(null);
   const [isPending, setIsPending] = React.useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setIsPending(true);
-    
-// Helper function to get appropriate error message
-const getErrorMessage = (type: string, errorMessage: string) => {
-  const lowerError = errorMessage.toLowerCase();
-  
-  if (type === 'signUp') {
-    if (lowerError.includes('email') || lowerError.includes('already') || 
-        lowerError.includes('exists') || lowerError.includes('duplicate')) {
-      return 'Email already exists. Please use a different email.';
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setError(null);
+  setIsPending(true);
+
+  // Helper function to get appropriate error message
+  const getErrorMessage = (type: string, errorMessage: string) => {
+    const lowerError = errorMessage.toLowerCase();
+
+    if (type === 'signUp') {
+      if (lowerError.includes('email') || lowerError.includes('already') ||
+          lowerError.includes('exists') || lowerError.includes('duplicate')) {
+        return 'Email already exists. Please use a different email.';
+      }
+      return 'Failed to create account. Please try again.';
+    } else {
+      if (lowerError.includes('email') || lowerError.includes('password') ||
+          lowerError.includes('invalid') || lowerError.includes('credentials')) {
+        return 'Email or password is incorrect.';
+      }
+      return 'Sign-in failed. Please try again.';
     }
-    return 'Failed to create account. Please try again.';
-  } else {
-    if (lowerError.includes('email') || lowerError.includes('password') ||
-        lowerError.includes('invalid') || lowerError.includes('credentials')) {
-      return 'Email or password is incorrect.';
+  };
+
+  try {
+    const formData = new FormData(e.currentTarget);
+    if (redirectUrl) {
+      formData.append('redirectUrl', redirectUrl);
     }
-    return 'Failed to sign in. Please try again.';
+
+    const result = type === 'signUp' 
+      ? await signUp(formData) 
+      : await signIn(formData);
+
+    console.log('Auth result:', result);
+
+    // Check if there's an error
+    if (result?.error) {
+      const errorMessages = Object.values(result.error).flat();
+      const rawErrorMessage = errorMessages.join(' ');
+      const formattedError = getErrorMessage(type, rawErrorMessage);
+      setError(formattedError);
+      toast.error(formattedError);
+      return;
+    }
+
+    // Handle special redirects (like user not found)
+    // Note: redirectTo property is not available in current auth actions
+    // Remove this check as it's not needed based on the current implementation
+
+    // Success case
+    if (result?.success) {
+      setError(null);
+      toast.success(
+        type === 'signUp'
+          ? 'Account created successfully!'
+          : 'Signed in successfully!'
+      );
+
+      // Handle redirects
+      const redirectTo = (result as any).redirectUrl || (type === 'signUp' ? '/sign-in' : redirectUrl || '/');
+      window.location.href = redirectTo;
+    }
+
+  } catch (err) {
+    console.error('Auth error:', err);
+    const errorMessage = (err as Error)?.message || 'An unexpected error occurred';
+    const formattedError = getErrorMessage(type, errorMessage);
+    setError(formattedError);
+    toast.error(formattedError);
+  } finally {
+    setIsPending(false);
   }
 };
-
-// Main try-catch block
-try {
-  const formData = new FormData(e.currentTarget);
-  if (redirectUrl) {
-    formData.append('redirectUrl', redirectUrl);
-  }
-
-  const result =
-    type === 'signUp' ? await signUp(formData) : await signIn(formData);
-
-  if (result?.error) {
-    const errorMessages = Object.values(result.error).flat();
-    const errorMessage = errorMessages.join(' ');
-    setError(errorMessage);
-    
-  } else {
-    toast(
-      type === 'signUp'
-        ? 'Account created successfully!'
-        : 'Signed in successfully!'
-    );
-    setError('');
-  }
-} catch (err) {
-  console.error('Auth error:', err);
-  const errorMessage = (err as Error)?.message || 'An unexpected error occurred';
-  const formattedError = getErrorMessage(type, errorMessage);
-  setError(formattedError);
-  
-  
-} finally {
-  setIsPending(false);
-}
-
-  };
 
   return (
     <div className="space-y-6">

@@ -13,9 +13,10 @@ export const user = pgTable('users', {
   name: text('name'),
   email: text('email').notNull().unique(),
   emailVerified: timestamp('email_verified', {
-    mode: 'string',
-    withTimezone: true,
-  }),
+  mode: 'string',
+  withTimezone: true,
+}).default(sql`null`),
+
   image: text('image'),
   createdAt: timestamp('created_at', { withTimezone: true })
     .notNull()

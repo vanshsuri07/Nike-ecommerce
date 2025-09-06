@@ -1,8 +1,8 @@
--- -- CREATE TYPE "public"."address_type" AS ENUM('billing', 'shipping');--> statement-breakpoint
--- -- CREATE TYPE "public"."discount_type" AS ENUM('percentage', 'fixed');--> statement-breakpoint
--- -- CREATE TYPE "public"."order_status" AS ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled');--> statement-breakpoint
--- -- CREATE TYPE "public"."payment_method" AS ENUM('stripe', 'paypal', 'cod');--> statement-breakpoint
--- -- CREATE TYPE "public"."payment_status" AS ENUM('initiated', 'completed', 'failed');--> statement-breakpoint
+-- CREATE TYPE "public"."address_type" AS ENUM('billing', 'shipping');--> statement-breakpoint
+-- CREATE TYPE "public"."discount_type" AS ENUM('percentage', 'fixed');--> statement-breakpoint
+-- CREATE TYPE "public"."order_status" AS ENUM('pending', 'paid', 'shipped', 'delivered', 'cancelled');--> statement-breakpoint
+-- CREATE TYPE "public"."payment_method" AS ENUM('stripe', 'paypal', 'cod');--> statement-breakpoint
+-- CREATE TYPE "public"."payment_status" AS ENUM('initiated', 'completed', 'failed');--> statement-breakpoint
 -- CREATE TABLE "users" (
 -- 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 -- 	"name" text,
@@ -137,6 +137,7 @@
 -- 	"total_amount" numeric(10, 2) NOT NULL,
 -- 	"shipping_address_id" uuid NOT NULL,
 -- 	"billing_address_id" uuid NOT NULL,
+-- 	"stripe_payment_intent_id" text,
 -- 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 -- );
 -- --> statement-breakpoint

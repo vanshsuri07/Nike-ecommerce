@@ -54,6 +54,11 @@ export async function signUp(data: FormData) {
       await mergeGuestCartWithUserCart(session.user.id, guest.id);
       console.log('Guest cart merged.');
     }
+
+    console.log('Sign-up successful.');
+    // Return success indicator instead of redirecting
+    return { success: true };
+    
   } catch (error) {
     console.error('Error during sign-up:', error);
     if (error instanceof BetterAuthError) {
@@ -63,11 +68,8 @@ export async function signUp(data: FormData) {
     }
     throw error;
   }
-
-  console.log('Sign-up successful. Redirecting...');
-  
-  redirect('/sign-in');
 }
+
 export async function signIn(data: FormData) {
   console.log('Attempting to sign in...');
   const formData = Object.fromEntries(data);
@@ -89,33 +91,39 @@ export async function signIn(data: FormData) {
     console.log('Signing in user...');
     const user = await auth.api.signInEmail({ body: { email, password } });
     console.log('User signed in:', user);
+    
     if (guest && user) {
       console.log('Merging guest cart with user cart...');
       await mergeGuestCartWithUserCart(user.user.id, guest.id);
       console.log('Guest cart merged.');
     }
+
+    console.log('Sign-in successful.');
+    // Return success indicator with redirect URL instead of redirecting
+    return { success: true, redirectUrl };
+    
   } catch (error) {
     console.error('Error during sign-in:', error);
     if (error instanceof BetterAuthError) {
       if (error.message.includes('user') && error.message.includes('not found')) {
-        console.log('User not found. Redirecting to sign-up page...');
+        console.log('User not found. Returning redirect info...');
         const url = new URLSearchParams();
         url.append('email', email);
         if (redirectUrl) {
           url.append('redirect_url', redirectUrl);
         }
-        redirect(`/sign-up?${url.toString()}`);
+        return { 
+          success: false, 
+          redirectTo: `/sign-up?${url.toString()}` 
+        };
       }
       return {
+        success: false,
         error: { _errors: [error.message] },
       };
     }
     throw error;
   }
-
-  console.log('Sign-in successful. Redirecting...');
-  
-  redirect(redirectUrl);
 }
 
 export async function signOut() {

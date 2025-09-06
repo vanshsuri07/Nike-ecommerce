@@ -1,6 +1,6 @@
 {
-  "id": "ccfc7b69-204b-4f60-b7a3-32983735a373",
-  "prevId": "59d0dfce-fe69-4da5-9c3f-28d808404ad8",
+  "id": "761f8a04-6245-472c-ba2d-d21083a1416d",
+  "prevId": "f60be5b5-dd57-4ccd-b73b-2335a1df3bf6",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -31,7 +31,8 @@
           "name": "email_verified",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": false,
+          "default": "null"
         },
         "image": {
           "name": "image",
@@ -928,7 +929,7 @@
         },
         "stripe_payment_intent_id": {
           "name": "stripe_payment_intent_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         },
