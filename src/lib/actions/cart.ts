@@ -10,7 +10,28 @@ import {
 } from '@/lib/auth/actions';
 import { revalidatePath } from 'next/cache';
 
-export async function getCart() {
+export async function getCart(cartId?: string) {
+  if (cartId) {
+    return await db.query.carts.findFirst({
+      where: eq(schema.carts.id, cartId),
+      with: {
+        items: {
+          with: {
+            productVariant: {
+              with: {
+                product: {
+                  with: {
+                    images: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   const user = await getCurrentUser();
   let guest;
   if (!user) {
@@ -108,11 +129,12 @@ export async function removeCartItem(cartItemId: string) {
   revalidatePath('/cart');
 }
 
-export async function clearCart() {
-  const cart = await getCart();
+export async function clearCart(cartId?: string) {
+  const cart = await getCart(cartId);
   if (!cart) return;
 
   await db.delete(schema.cartItems).where(eq(schema.cartItems.cartId, cart.id));
-
-  revalidatePath('/cart');
+  if (!cartId) {
+    revalidatePath('/cart');
+  }
 }
