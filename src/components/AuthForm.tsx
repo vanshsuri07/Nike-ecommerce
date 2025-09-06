@@ -84,6 +84,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       );
 
       // Handle redirects
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       const redirectTo = (result as any).redirectUrl || (type === 'signUp' ? '/sign-in' : redirectUrl || '/');
       window.location.href = redirectTo;
     }

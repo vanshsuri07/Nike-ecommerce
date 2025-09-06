@@ -12,7 +12,7 @@ interface CartSummaryProps {
   user: TUser | null;
 }
 
-export default function CartSummary({ user }: CartSummaryProps) {
+export default function CartSummary({ }: CartSummaryProps) {
   const { items } = useCartStore();
   const [isPending, startTransition] = useTransition();
 
@@ -22,6 +22,7 @@ export default function CartSummary({ user }: CartSummaryProps) {
         await createStripeCheckoutSession();
       } catch (error) {
         toast.error('Failed to create checkout session. Please try again.');
+        console.error('Error creating checkout session:', error);
       }
     });
   };

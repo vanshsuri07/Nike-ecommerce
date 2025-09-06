@@ -3,18 +3,26 @@
 import Image from 'next/image';
 import React from 'react';
 import Link from 'next/link';
-import { Product } from '../types';
+import { TProductWithVariants } from '../types';
 import { useCartStore } from '@/store/cart.store';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 
+
 interface CardProps {
-  product: Product;
+  product: TProductWithVariants;
 }
 
 const Card: React.FC<CardProps> = ({ product }) => {
-  const { name, price, image, category, colors, bestseller, id, defaultVariantId } = product;
+
+  const { name, categoryId, id, defaultVariantId, images, variants } = product;
   const { addCartItem } = useCartStore();
+
+  // Get price from default variant if available
+  const defaultVariant = variants.find(v => v.id === defaultVariantId);
+  const price = defaultVariant ? defaultVariant.price : undefined;
+  // Use first image if available
+  const image = images && images.length > 0 ? images[0].url : undefined;
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -31,11 +39,8 @@ const Card: React.FC<CardProps> = ({ product }) => {
     <article className="group flex flex-col ...">
   <div className="relative">
     <Link href={`/products/${id}`} passHref>
-      {bestseller && (
-        <div className="absolute top-0 left-0 bg-orange ...">
-          Best Seller
-        </div>
-      )}
+
+  {/* Optionally show a badge if you have a bestseller flag in the future */}
 
       {image && (
         <div className="relative h-64 w-full overflow-hidden rounded-t-xl">
@@ -57,11 +62,11 @@ const Card: React.FC<CardProps> = ({ product }) => {
           {name}
         </h3>
       </Link>
-      <p className="text-body text-dark-700 mt-1">{category}</p>
-      <p className="text-body text-dark-700 mt-1">{colors}</p>
+      <p className="text-body text-dark-700 mt-1">{categoryId}</p>
+  {/* Optionally show color info if you add it to the product type */}
     </div>
     <div className="flex justify-between items-center mt-4">
-      <span className="text-lead text-dark-900 font-bold">${price}</span>
+  <span className="text-lead text-dark-900 font-bold">{price ? `$${price}` : '—'}</span>
       <Button onClick={handleAddToCart} disabled={!defaultVariantId}>
         Add to Cart
       </Button>

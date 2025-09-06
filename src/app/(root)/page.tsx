@@ -3,10 +3,10 @@ import React from 'react';
 import Navbar from '../../components/Navbar';
 import Card from '../../components/Card';
 import Footer from '../../components/Footer';
-import { Product } from '../../types';
+import { TProductWithVariants } from '../../types';
 import HeroSection from '@/components/HeroSection';
 import UpcomingProducts from '@/components/UpcomingProducts';
-import { getAllProducts, ProductWithDetails } from '@/lib/actions/product';
+import { getAllProducts } from '@/lib/actions/product';
 
 const Page = async () => {
   const { products: fetchedProducts } = await getAllProducts({
@@ -15,23 +15,14 @@ const Page = async () => {
     sortBy: 'latest',
   });
 
-  const products: Product[] = fetchedProducts.map((p: ProductWithDetails) => ({
-    id: p.id,
-    name: p.name,
-    description: p.description,
-    price: p.minPrice,
-    image: p.images[0]?.url || '/shoes/shoe-placeholder.png',
-    category: p.category?.name || 'Uncategorized',
-    colors: `${p.variants.length} ${p.variants.length === 1 ? 'Colour' : 'Colours'}`,
-    bestseller: false, // This field is not available in the new data structure
-    defaultVariantId: p.defaultVariantId || undefined,
-  }));
+  // fetchedProducts already match TProductWithVariants, so just use them directly
+  const products: TProductWithVariants[] = fetchedProducts.filter((p) => p.brand !== null) as TProductWithVariants[];
 
   return (
     <div className="bg-light-100">
       <Navbar />
       <HeroSection />
-      
+      <UpcomingProducts />
       <main className="container mx-auto px-4 py-8 ">
         <div className="text-center mb-12 mt-12">
           <h2 className="text-4xl font-extrabold text-gray-900">Featured Products</h2>
@@ -44,7 +35,6 @@ const Page = async () => {
             <Card key={product.id} product={product} />
           ))}
         </div>
-        <UpcomingProducts />
       </main>
       <Footer />
     </div>

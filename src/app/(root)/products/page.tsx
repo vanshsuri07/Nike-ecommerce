@@ -4,7 +4,7 @@ import Card from '@/components/Card';
 import Filters from '@/components/Filters';
 import Sort from '@/components/Sort';
 import Link from 'next/link';
-import { Product as CardProduct } from '@/types';
+
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -15,17 +15,17 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   const filters = parseFilterParams(resolvedParams);
   const { products: fetchedProducts, totalCount } = await getAllProducts(filters);
 
-  const products: CardProduct[] = fetchedProducts.map((p: ProductWithDetails) => ({
-    id: p.id,
-    name: p.name,
-    description: p.description,
-    price: p.minPrice || '0',
-    image: p.images[0]?.url || null,
-    category: p.category?.name || 'N/A',
-    colors: p.variants.map(v => v.color.name).slice(0, 3).join(', '),
-    bestseller: false,
-    defaultVariantId: p.defaultVariantId || undefined,
-  }));
+  // Filter out products with null brand and assert type for Card
+  const products = fetchedProducts
+    .filter((p): p is ProductWithDetails & { brand: NonNullable<ProductWithDetails['brand']> } => p.brand !== null)
+    .map((p) => ({
+      ...p,
+      variants: p.variants.map((v) => ({
+        ...v,
+        
+        dimensions: v.dimensions as any,
+      })),
+    }));
 
   const activeFilters = Object.entries(filters)
     .filter(([key, value]) =>

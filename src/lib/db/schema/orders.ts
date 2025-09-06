@@ -16,6 +16,7 @@ export const orders = pgTable('orders', {
   totalAmount: numeric('total_amount', { precision: 10, scale: 2 }).notNull(),
   shippingAddressId: uuid('shipping_address_id').notNull().references(() => addresses.id, { onDelete: 'set null' }),
   billingAddressId: uuid('billing_address_id').notNull().references(() => addresses.id, { onDelete: 'set null' }),
+  stripeSessionId: text('stripe_session_id'), 
   stripePaymentIntentId: text('stripe_payment_intent_id'), // ✅ NEW COLUMN
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });

@@ -5,10 +5,22 @@ import SizePicker from '@/components/SizePicker';
 import { Loader, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/store/cart.store';
 import { toast } from 'sonner';
-import { TProductWithVariants } from '@/lib/db/schema/products';
+
+
+// Define a type for product variant with size
+type ProductVariantWithSize = {
+    id: string;
+    size: { name: string };
+};
+
+interface ProductWithVariants {
+    name: string;
+    variants: ProductVariantWithSize[];
+}
+
 
 interface AddToCartFormProps {
-    product: TProductWithVariants;
+    product: ProductWithVariants;
 }
 
 export default function AddToCartForm({ product }: AddToCartFormProps) {
@@ -16,10 +28,10 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
     const [isPending, startTransition] = useTransition();
     const { addCartItem } = useCartStore();
 
-    const uniqueSizes = [...new Set(product.variants.map((v) => v.size.name))].sort();
+    const uniqueSizes = [...new Set(product.variants.map((v: ProductVariantWithSize) => v.size.name))].sort();
 
     const selectedVariant = product.variants.find(
-        (v) => v.size.name === selectedSize,
+        (v: ProductVariantWithSize) => v.size.name === selectedSize,
     );
 
     const handleAddToCart = () => {
@@ -38,6 +50,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
                 toast.success('Added to cart');
             } catch (error) {
                 toast.error('Failed to add to cart. Please try again.');
+                console.error('Error adding to cart:', error);
             }
         });
     };
@@ -46,7 +59,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
         <>
             <div className="mt-8">
     <SizePicker
-        sizes={uniqueSizes}
+        sizes={uniqueSizes as string[]}
         selectedSize={selectedSize}
         onSelectSize={setSelectedSize}
     />

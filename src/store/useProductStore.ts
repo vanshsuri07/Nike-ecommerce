@@ -1,11 +1,11 @@
 import { create } from 'zustand';
-import { Product } from '../types';
+import { TProduct } from '../types';
 
 interface ProductState {
-  products: Product[];
+  products: TProduct[];
   isLoading: boolean;
   error: string | null;
-  setProducts: (products: Product[]) => void;
+  setProducts: (products: TProduct[]) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
 }
