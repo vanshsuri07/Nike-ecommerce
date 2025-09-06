@@ -29,6 +29,7 @@
     "pg": "^8.16.3",
     "query-string": "^9.2.2",
     "react": "19.1.0",
+    "react-confetti": "^6.4.0",
     "react-dom": "19.1.0",
     "sonner": "^1.5.0",
     "stripe": "^18.5.0",

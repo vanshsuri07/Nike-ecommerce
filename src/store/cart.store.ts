@@ -7,6 +7,7 @@ import {
 } from '@/lib/actions/cart';
 import { CartItemWithProduct } from '@/types/cart';
 
+import { clearCart as clearCartAction } from '@/lib/actions/cart';
 interface CartState {
   items: CartItemWithProduct[];
   loading: boolean;
@@ -15,6 +16,7 @@ interface CartState {
   addCartItem: (productVariantId: string, quantity: number) => Promise<void>;
   updateCartItem: (cartItemId: string, quantity: number) => Promise<void>;
   removeCartItem: (cartItemId: string) => Promise<void>;
+  clearCart: () => Promise<void>;
 }
 
 export const useCartStore = create<CartState>((set) => ({
@@ -61,6 +63,16 @@ export const useCartStore = create<CartState>((set) => ({
       set({ items: (cart?.items || []) as CartItemWithProduct[], loading: false });
     } catch (error) {
       set({ error: 'Failed to remove item from cart.', loading: false });
+      console.error(error);
+    }
+  },
+  clearCart: async () => {
+    set({ loading: true, error: null });
+    try {
+      await clearCartAction();
+      set({ items: [], loading: false });
+    } catch (error) {
+      set({ error: 'Failed to clear cart.', loading: false });
       console.error(error);
     }
   },
