@@ -11,7 +11,7 @@ export async function createOrder(
   userId?: string,
 ) {
   const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
-    expand: ['line_items.data.price.product', 'customer'],
+    expand: ['line_items.data.price.product', 'customer', 'shipping_details'],
   });
 
   if (!session) {
@@ -31,9 +31,14 @@ export async function createOrder(
 
   const cartId = session.metadata?.cartId;
   const sessionUserId = session.metadata?.userId;
+  const finalUserId = userId || sessionUserId;
 
   if (!cartId) {
     throw new Error('Cart ID not found in Stripe session metadata');
+  }
+
+  if (!finalUserId) {
+    throw new Error('User ID not found in Stripe session metadata');
   }
 
   const cart = await getCart(cartId);
@@ -41,20 +46,32 @@ export async function createOrder(
   if (!cart) {
     throw new Error(`Cart with id ${cartId} not found`);
   }
-{/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+
+  const shippingDetails = session.shipping_details;
+  if (!shippingDetails?.address) {
+    throw new Error('Shipping address not found in Stripe session');
+  }
+
+  const [newAddress] = await db.insert(schema.addresses).values({
+    userId: finalUserId,
+    type: 'shipping',
+    line1: shippingDetails.address.line1!,
+    line2: shippingDetails.address.line2,
+    city: shippingDetails.address.city!,
+    state: shippingDetails.address.state!,
+    country: shippingDetails.address.country!,
+    postalCode: shippingDetails.address.postal_code!,
+  }).returning();
+
 const orderValues: any = {
   totalAmount: ((session.amount_total ?? 0) / 100).toString(),
   status: 'paid',
   stripePaymentIntentId: paymentIntentId,
-  stripeSessionId: stripeSessionId, // ADD THIS LINE
-  
+  stripeSessionId: stripeSessionId,
+  shippingAddressId: newAddress.id,
+  billingAddressId: newAddress.id,
+  userId: finalUserId,
 };
-
-// Only add userId if it exists
-const finalUserId = userId || sessionUserId;
-if (finalUserId) {
-  orderValues.userId = finalUserId;
-}
 
 const [newOrder] = await db
   .insert(schema.orders)

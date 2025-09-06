@@ -41,6 +41,9 @@ export async function createStripeCheckoutSession() {
     mode: 'payment',
     success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/cart`,
+    shipping_address_collection: {
+      allowed_countries: ['US', 'CA', 'GB', 'AU'],
+    },
     ...(user ? { customer_email: user.email } : {}),
     metadata: {
       cartId: cart.id,
