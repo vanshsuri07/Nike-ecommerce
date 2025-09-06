@@ -6,21 +6,26 @@ import { motion } from 'framer-motion';
 import Model from './Model';
 import { Float, OrbitControls, PresentationControls } from '@react-three/drei';
 import Loader from './Loader';
+import { Variants } from "framer-motion";
 
+const headingVariants: Variants = {
+  hidden: { opacity: 0, x: -50, filter: "blur(10px)" },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    filter: "blur(0px)",
+    transition: {
+      delay: i * 0.2,
+      duration: 0.6,
+      ease: [0.42, 0, 0.58, 1] as [number, number, number, number], // 👈 cast to cubic-bezier tuple
+    },
+  }),
+};
 const HeroSection = () => {
-  const headingVariants = {
-    hidden: { opacity: 0, x: -50, filter: 'blur(10px)' },
-    visible: (i: number) => ({
-      opacity: 1,
-      x: 0,
-      filter: 'blur(0px)',
-      transition: {
-        delay: i * 0.2,
-        duration: 0.5,
-        ease: [0.25, 0.1, 0.25, 1],
-      },
-    }),
-  };
+ 
+
+
+
 
   return (
     <div className="relative w-full h-[450px] overflow-hidden">
@@ -60,21 +65,21 @@ const HeroSection = () => {
           >
             <motion.span
               className="block text-3xl sm:text-4xl md:text-5xl lg:text-8xl"
-              variants={headingVariants as any}
+              variants={headingVariants}
               custom={0}
             >
               Unleash
             </motion.span>
             <motion.span
               className="block text-3xl sm:text-4xl md:text-5xl lg:text-8xl"
-              variants={headingVariants as any}
+              variants={headingVariants}
               custom={1}
             >
               Your
             </motion.span>
             <motion.span
               className="block text-3xl sm:text-4xl md:text-5xl lg:text-8xl text-green-500"
-              variants={headingVariants as any}
+              variants={headingVariants}
               custom={2}
             >
               Speed

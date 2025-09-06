@@ -25,9 +25,10 @@ export const useCartStore = create<CartState>((set) => ({
     set({ loading: true, error: null });
     try {
       const cart = await getCart();
-      set({ items: cart?.items || [], loading: false });
+      set({ items: (cart?.items || []) as CartItemWithProduct[], loading: false });
     } catch (error) {
       set({ error: 'Failed to fetch cart.', loading: false });
+      console.error(error);
     }
   },
   addCartItem: async (productVariantId, quantity) => {
@@ -35,9 +36,10 @@ export const useCartStore = create<CartState>((set) => ({
     try {
       await addCartItem(productVariantId, quantity);
       const cart = await getCart();
-      set({ items: cart?.items || [], loading: false });
+      set({ items: (cart?.items || []) as CartItemWithProduct[], loading: false });
     } catch (error) {
       set({ error: 'Failed to add item to cart.', loading: false });
+      console.error(error);
     }
   },
   updateCartItem: async (cartItemId, quantity) => {
@@ -45,9 +47,10 @@ export const useCartStore = create<CartState>((set) => ({
     try {
       await updateCartItem(cartItemId, quantity);
       const cart = await getCart();
-      set({ items: cart?.items || [], loading: false });
+      set({ items: (cart?.items || []) as CartItemWithProduct[], loading: false });
     } catch (error) {
       set({ error: 'Failed to update item in cart.', loading: false });
+      console.error(error);
     }
   },
   removeCartItem: async (cartItemId) => {
@@ -55,9 +58,10 @@ export const useCartStore = create<CartState>((set) => ({
     try {
       await removeCartItem(cartItemId);
       const cart = await getCart();
-      set({ items: cart?.items || [], loading: false });
+      set({ items: (cart?.items || []) as CartItemWithProduct[], loading: false });
     } catch (error) {
       set({ error: 'Failed to remove item from cart.', loading: false });
+      console.error(error);
     }
   },
 }));

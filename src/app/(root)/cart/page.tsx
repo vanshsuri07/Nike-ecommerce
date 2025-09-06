@@ -9,7 +9,9 @@ export default async function CartPage() {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-heading-2 text-dark-900 mb-8">Your Cart</h1>
-      <Cart initialCart={cart} user={user} />
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <Cart initialCart={cart as any} user={user as any} />
+
     </div>
   );
 }

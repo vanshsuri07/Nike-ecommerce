@@ -7,7 +7,9 @@ import shoe5 from '/public/shoes/shoe-5.avif';
 import shoe6 from '/public/shoes/shoe-6.avif';
 import shoe7 from '/public/shoes/shoe-7.avif';
 import shoe8 from '/public/shoes/shoe-8.avif';
-import { Product } from '@/types';
+
+
+
 
 export interface ProductVariant {
   color: string;

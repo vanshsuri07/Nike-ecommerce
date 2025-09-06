@@ -1,3 +1,4 @@
+
 import { TProduct as TProductSchema } from "@/lib/db/schema/products";
 import { TProductVariant as TProductVariantSchema } from "@/lib/db/schema/variants";
 import { TBrand as TBrandSchema } from "@/lib/db/schema/brands";
@@ -31,3 +32,4 @@ export type TOrderItemWithProduct = TOrderItem & {
 export type TOrderWithItems = TOrder & {
     items: TOrderItemWithProduct[];
 };
+

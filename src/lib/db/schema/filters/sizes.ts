@@ -11,7 +11,7 @@ export const sizes = pgTable('sizes', {
   sortOrder: integer('sort_order').default(0).notNull(),
 });
 
-export const sizesRelations = relations(sizes, ({ many }) => ({
+export const sizesRelations = relations(sizes, ({ }) => ({
   // productVariants: many(productVariants),
 }));
 

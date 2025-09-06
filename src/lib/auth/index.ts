@@ -2,7 +2,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from '../../db/index' // adjust if no TS alias
-import * as schema from "../../lib/db/schema"; // exports user, accounts, etc.
+
 import { user, session, account, verifications} from "../../lib/db/schema";
 
 
