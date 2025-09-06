@@ -11,7 +11,7 @@ export async function createOrder(
   userId?: string,
 ) {
   const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
-    expand: ['line_items.data.price.product', 'customer', 'shipping_details'],
+    expand: ['line_items.data.price.product', 'customer'],
   });
 
   if (!session) {
@@ -31,14 +31,9 @@ export async function createOrder(
 
   const cartId = session.metadata?.cartId;
   const sessionUserId = session.metadata?.userId;
-  const finalUserId = userId || sessionUserId;
 
   if (!cartId) {
     throw new Error('Cart ID not found in Stripe session metadata');
-  }
-
-  if (!finalUserId) {
-    throw new Error('User ID not found in Stripe session metadata');
   }
 
   const cart = await getCart(cartId);
@@ -47,31 +42,50 @@ export async function createOrder(
     throw new Error(`Cart with id ${cartId} not found`);
   }
 
-  const shippingDetails = session.shipping_details;
-  if (!shippingDetails?.address) {
-    throw new Error('Shipping address not found in Stripe session');
+  const dummyUserEmail = 'dummy@example.com';
+  let dummyUser = await db.query.users.findFirst({
+    where: eq(schema.users.email, dummyUserEmail),
+  });
+
+  if (!dummyUser) {
+    [dummyUser] = await db.insert(schema.users).values({
+      email: dummyUserEmail,
+      name: 'Dummy User',
+      emailVerified: null,
+    }).returning();
   }
 
-  const [newAddress] = await db.insert(schema.addresses).values({
-    userId: finalUserId,
-    type: 'shipping',
-    line1: shippingDetails.address.line1!,
-    line2: shippingDetails.address.line2,
-    city: shippingDetails.address.city!,
-    state: shippingDetails.address.state!,
-    country: shippingDetails.address.country!,
-    postalCode: shippingDetails.address.postal_code!,
-  }).returning();
+  const dummyAddressLine1 = '123 Dummy Street';
+  let dummyAddress = await db.query.addresses.findFirst({
+    where: eq(schema.addresses.line1, dummyAddressLine1),
+  });
 
-const orderValues: any = {
-  totalAmount: ((session.amount_total ?? 0) / 100).toString(),
-  status: 'paid',
-  stripePaymentIntentId: paymentIntentId,
-  stripeSessionId: stripeSessionId,
-  shippingAddressId: newAddress.id,
-  billingAddressId: newAddress.id,
-  userId: finalUserId,
-};
+  if (!dummyAddress) {
+    [dummyAddress] = await db.insert(schema.addresses).values({
+      userId: dummyUser.id,
+      type: 'shipping',
+      line1: dummyAddressLine1,
+      city: 'Dummyville',
+      state: 'Dummystate',
+      country: 'DM',
+      postalCode: '00000',
+    }).returning();
+  }
+
+  const finalUserId = userId || sessionUserId || dummyUser.id;
+  if (!finalUserId) {
+    throw new Error('User ID not found in Stripe session metadata');
+  }
+
+  const orderValues: any = {
+    totalAmount: ((session.amount_total ?? 0) / 100).toString(),
+    status: 'paid',
+    stripePaymentIntentId: paymentIntentId,
+    stripeSessionId: stripeSessionId,
+    shippingAddressId: dummyAddress.id,
+    billingAddressId: dummyAddress.id,
+    userId: finalUserId,
+  };
 
 const [newOrder] = await db
   .insert(schema.orders)
