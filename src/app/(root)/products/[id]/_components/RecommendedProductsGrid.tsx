@@ -13,16 +13,21 @@ export async function RecommendedProductsGrid({ productId }: RecommendedProducts
     return null;
   }
 
+  // Map to TProductWithVariants structure expected by Card
   const allProductsForCards = products.map(p => ({
     id: p.id,
     name: p.name,
-    description: '', // Not available in recommended product data
-    price: p.price,
-    image: p.image,
-    category: 'Related', // Placeholder
-    colors: '', // Not available
-    bestseller: false, // Not available
-    defaultVariantId: p.defaultVariantId,
+    description: '',
+    categoryId: null,
+    genderId: null,
+    brandId: null,
+    isPublished: true,
+    defaultVariantId: p.defaultVariantId ?? null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    brand: { id: '', name: '', slug: '', logoUrl: null },
+    images: p.image ? [{ id: '', productId: p.id, variantId: null, url: p.image, sortOrder: 0, isPrimary: true }] : [],
+    variants: [],
   }));
 
   return (

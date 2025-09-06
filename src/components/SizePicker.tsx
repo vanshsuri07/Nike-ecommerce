@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from 'react';
 
 interface SizePickerProps {
   sizes: string[];
+  selectedSize: string | null;
+  onSelectSize: (size: string) => void;
 }
 
-export default function SizePicker({ sizes }: SizePickerProps) {
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+export default function SizePicker({ sizes, selectedSize, onSelectSize }: SizePickerProps) {
 
   if (!sizes || sizes.length === 0) {
     return null;
@@ -23,7 +23,7 @@ export default function SizePicker({ sizes }: SizePickerProps) {
         {sizes.map((size) => (
           <button
             key={size}
-            onClick={() => setSelectedSize(size)}
+            onClick={() => onSelectSize(size)}
             className={`py-3 px-4 rounded-md border text-center text-body-medium transition-colors ${
               selectedSize === size
                 ? 'bg-dark-900 text-light-100 border-dark-900'

@@ -41,17 +41,24 @@ export async function createOrder(
   if (!cart) {
     throw new Error(`Cart with id ${cartId} not found`);
   }
+{/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+const orderValues: any = {
+  totalAmount: ((session.amount_total ?? 0) / 100).toString(),
+  status: 'paid',
+  stripePaymentIntentId: paymentIntentId,
+  stripeSessionId: stripeSessionId, // ADD THIS LINE
+  
+};
+
+// Only add userId if it exists
+const finalUserId = userId || sessionUserId;
+if (finalUserId) {
+  orderValues.userId = finalUserId;
+}
 
 const [newOrder] = await db
   .insert(schema.orders)
-  .values({
-    userId: userId || sessionUserId || '', // Use provided userId or session userId
-    totalAmount: ((session.amount_total ?? 0) / 100).toString(), // ✅ convert cents to dollars
-    status: 'paid',
-    stripePaymentIntentId: paymentIntentId,
-    shippingAddressId: '', // Add required field - update with actual address ID
-    billingAddressId: '', // Add required field - update with actual address ID
-  })
+  .values(orderValues)
   .returning();
 
   const orderItems = cart.items.map((item) => ({
@@ -71,27 +78,29 @@ const [newOrder] = await db
 
 export async function getOrderByStripeSessionId(sessionId: string) {
   const session = await stripe.checkout.sessions.retrieve(sessionId);
+  console.log('Session payment_intent:', session.payment_intent);
+  console.log('Session status:', session.status);
+  console.log('Session payment_status:', session.payment_status);
+  
   const paymentIntentId = session.payment_intent as string;
 
+  if (!paymentIntentId) {
+    console.log('No payment intent found in session');
+    return null;
+  }
+
+  const allOrders = await db.select({ 
+  id: schema.orders.id, 
+  stripePaymentIntentId: schema.orders.stripePaymentIntentId 
+}).from(schema.orders).limit(5);
+console.log('All orders in DB:', allOrders);
+
   const order = await db.query.orders.findFirst({
-    where: eq(schema.orders.stripePaymentIntentId, paymentIntentId),
-    with: {
-      items: {
-        with: {
-          productVariant: {
-            with: {
-              product: {
-                with: {
-                  images: true,
-                },
-              },
-            },
-          },
-        },
-      },
-    },
+   where: eq(schema.orders.stripeSessionId, sessionId),
+    // ... rest of your query
   });
 
+  console.log('Found order:', !!order);
   return order;
 }
 
