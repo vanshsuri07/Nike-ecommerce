@@ -42,13 +42,17 @@ export async function createOrder(
     throw new Error(`Cart with id ${cartId} not found`);
   }
 
-const [newOrder] = await db
-  .insert(schema.orders)
-  .values({
-    userId: userId || sessionUserId || '', // Use provided userId or session userId
-    totalAmount: ((session.amount_total ?? 0) / 100).toString(), // ✅ convert cents to dollars
-    status: 'paid',
-    stripePaymentIntentId: paymentIntentId,
+  const totalAmount = cart.items.reduce((total, item) => {
+    return total + item.productVariant.price * item.quantity;
+  }, 0);
+
+  const [newOrder] = await db
+    .insert(schema.orders)
+    .values({
+      userId: userId || sessionUserId || '',
+      totalAmount: totalAmount.toString(),
+      status: 'paid',
+      stripePaymentIntentId: paymentIntentId,
     shippingAddressId: '', // Add required field - update with actual address ID
     billingAddressId: '', // Add required field - update with actual address ID
   })
@@ -73,7 +77,7 @@ export async function getOrderByStripeSessionId(sessionId: string) {
   const session = await stripe.checkout.sessions.retrieve(sessionId);
   const paymentIntentId = session.payment_intent as string;
 
-  const order = db.query.orders.findFirst({
+  const order = await db.query.orders.findFirst({
     where: eq(schema.orders.stripePaymentIntentId, paymentIntentId),
     with: {
       items: {

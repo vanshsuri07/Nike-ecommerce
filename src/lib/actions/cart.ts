@@ -134,7 +134,5 @@ export async function clearCart(cartId?: string) {
   if (!cart) return;
 
   await db.delete(schema.cartItems).where(eq(schema.cartItems.cartId, cart.id));
-  if (!cartId) {
-    revalidatePath('/cart');
-  }
+  revalidatePath('/cart');
 }

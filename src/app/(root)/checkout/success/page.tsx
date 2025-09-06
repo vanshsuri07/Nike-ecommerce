@@ -18,7 +18,7 @@ const sessionId = searchParams.session_id;
     return notFound();
   }
 
-  const order = getOrderByStripeSessionId(sessionId);
+  const order = await getOrderByStripeSessionId(sessionId);
 
   if (!order) {
     return notFound();

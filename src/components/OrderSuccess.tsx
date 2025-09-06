@@ -10,8 +10,6 @@ interface OrderSuccessProps {
 }
 
 export default function OrderSuccess({ order }: OrderSuccessProps) {
-  const total = (order.total / 100).toFixed(2);
-
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="max-w-2xl mx-auto">
@@ -32,7 +30,9 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
           </div>
           <div className="flex justify-between">
             <p className="text-body text-dark-700">Total</p>
-            <p className="text-body-medium text-dark-900">${total}</p>
+            <p className="text-body-medium text-dark-900">
+              ${Number(order.totalAmount).toFixed(2)}
+            </p>
           </div>
           <hr />
           <div className="space-y-4">
@@ -61,8 +61,10 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
                     </p>
                   </div>
                 </div>
-                <p>Total: ${Number(order.totalAmount).toFixed(2)}</p>
-
+                <p>
+                  Total: $
+                  {Number(item.priceAtPurchase * item.quantity).toFixed(2)}
+                </p>
               </div>
             ))}
           </div>
