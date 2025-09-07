@@ -43,12 +43,12 @@ export async function createOrder(
   }
 
   const dummyUserEmail = 'dummy@example.com';
-  let dummyUser = await db.query.users.findFirst({
-    where: eq(schema.users.email, dummyUserEmail),
+  let dummyUser = await db.query.user.findFirst({
+    where: eq(schema.user.email, dummyUserEmail),
   });
 
   if (!dummyUser) {
-    [dummyUser] = await db.insert(schema.users).values({
+    [dummyUser] = await db.insert(schema.user).values({
       email: dummyUserEmail,
       name: 'Dummy User',
       emailVerified: null,

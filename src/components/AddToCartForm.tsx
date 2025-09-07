@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import SizePicker from '@/components/SizePicker';
 import { Loader, ShoppingBag } from 'lucide-react';
 import { useCartStore } from '@/store/cart.store';
 import { toast } from 'sonner';
-
 
 // Define a type for product variant with size
 type ProductVariantWithSize = {
@@ -18,14 +17,13 @@ interface ProductWithVariants {
     variants: ProductVariantWithSize[];
 }
 
-
 interface AddToCartFormProps {
     product: ProductWithVariants;
 }
 
 export default function AddToCartForm({ product }: AddToCartFormProps) {
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
-    const [isPending, startTransition] = useTransition();
+    const [isPending, setIsPending] = useState(false);
     const { addCartItem } = useCartStore();
 
     const uniqueSizes = [...new Set(product.variants.map((v: ProductVariantWithSize) => v.size.name))].sort();
@@ -34,7 +32,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
         (v: ProductVariantWithSize) => v.size.name === selectedSize,
     );
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         if (!selectedSize) {
             toast.error('Please select a size');
             return;
@@ -44,25 +42,26 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
             return;
         }
 
-        startTransition(async () => {
-            try {
-                await addCartItem(selectedVariant.id, 1);
-                toast.success('Added to cart');
-            } catch (error) {
-                toast.error('Failed to add to cart. Please try again.');
-                console.error('Error adding to cart:', error);
-            }
-        });
+        setIsPending(true);
+        try {
+            await addCartItem(selectedVariant.id, 1);
+            toast.success('Added to cart');
+        } catch (error) {
+            toast.error('Failed to add to cart. Please try again.');
+            console.error('Error adding to cart:', error);
+        } finally {
+            setIsPending(false);
+        }
     };
 
     return (
         <>
             <div className="mt-8">
-    <SizePicker
-        sizes={uniqueSizes as string[]}
-        selectedSize={selectedSize}
-        onSelectSize={setSelectedSize}
-    />
+                <SizePicker
+                    sizes={uniqueSizes as string[]}
+                    selectedSize={selectedSize}
+                    onSelectSize={setSelectedSize}
+                />
             </div>
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">

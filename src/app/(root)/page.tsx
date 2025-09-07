@@ -1,8 +1,7 @@
-
 import React from 'react';
-import Navbar from '../../components/Navbar';
-import Card from '../../components/Card';
-import Footer from '../../components/Footer';
+import Navbar from '@/components/Navbar';
+import Card from '@/components/Card';
+import Footer from '@/components/Footer';
 import { TProductWithVariants } from '../../types';
 import HeroSection from '@/components/HeroSection';
 import UpcomingProducts from '@/components/UpcomingProducts';
@@ -14,10 +13,9 @@ const Page = async () => {
     limit: 8,
     sortBy: 'latest',
   });
-
   // fetchedProducts already match TProductWithVariants, so just use them directly
   const products: TProductWithVariants[] = fetchedProducts.filter((p) => p.brand !== null) as TProductWithVariants[];
-
+  
   return (
     <div className="bg-light-100">
       <Navbar />
