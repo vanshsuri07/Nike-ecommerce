@@ -41,20 +41,51 @@ export async function createOrder(
   if (!cart) {
     throw new Error(`Cart with id ${cartId} not found`);
   }
-{/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-const orderValues: any = {
-  totalAmount: ((session.amount_total ?? 0) / 100).toString(),
-  status: 'paid',
-  stripePaymentIntentId: paymentIntentId,
-  stripeSessionId: stripeSessionId, // ADD THIS LINE
-  
-};
 
-// Only add userId if it exists
-const finalUserId = userId || sessionUserId;
-if (finalUserId) {
-  orderValues.userId = finalUserId;
-}
+  const dummyUserEmail = 'dummy@example.com';
+  let dummyUser = await db.query.users.findFirst({
+    where: eq(schema.users.email, dummyUserEmail),
+  });
+
+  if (!dummyUser) {
+    [dummyUser] = await db.insert(schema.users).values({
+      email: dummyUserEmail,
+      name: 'Dummy User',
+      emailVerified: null,
+    }).returning();
+  }
+
+  const dummyAddressLine1 = '123 Dummy Street';
+  let dummyAddress = await db.query.addresses.findFirst({
+    where: eq(schema.addresses.line1, dummyAddressLine1),
+  });
+
+  if (!dummyAddress) {
+    [dummyAddress] = await db.insert(schema.addresses).values({
+      userId: dummyUser.id,
+      type: 'shipping',
+      line1: dummyAddressLine1,
+      city: 'Dummyville',
+      state: 'Dummystate',
+      country: 'DM',
+      postalCode: '00000',
+    }).returning();
+  }
+
+  const finalUserId = userId || sessionUserId || dummyUser.id;
+  if (!finalUserId) {
+    throw new Error('User ID not found in Stripe session metadata');
+  }
+
+  const orderValues: any = {
+    totalAmount: ((session.amount_total ?? 0) / 100).toString(),
+    status: 'paid',
+    stripePaymentIntentId: paymentIntentId,
+    stripeSessionId: stripeSessionId,
+    shippingAddressId: dummyAddress.id,
+    billingAddressId: dummyAddress.id,
+    userId: finalUserId,
+  };
 
 const [newOrder] = await db
   .insert(schema.orders)
