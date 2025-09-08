@@ -30,63 +30,89 @@ export async function createOrder(
   }
 
   const cartId = session.metadata?.cartId;
-  const sessionUserId = session.metadata?.userId;
-
   if (!cartId) {
     throw new Error('Cart ID not found in Stripe session metadata');
   }
 
   const cart = await getCart(cartId);
-
   if (!cart) {
     throw new Error(`Cart with id ${cartId} not found`);
   }
 
-  const userIdToUse = userId || sessionUserId;
-  if (!userIdToUse) {
-    throw new Error('User ID not found in Stripe session metadata');
+  let userIdToUse = userId || session.metadata?.userId;
+  let user;
+
+  if (userIdToUse) {
+    user = await db.query.user.findFirst({
+      where: eq(schema.user.id, userIdToUse),
+      with: {
+        addresses: true,
+      },
+    });
+    if (!user) {
+      throw new Error(`User with id ${userIdToUse} not found`);
+    }
+  } else {
+    // Handle guest checkout
+    const customerEmail = session.customer_details?.email;
+    if (!customerEmail) {
+      throw new Error('Customer email not found in Stripe session for guest checkout.');
+    }
+
+    const existingGuestUser = await db.query.user.findFirst({
+      where: eq(schema.user.email, customerEmail),
+      with: {
+        addresses: true,
+      }
+    });
+
+    if (existingGuestUser) {
+      user = existingGuestUser;
+    } else {
+      const [newUser] = await db.insert(schema.user).values({
+        email: customerEmail,
+        name: session.customer_details?.name || 'Guest User',
+      }).returning();
+      user = { ...newUser, addresses: [] };
+    }
+    userIdToUse = user.id;
   }
 
-  const user = await db.query.user.findFirst({
-    where: eq(schema.user.id, userIdToUse),
-    with: {
-      addresses: true,
-    },
-  });
+  let shippingAddress;
+  let billingAddress;
 
-  if (!user) {
-    throw new Error(`User with id ${userIdToUse} not found`);
-  }
+  const stripeShippingAddress = session.shipping_details?.address;
 
-  // Find default shipping address, or fallback to the first shipping address.
-  let shippingAddress = user.addresses.find(
-    (a) => a.type === 'shipping' && a.isDefault,
-  );
-  if (!shippingAddress) {
-    shippingAddress = user.addresses.find((a) => a.type === 'shipping');
-  }
+  if (user.addresses.length > 0) {
+    // Existing user with addresses
+    shippingAddress = user.addresses.find(a => a.type === 'shipping' && a.isDefault) || user.addresses.find(a => a.type === 'shipping');
+    billingAddress = user.addresses.find(a => a.type === 'billing' && a.isDefault) || user.addresses.find(a => a.type === 'billing');
 
-  // Find default billing address, or fallback to the first billing address.
-  let billingAddress = user.addresses.find(
-    (a) => a.type === 'billing' && a.isDefault,
-  );
-  if (!billingAddress) {
-    billingAddress = user.addresses.find((a) => a.type === 'billing');
-  }
+    if (!shippingAddress) shippingAddress = user.addresses[0];
+    if (!billingAddress) billingAddress = user.addresses[0];
 
-  // As a last resort, if no typed addresses are found, use the first available address for both.
-  if (!shippingAddress) {
-    shippingAddress = user.addresses[0];
-  }
-  if (!billingAddress) {
-    billingAddress = user.addresses[0];
+  } else if (stripeShippingAddress) {
+    // Guest user or existing user with no addresses - create new address from Stripe info
+    const [newAddress] = await db.insert(schema.addresses).values({
+      userId: userIdToUse,
+      type: 'shipping', // Assume shipping, as it comes from shipping_details
+      line1: stripeShippingAddress.line1!,
+      line2: stripeShippingAddress.line2,
+      city: stripeShippingAddress.city!,
+      state: stripeShippingAddress.state!,
+      country: stripeShippingAddress.country!,
+      postalCode: stripeShippingAddress.postal_code!,
+      isDefault: true,
+    }).returning();
+    shippingAddress = newAddress;
+    billingAddress = newAddress; // Use the same for billing
   }
 
   if (!shippingAddress || !billingAddress) {
-    throw new Error(`Shipping or billing address not found for user ${userIdToUse}`);
+    throw new Error(`Could not determine shipping or billing address for user ${userIdToUse}`);
   }
 
-  const orderValues: any = {
+  const orderValues = {
     totalAmount: ((session.amount_total ?? 0) / 100).toString(),
     status: 'paid',
     stripePaymentIntentId: paymentIntentId,
@@ -105,42 +131,39 @@ export async function createOrder(
     orderId: newOrder.id,
     productVariantId: item.productVariantId,
     quantity: item.quantity,
-    priceAtPurchase: item.productVariant.price
-
+    priceAtPurchase: item.productVariant.price,
   }));
 
   await db.insert(schema.orderItems).values(orderItems);
-
   await clearCart(cartId);
 
-  return newOrder;
+  // Return the full order with items
+  const fullOrder = await db.query.orders.findFirst({
+    where: eq(schema.orders.id, newOrder.id),
+    with: {
+      items: true,
+    },
+  });
+
+  return fullOrder;
 }
 
 export async function getOrderByStripeSessionId(sessionId: string) {
   const session = await stripe.checkout.sessions.retrieve(sessionId);
-  console.log('Session payment_intent:', session.payment_intent);
-  console.log('Session status:', session.status);
-  console.log('Session payment_status:', session.payment_status);
   
   const paymentIntentId = session.payment_intent as string;
 
   if (!paymentIntentId) {
-    console.log('No payment intent found in session');
     return null;
   }
 
-  const allOrders = await db.select({ 
-  id: schema.orders.id, 
-  stripePaymentIntentId: schema.orders.stripePaymentIntentId 
-}).from(schema.orders).limit(5);
-console.log('All orders in DB:', allOrders);
-
   const order = await db.query.orders.findFirst({
    where: eq(schema.orders.stripeSessionId, sessionId),
-    // ... rest of your query
+    with: {
+      items: true,
+    }
   });
 
-  console.log('Found order:', !!order);
   return order;
 }
 
