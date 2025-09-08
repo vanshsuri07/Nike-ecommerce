@@ -21,9 +21,9 @@ const Navbar: React.FC = () => {
       <div className="hidden md:flex md:items-center md:space-x-8">
         <Link href="/products?gender=Men" className="text-light-100 hover:text-green text-body">Men</Link>
         <Link href="/products?gender=Women" className="text-light-100 hover:text-green text-body">Women</Link>
-        <Link href="#" className="text-light-100 hover:text-green text-body">Kids</Link>
-        <Link href="#" className="text-light-100 hover:text-green text-body">Collections</Link>
-        <Link href="#" className="text-light-100 hover:text-green text-body">Contact</Link>
+        <Link href="/products?gender=Kids" className="text-light-100 hover:text-green text-body">Kids</Link>
+        <Link href="/products" className="text-light-100 hover:text-green text-body">Collections</Link>
+        <Link href="/contact" className="text-light-100 hover:text-green text-body">Contact</Link>
       </div>
 
       <div className="hidden md:flex md:items-center md:space-x-8">

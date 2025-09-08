@@ -20,7 +20,7 @@ const Page = async () => {
     <div className="bg-light-100">
       <Navbar />
       <HeroSection />
-      <UpcomingProducts />
+      
       <main className="container mx-auto px-4 py-8 ">
         <div className="text-center mb-12 mt-12">
           <h2 className="text-4xl font-extrabold text-gray-900">Featured Products</h2>
@@ -34,6 +34,7 @@ const Page = async () => {
           ))}
         </div>
       </main>
+      <UpcomingProducts />
       <Footer />
     </div>
   );

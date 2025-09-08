@@ -10,6 +10,7 @@ import { reviews } from './reviews';
 import { productImages } from './product-images';
 import { productCollections } from './product-collections';
 import { wishlists } from './wishlists';
+import { numeric } from 'drizzle-orm/pg-core';
 
 
 export const products = pgTable('products', {
@@ -23,6 +24,10 @@ export const products = pgTable('products', {
   defaultVariantId: uuid('default_variant_id').references(() => productVariants.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  price: numeric('price', { precision: 10, scale: 2 }),
+  image: text('image'),
+  stripeProductId: text('stripe_product_id'),
+  stripePriceId: text('stripe_price_id'),
 });
 
 export const productsRelations = relations(products, ({ one, many }) => ({
@@ -53,3 +58,4 @@ export const ProductInsertSchema = createInsertSchema(products);
 export const ProductSelectSchema = createSelectSchema(products);
 export type TProduct = z.infer<typeof ProductSelectSchema>;
 export type TNewProduct = z.infer<typeof ProductInsertSchema>;
+

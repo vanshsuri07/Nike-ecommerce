@@ -1,4 +1,4 @@
-import { getOrderByStripeSessionId } from '@/lib/actions/orders';
+import { createOrder } from '@/lib/actions/orders';
 import OrderSuccess from '@/components/OrderSuccess';
 import { notFound } from 'next/navigation';
 
@@ -22,7 +22,7 @@ export default async function CheckoutSuccessPage({
 
   try {
     console.log('CheckoutSuccessPage: Fetching order for session:', sessionId);
-    const order = await getOrderByStripeSessionId(sessionId);
+    const order = await createOrder(sessionId);
     console.log('CheckoutSuccessPage: Order result:', order);
 
     if (!order) {

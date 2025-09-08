@@ -32,7 +32,7 @@ const HeroSection = () => {
       {/* Video Background */}
       <video
   ref={(video) => {
-    if (video) video.playbackRate = 1.0;
+    if (video) video.playbackRate = 0.6;
   }}
   className="absolute inset-0 w-full h-full object-fill"
   autoPlay

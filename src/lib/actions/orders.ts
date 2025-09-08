@@ -12,6 +12,7 @@ export async function createOrder(
 ) {
   const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
     expand: ['line_items.data.price.product', 'customer'],
+    
   });
 
   if (!session) {
@@ -42,62 +43,99 @@ export async function createOrder(
     throw new Error(`Cart with id ${cartId} not found`);
   }
 
-  const dummyUserEmail = 'dummy@example.com';
-  let dummyUser = await db.query.user.findFirst({
-    where: eq(schema.user.email, dummyUserEmail),
+  // Extract customer data from Stripe session
+  const customer = session.customer;
+  const customerEmail = session.customer_details?.email || 'unknown@example.com';
+  const customerName = session.customer_details?.name || 'Unknown Customer';
+  
+  // Get shipping details
+  const shippingDetails = (session as any).shipping_details;
+  const billingDetails = session.customer_details;
+
+  // Create or find user with real email
+  let realUser = await db.query.user.findFirst({
+    where: eq(schema.user.email, customerEmail),
   });
 
-  if (!dummyUser) {
-    [dummyUser] = await db.insert(schema.user).values({
-      email: dummyUserEmail,
-      name: 'Dummy User',
+  if (!realUser) {
+    [realUser] = await db.insert(schema.user).values({
+      email: customerEmail,
+      name: customerName,
       emailVerified: null,
     }).returning();
   }
 
-  const dummyAddressLine1 = '123 Dummy Street';
-  let dummyAddress = await db.query.addresses.findFirst({
-    where: eq(schema.addresses.line1, dummyAddressLine1),
-  });
-
-  if (!dummyAddress) {
-    [dummyAddress] = await db.insert(schema.addresses).values({
-      userId: dummyUser.id,
+  // Create shipping address from Stripe data
+  let shippingAddress;
+  if (shippingDetails?.address) {
+    const shippingAddr = shippingDetails.address;
+    [shippingAddress] = await db.insert(schema.addresses).values({
+      userId: realUser.id,
       type: 'shipping',
-      line1: dummyAddressLine1,
-      city: 'Dummyville',
-      state: 'Dummystate',
-      country: 'DM',
+      line1: shippingAddr.line1 || 'Address not provided',
+      line2: shippingAddr.line2,
+      city: shippingAddr.city || 'Unknown',
+      state: shippingAddr.state || 'Unknown',
+      country: shippingAddr.country || 'US',
+      postalCode: shippingAddr.postal_code || '00000',
+    }).returning();
+  } else {
+    // Fallback to a default address if no shipping info
+    [shippingAddress] = await db.insert(schema.addresses).values({
+      userId: realUser.id,
+      type: 'shipping',
+      line1: 'Address not provided',
+      city: 'Unknown',
+      state: 'Unknown',
+      country: 'US',
       postalCode: '00000',
     }).returning();
   }
 
-  const finalUserId = userId || sessionUserId || dummyUser.id;
-  if (!finalUserId) {
-    throw new Error('User ID not found in Stripe session metadata');
+  // Create billing address from Stripe data
+  let billingAddress;
+  if (billingDetails?.address) {
+    const billingAddr = billingDetails.address;
+    [billingAddress] = await db.insert(schema.addresses).values({
+      userId: realUser.id,
+      type: 'billing',
+      line1: billingAddr.line1 || 'Address not provided',
+      line2: billingAddr.line2,
+      city: billingAddr.city || 'Unknown',
+      state: billingAddr.state || 'Unknown',
+      country: billingAddr.country || 'US',
+      postalCode: billingAddr.postal_code || '00000',
+    }).returning();
+  } else {
+    // Use shipping address as billing address if no separate billing info
+    billingAddress = shippingAddress;
   }
 
-  const orderValues: any = {
-    totalAmount: ((session.amount_total ?? 0) / 100).toString(),
-    status: 'paid',
-    stripePaymentIntentId: paymentIntentId,
-    stripeSessionId: stripeSessionId,
-    shippingAddressId: dummyAddress.id,
-    billingAddressId: dummyAddress.id,
-    userId: finalUserId,
-  };
+  const finalUserId = userId || sessionUserId || realUser.id;
+  if (!finalUserId) {
+    throw new Error('User ID not found');
+  }
 
-const [newOrder] = await db
-  .insert(schema.orders)
-  .values(orderValues)
-  .returning();
+ const orderValues = {
+  totalAmount: ((session.amount_total ?? 0) / 100).toString(),
+  status: 'paid' as const,
+  stripePaymentIntentId: paymentIntentId,
+  stripeSessionId: stripeSessionId,
+  shippingAddressId: shippingAddress.id,
+  billingAddressId: billingAddress.id,
+  userId: realUser.id, // ✅ Change from finalUserId to realUser.id
+};
+
+  const [newOrder] = await db
+    .insert(schema.orders)
+    .values(orderValues)
+    .returning();
 
   const orderItems = cart.items.map((item) => ({
     orderId: newOrder.id,
     productVariantId: item.productVariantId,
     quantity: item.quantity,
     priceAtPurchase: item.productVariant.price
-
   }));
 
   await db.insert(schema.orderItems).values(orderItems);
@@ -105,42 +143,4 @@ const [newOrder] = await db
   await clearCart(cartId);
 
   return newOrder;
-}
-
-export async function getOrderByStripeSessionId(sessionId: string) {
-  const session = await stripe.checkout.sessions.retrieve(sessionId);
-  console.log('Session payment_intent:', session.payment_intent);
-  console.log('Session status:', session.status);
-  console.log('Session payment_status:', session.payment_status);
-  
-  const paymentIntentId = session.payment_intent as string;
-
-  if (!paymentIntentId) {
-    console.log('No payment intent found in session');
-    return null;
-  }
-
-  const allOrders = await db.select({ 
-  id: schema.orders.id, 
-  stripePaymentIntentId: schema.orders.stripePaymentIntentId 
-}).from(schema.orders).limit(5);
-console.log('All orders in DB:', allOrders);
-
-  const order = await db.query.orders.findFirst({
-   where: eq(schema.orders.stripeSessionId, sessionId),
-    // ... rest of your query
-  });
-
-  console.log('Found order:', !!order);
-  return order;
-}
-
-export async function fulfillOrder(sessionId: string) {
-  const order = await getOrderByStripeSessionId(sessionId);
-
-  if (order) {
-    return order;
-  }
-
-  return createOrder(sessionId);
 }

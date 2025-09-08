@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import Link from 'next/link';
 import Confetti from 'react-confetti';
 import { useCartStore } from '@/store/cart.store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface OrderSuccessProps {
   order: TOrderWithItems;
@@ -14,16 +14,37 @@ interface OrderSuccessProps {
 
 export default function OrderSuccess({ order }: OrderSuccessProps) {
   const { clearCart } = useCartStore();
-
+  const [windowSize, setWindowSize] = useState({
+  width: 0,
+  height: 0,
+});
   useEffect(() => {
     clearCart();
   }, [clearCart]);
 
-  const total = (Number(order.totalAmount) / 100).toFixed(2);
+  useEffect(() => {
+  const updateSize = () => {
+    setWindowSize({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
+  };
+
+  updateSize();
+  window.addEventListener('resize', updateSize);
+  return () => window.removeEventListener('resize', updateSize);
+}, []);
+
+  const total = Number(order.totalAmount).toFixed(2);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <Confetti />
+      <Confetti 
+  width={windowSize.width}
+  height={windowSize.height}
+  recycle={false}
+  numberOfPieces={400}
+/>
       <div className="max-w-2xl mx-auto">
         <div className="text-center">
           <h1 className="text-heading-2 text-dark-900 mb-2">

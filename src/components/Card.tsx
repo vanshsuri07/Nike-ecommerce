@@ -3,19 +3,19 @@
 import Image from 'next/image';
 import React from 'react';
 import Link from 'next/link';
-import { TProductWithVariants } from '../types';
+import { ProductWithDetails } from '@/lib/actions/product';
 import { useCartStore } from '@/store/cart.store';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 
 
 interface CardProps {
-  product: TProductWithVariants;
+  product: ProductWithDetails;
 }
 
 const Card: React.FC<CardProps> = ({ product }) => {
 
-  const { name, categoryId, id, defaultVariantId, images, variants } = product;
+  const { name, category, id, defaultVariantId, images, variants } = product;
   const { addCartItem } = useCartStore();
 
   // Get price from default variant if available
@@ -62,7 +62,7 @@ const Card: React.FC<CardProps> = ({ product }) => {
           {name}
         </h3>
       </Link>
-      <p className="text-body text-dark-700 mt-1">{categoryId}</p>
+      <p className="text-body text-dark-700 mt-1">{category?.name}</p>
   {/* Optionally show color info if you add it to the product type */}
     </div>
     <div className="flex justify-between items-center mt-4">

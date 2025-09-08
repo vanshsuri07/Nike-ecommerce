@@ -13,7 +13,7 @@ export async function RecommendedProductsGrid({ productId }: RecommendedProducts
     return null;
   }
 
-  // Map to TProductWithVariants structure expected by Card
+  // Map to ProductWithDetails structure expected by Card
   const allProductsForCards = products.map(p => ({
     id: p.id,
     name: p.name,
@@ -26,8 +26,16 @@ export async function RecommendedProductsGrid({ productId }: RecommendedProducts
     createdAt: new Date(),
     updatedAt: new Date(),
     brand: { id: '', name: '', slug: '', logoUrl: null },
+    category: null,
+    gender: null,
     images: p.image ? [{ id: '', productId: p.id, variantId: null, url: p.image, sortOrder: 0, isPrimary: true }] : [],
     variants: [],
+    minPrice: '0',
+    maxPrice: '0',
+    image: p.image ?? null,
+    price: null,
+    stripeProductId: null,
+    stripePriceId: null,
   }));
 
   return (
