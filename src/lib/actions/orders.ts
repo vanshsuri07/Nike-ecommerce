@@ -42,39 +42,48 @@ export async function createOrder(
     throw new Error(`Cart with id ${cartId} not found`);
   }
 
-  const dummyUserEmail = 'dummy@example.com';
-  let dummyUser = await db.query.user.findFirst({
-    where: eq(schema.user.email, dummyUserEmail),
-  });
-
-  if (!dummyUser) {
-    [dummyUser] = await db.insert(schema.user).values({
-      email: dummyUserEmail,
-      name: 'Dummy User',
-      emailVerified: null,
-    }).returning();
-  }
-
-  const dummyAddressLine1 = '123 Dummy Street';
-  let dummyAddress = await db.query.addresses.findFirst({
-    where: eq(schema.addresses.line1, dummyAddressLine1),
-  });
-
-  if (!dummyAddress) {
-    [dummyAddress] = await db.insert(schema.addresses).values({
-      userId: dummyUser.id,
-      type: 'shipping',
-      line1: dummyAddressLine1,
-      city: 'Dummyville',
-      state: 'Dummystate',
-      country: 'DM',
-      postalCode: '00000',
-    }).returning();
-  }
-
-  const finalUserId = userId || sessionUserId || dummyUser.id;
-  if (!finalUserId) {
+  const userIdToUse = userId || sessionUserId;
+  if (!userIdToUse) {
     throw new Error('User ID not found in Stripe session metadata');
+  }
+
+  const user = await db.query.user.findFirst({
+    where: eq(schema.user.id, userIdToUse),
+    with: {
+      addresses: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error(`User with id ${userIdToUse} not found`);
+  }
+
+  // Find default shipping address, or fallback to the first shipping address.
+  let shippingAddress = user.addresses.find(
+    (a) => a.type === 'shipping' && a.isDefault,
+  );
+  if (!shippingAddress) {
+    shippingAddress = user.addresses.find((a) => a.type === 'shipping');
+  }
+
+  // Find default billing address, or fallback to the first billing address.
+  let billingAddress = user.addresses.find(
+    (a) => a.type === 'billing' && a.isDefault,
+  );
+  if (!billingAddress) {
+    billingAddress = user.addresses.find((a) => a.type === 'billing');
+  }
+
+  // As a last resort, if no typed addresses are found, use the first available address for both.
+  if (!shippingAddress) {
+    shippingAddress = user.addresses[0];
+  }
+  if (!billingAddress) {
+    billingAddress = user.addresses[0];
+  }
+
+  if (!shippingAddress || !billingAddress) {
+    throw new Error(`Shipping or billing address not found for user ${userIdToUse}`);
   }
 
   const orderValues: any = {
@@ -82,15 +91,15 @@ export async function createOrder(
     status: 'paid',
     stripePaymentIntentId: paymentIntentId,
     stripeSessionId: stripeSessionId,
-    shippingAddressId: dummyAddress.id,
-    billingAddressId: dummyAddress.id,
-    userId: finalUserId,
+    userId: userIdToUse,
+    shippingAddressId: shippingAddress.id,
+    billingAddressId: billingAddress.id,
   };
 
-const [newOrder] = await db
-  .insert(schema.orders)
-  .values(orderValues)
-  .returning();
+  const [newOrder] = await db
+    .insert(schema.orders)
+    .values(orderValues)
+    .returning();
 
   const orderItems = cart.items.map((item) => ({
     orderId: newOrder.id,
