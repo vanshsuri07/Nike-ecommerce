@@ -23,7 +23,7 @@ export const mockProducts: Product[] = [
     gender: 'Men',
     category: 'Lifestyle',
     colors: ['Black', 'White', 'Red'],
-    sizes: ['M', 'L', 'XL', 'XXL'],
+    sizes: ['8', '9', '10', '11', '12'],
     isNew: true,
     isBestSeller: true,
     createdAt: new Date('2024-07-20T10:00:00Z'),
@@ -36,7 +36,7 @@ export const mockProducts: Product[] = [
     gender: 'Unisex',
     category: 'Lifestyle',
     colors: ['White', 'Black'],
-    sizes: ['M', 'L', 'XL', 'XXL'],
+    sizes: ['8', '9', '10', '11', '12'],
     isNew: false,
     isBestSeller: false,
     createdAt: new Date('2024-06-15T10:00:00Z'),
@@ -49,7 +49,7 @@ export const mockProducts: Product[] = [
     gender: 'Women',
     category: 'Running',
     colors: ['Blue', 'Green'],
-    sizes: ['S', 'M', 'L', 'XL', 'XS'],
+    sizes: [ '9', '10', '11' ],
     isNew: true,
     isBestSeller: false,
     createdAt: new Date('2024-07-22T10:00:00Z'),
@@ -62,7 +62,7 @@ export const mockProducts: Product[] = [
     gender: 'Unisex',
     category: 'Lifestyle',
     colors: ['Gray', 'White'],
-    sizes: ['M', 'L', 'XL'],
+    sizes: ['8', '9', '10', '11', '12'],
     isNew: false,
     isBestSeller: true,
     createdAt: new Date('2024-05-10T10:00:00Z'),
@@ -88,7 +88,7 @@ export const mockProducts: Product[] = [
     gender: 'Women',
     category: 'Running',
     colors: ['White', 'Pink'],
-    sizes: ['S', 'M', 'L'],
+    sizes: ['8', '9', '10', '11', '12'],
     isNew: false,
     isBestSeller: true,
     createdAt: new Date('2024-04-01T10:00:00Z'),
@@ -101,7 +101,7 @@ export const mockProducts: Product[] = [
     gender: 'Unisex',
     category: 'Lifestyle',
     colors: ['White', 'Blue'],
-    sizes: ['M', 'L', 'XL', 'XXL'],
+    sizes: ['8', '9', '10', '11', '12'],
     isNew: false,
     isBestSeller: false,
     createdAt: new Date('2024-03-12T10:00:00Z'),
@@ -114,7 +114,7 @@ export const mockProducts: Product[] = [
     gender: 'Men',
     category: 'Basketball',
     colors: ['Green', 'Black'],
-    sizes: ['M', 'L', 'XL'],
+    sizes: [ '8', '9', '12'],
     isNew: true,
     isBestSeller: false,
     createdAt: new Date('2024-07-25T10:00:00Z'),
@@ -122,7 +122,7 @@ export const mockProducts: Product[] = [
 ];
 
 export const GENDERS = ['Men', 'Women', 'Unisex'];
-export const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+export const SIZES = ['8', '9', '10', '11', '12'];
 export const COLORS = ['Black', 'White', 'Red', 'Blue', 'Green', 'Gray', 'Pink'];
 export const CATEGORIES = ['Lifestyle', 'Running', 'Basketball'];
 export const PRICES = [

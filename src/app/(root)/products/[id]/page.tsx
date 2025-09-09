@@ -9,6 +9,8 @@ import { ReviewsList } from './_components/ReviewsList';
 import { RecommendedProductsGrid } from './_components/RecommendedProductsGrid';
 import { RecommendedSkeleton } from './_components/RecommendedSkeleton';
 import AddToCartForm from '@/components/AddToCartForm';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 interface ProductPageProps {
   params: Promise<{
@@ -32,7 +34,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const displayPrice = product.variants[0]?.price || '0.00';
 
   return (
+    
     <div className="bg-light-100">
+      <Navbar />
       <main className="container mx-auto px-4 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12">
           <div className="lg:sticky top-24 self-start">
@@ -71,6 +75,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <RecommendedProductsGrid productId={product.id} />
         </Suspense>
       </main>
+      <Footer />
     </div>
   );
 }
