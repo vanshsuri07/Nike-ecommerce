@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { z } from 'zod';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import * as fs from 'fs';
 import * as path from 'path';
 import { eq } from 'drizzle-orm';
@@ -16,10 +16,14 @@ export const ProductAIOutputSchema = z.object({
   color: z.string().min(1, 'Color cannot be empty.'),
   hexCode: z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Invalid hex code format.'),
   category: z.string().min(1, 'Category cannot be empty.'),
+  gender: z.enum(['Men', 'Women', 'Unisex', 'Kids']),
+  brand: z.string().min(1, 'Brand cannot be empty.').default('Nike'),
+
+
 });
 
 export type ProductAIOutput = z.infer<typeof ProductAIOutputSchema>;
-
+// Add this after step 1 (Generate product data from AI)
 const slugify = (text: string): string => {
   return text
     .toString()
@@ -40,7 +44,9 @@ export async function createProductFromAI(
     // 1. Generate product data from AI
     const aiData = await generateProductDataWithGemini(productName, imagePath);
     console.log('AI Generated Data:', aiData);
-
+    // Delete these lines from the top level
+const stripe_product_id = "prod_" + Math.random().toString(36).substr(2, 9);
+const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
     // 2. Get or create category
     const categorySlug = slugify(aiData.category);
     let [category] = await tx
@@ -86,8 +92,33 @@ export async function createProductFromAI(
         .values({ name: 'One Size', slug: sizeSlug })
         .returning();
     }
-
-    // 5. Insert the product
+    // 5. Get or create brand
+    const brandSlug = slugify(aiData.brand);
+    let [brand] = await tx
+      .select()
+      .from(schema.brands)
+      .where(eq(schema.brands.slug, brandSlug));
+    if (!brand) {
+      console.log(`Brand "${aiData.brand}" not found, creating it...`);
+      [brand] = await tx
+        .insert(schema.brands)
+        .values({ name: aiData.brand, slug: brandSlug })
+        .returning();
+    }
+    // 6. Get or create gender
+    const genderSlug = slugify(aiData.gender);
+    let [gender] = await tx
+      .select()
+      .from(schema.genders)
+      .where(eq(schema.genders.slug, genderSlug));
+    if (!gender) {
+      console.log(`Gender "${aiData.gender}" not found, creating it...`);
+      [gender] = await tx
+        .insert(schema.genders)
+        .values({ label: aiData.gender, slug: genderSlug })
+        .returning();
+    }
+    // 7. Insert the product
     const [product] = await tx
       .insert(schema.products)
       .values({
@@ -95,11 +126,17 @@ export async function createProductFromAI(
         description: aiData.description,
         price: String(aiData.price),
         categoryId: category.id,
+        brandId: brand.id,
+        genderId: gender.id,
+        isPublished: true,
+        stripeProductId: stripe_product_id,
+        stripePriceId: stripe_price_id,
+        image: imagePath ? await saveImage(imagePath) : null,
       })
       .returning();
     console.log('Inserted Product ID:', product.id);
 
-    // 6. Insert the product variant
+    // 8. Insert the product variant
     const sku = `${slugify(productName)}-${colorSlug}`.substring(0, 50);
     const [variant] = await tx
       .insert(schema.productVariants)
@@ -113,7 +150,7 @@ export async function createProductFromAI(
       .returning();
     console.log('Inserted Variant ID:', variant.id);
 
-    // 7. Handle Image
+    // 9. Handle Image
     if (imagePath) {
       const imageUrl = await saveImage(imagePath);
       await tx.insert(schema.productImages).values({
@@ -125,7 +162,7 @@ export async function createProductFromAI(
       console.log('Inserted Product Image URL:', imageUrl);
     }
 
-    // 8. Update product with default variant ID
+    // 10. Update product with default variant ID
     await tx
       .update(schema.products)
       .set({ defaultVariantId: variant.id })
@@ -168,7 +205,8 @@ export async function generateProductDataWithGemini(
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro-latest' });
+  // Use gemini-1.5-flash for higher rate limits and faster response
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   const prompt = `
     You are an expert in Nike product data.
@@ -180,6 +218,8 @@ export async function generateProductDataWithGemini(
     - color: The primary color of the product.
     - hexCode: The hex code for the primary color (e.g., "#000000").
     - category: The most specific product category (e.g., "Running Shoes", "Basketball Shorts", "Lifestyle T-Shirt").
+    - gender: The target gender - must be one of: "Men", "Women", "Unisex", or "Kids".
+    - brand: The brand name (default to "Nike" unless specified otherwise).
 
     The output must be a single, valid JSON object and nothing else.
     Example:
@@ -188,7 +228,9 @@ export async function generateProductDataWithGemini(
       "price": 150,
       "color": "Black/Anthracite/White",
       "hexCode": "#000000",
-      "category": "Lifestyle Shoes"
+      "category": "Lifestyle Shoes",
+      "gender": "Unisex",
+      "brand": "Nike"
     }
   `;
 
@@ -214,19 +256,20 @@ export async function generateProductDataWithGemini(
   };
 
   const safetySettings = [
-    { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-    { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
   ];
 
   let attempts = 0;
-  const maxAttempts = 3;
+  const maxAttempts = 5; // Increased from 3 to 5
+  
   while (attempts < maxAttempts) {
     try {
       attempts++;
       console.log(
-        `Attempt ${attempts}: Generating product data for "${name}"...`,
+        `Attempt ${attempts}/${maxAttempts}: Generating product data for "${name}"...`,
       );
 
       const result = await model.generateContent({
@@ -244,14 +287,116 @@ export async function generateProductDataWithGemini(
       console.log('Successfully generated and validated product data.');
       return validatedData;
     } catch (error) {
-      console.error(`Attempt ${attempts} failed:`, error);
-      if (attempts >= maxAttempts) {
-        throw new Error(
-          'Failed to generate and parse product data after multiple attempts.',
-        );
+      console.error(`Attempt ${attempts}/${maxAttempts} failed:`, error);
+      
+      // Calculate exponential backoff delay
+      let delay = Math.pow(2, attempts - 1) * 5000; // 5s, 10s, 20s, 40s, 80s
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.message.includes('429') || error.message.includes('quota')) {
+          console.log('Rate limit hit. Using extended delay...');
+          delay = 60000; // 60 seconds for rate limits
+        } else if (error.message.includes('503') || error.message.includes('overloaded')) {
+          console.log('Service overloaded. Using exponential backoff...');
+          delay = Math.min(delay, 120000); // Cap at 2 minutes
+        } else if (error.message.includes('500')) {
+          console.log('Internal server error. Using moderate delay...');
+          delay = Math.min(delay, 30000); // Cap at 30 seconds
+        }
       }
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      if (attempts >= maxAttempts) {
+        // Provide a more helpful error message
+        let errorMessage = 'Failed to generate product data after multiple attempts.';
+        
+        if (error instanceof Error) {
+          if (error.message.includes('503') || error.message.includes('overloaded')) {
+            errorMessage += ' The Gemini API is currently overloaded. Please try again in a few minutes.';
+          } else if (error.message.includes('429') || error.message.includes('quota')) {
+            errorMessage += ' Rate limit exceeded. Consider upgrading your API plan or wait longer between requests.';
+          } else {
+            errorMessage += ` Last error: ${error.message}`;
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      // Wait before retry with exponential backoff
+      console.log(`Waiting ${delay / 1000} seconds before retry...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
+  
   throw new Error('Exited retry loop unexpectedly.');
+}
+
+// Alternative: Add a fallback function that creates basic product data
+export function createFallbackProductData(name: string): ProductAIOutput {
+  console.log('Using fallback product data generation...');
+  
+  // Extract basic info from product name
+  const nameLower = name.toLowerCase();
+  let category = 'Lifestyle';
+  let gender: 'Men' | 'Women' | 'Unisex' | 'Kids' = 'Unisex';
+  const price = 100; // Default price
+  
+  // Basic category detection
+  if (nameLower.includes('shoe') || nameLower.includes('force') || nameLower.includes('max')) {
+    category = 'Lifestyle Shoes';
+  } else if (nameLower.includes('shirt') || nameLower.includes('tee')) {
+    category = 'Lifestyle T-Shirt';
+  } else if (nameLower.includes('short')) {
+    category = 'Shorts';
+  } else if (nameLower.includes('jacket') || nameLower.includes('hoodie')) {
+    category = 'Outerwear';
+  }
+  
+  // Basic gender detection
+  if (nameLower.includes('men') || nameLower.includes("men's")) {
+    gender = 'Men';
+  } else if (nameLower.includes('women') || nameLower.includes("women's")) {
+    gender = 'Women';
+  } else if (nameLower.includes('kid') || nameLower.includes('youth')) {
+    gender = 'Kids';
+  }
+  
+  // Basic color detection
+  let color = 'White';
+  let hexCode = '#FFFFFF';
+  if (nameLower.includes('black')) {
+    color = 'Black';
+    hexCode = '#000000';
+  } else if (nameLower.includes('blue')) {
+    color = 'Blue';
+    hexCode = '#0066CC';
+  } else if (nameLower.includes('red')) {
+    color = 'Red';
+    hexCode = '#CC0000';
+  }
+  
+  return {
+    description: `The ${name} offers classic Nike style and comfort. Perfect for everyday wear with premium materials and iconic design.`,
+    price,
+    color,
+    hexCode,
+    category,
+    gender,
+    brand: 'Nike'
+  };
+}
+
+// Modified main function that uses fallback on repeated failures
+export async function generateProductDataWithGeminiAndFallback(
+  name: string,
+  imagePath?: string,
+): Promise<ProductAIOutput> {
+  try {
+    return await generateProductDataWithGemini(name, imagePath);
+  } catch (error) {
+    console.error('Gemini API failed after all retries. Using fallback data generation...');
+    console.error('Error:', error);
+    return createFallbackProductData(name);
+  }
 }

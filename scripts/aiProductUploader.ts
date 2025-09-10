@@ -19,6 +19,10 @@ async function main() {
     throw new Error('DATABASE_URL is not set in .env file');
   }
 
+  if (!process.env.GOOGLE_API_KEY) {
+    throw new Error('GOOGLE_API_KEY is not set in .env file');
+  }
+
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
   });
@@ -59,7 +63,7 @@ async function main() {
     } else {
       console.error('An unknown error occurred:', error);
     }
-    // process.exit(1) is commented out to allow the finally block to run
+    process.exit(1);
   } finally {
     console.log('Closing database connection...');
     await pool.end();
