@@ -31,10 +31,12 @@ export const ProductAIOutputSchema = z.object({
   category: z.string().min(1, 'Category cannot be empty.'),
   gender: z.enum(['Men', 'Women', 'Unisex', 'Kids']),
   brand: z.string().min(1, 'Brand cannot be empty.').default('Nike'),
+
+
 });
 
 export type ProductAIOutput = z.infer<typeof ProductAIOutputSchema>;
-
+// Add this after step 1 (Generate product data from AI)
 const slugify = (text: string): string => {
   return text
     .toString()
@@ -52,15 +54,15 @@ export async function createProductFromAI(
   imagePath?: string,
 ) {
   return db.transaction(async (tx) => {
-    // 1. Generate product data from AI
-    const aiData = await generateProductDataWithGemini(productName, imagePath);
-    console.log('AI Generated Data:', aiData);
+// 1. Generate product data from AI
+const aiData = await generateProductDataWithGemini(productName, imagePath);
+console.log('AI Generated Data:', aiData);
 
-    // Generate Stripe IDs
-    const stripe_product_id = "prod_" + Math.random().toString(36).substr(2, 9);
-    const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
+// Generate Stripe IDs
+const stripe_product_id = "prod_" + Math.random().toString(36).substr(2, 9);
+const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
 
-    // 2. Get or create category
+// 2. Get or create category
     const categorySlug = slugify(aiData.category);
     let [category] = await tx
       .select()
@@ -92,12 +94,12 @@ export async function createProductFromAI(
         .returning();
     }
 
-    // 4. Get sizes and select random ones
-    const allSizes = await tx.select().from(schema.sizes);
+    // 4. Get or create size
+        const allSizes = await tx.select().from(schema.sizes);
     if (allSizes.length === 0) {
       throw new Error('No sizes found in the database. Please seed the sizes table first.');
     }
-
+    const size = allSizes[Math.floor(Math.random() * allSizes.length)];
     // 5. Get or create brand
     const brandSlug = slugify(aiData.brand);
     let [brand] = await tx
@@ -111,7 +113,6 @@ export async function createProductFromAI(
         .values({ name: aiData.brand, slug: brandSlug })
         .returning();
     }
-
     // 6. Get or create gender
     const genderSlug = slugify(aiData.gender);
     let [gender] = await tx
@@ -125,7 +126,6 @@ export async function createProductFromAI(
         .values({ label: aiData.gender, slug: genderSlug })
         .returning();
     }
-
     // 7. Insert the product
     const [product] = await tx
       .insert(schema.products)
@@ -144,9 +144,11 @@ export async function createProductFromAI(
       .returning();
     console.log('Inserted Product ID:', product.id);
 
-    // 8. Insert product variants
-    const sizeChoices = pick(allSizes, randInt(5, Math.min(5, allSizes.length)));
-    let defaultVariant: any = null;
+   // 8. Insert product variants for a selection of sizes
+     // 8. Insert product variants for a selection of sizes
+    const sizeChoices = pick(allSizes, randInt(5, Math.min(5, allSizes.length))); // Using the pick function from seed.ts
+    const variantIds: string[] = [];
+    let defaultVariantId: string | null = null;
 
     for (const size of sizeChoices) {
       const sku = `${slugify(productName)}-${colorSlug}-${size.slug}`.substring(0, 50);
@@ -160,35 +162,31 @@ export async function createProductFromAI(
           sku: sku,
         })
         .returning();
-      
-      console.log('Inserted Variant ID:', variant.id);
-      
-      // Set the first variant as default
-      if (!defaultVariant) {
-        defaultVariant = variant;
+      variantIds.push(variant.id);
+      if (!defaultVariantId) {
+        defaultVariantId = variant.id;
       }
+    }
+    console.log(`Inserted ${variantIds.length} variants for product ${product.id}`);
 
-      // 9. Handle Image for each variant
-      if (imagePath) {
-        const imageUrl = await saveImage(imagePath);
-        await tx.insert(schema.productImages).values({
-          productId: product.id,
-          variantId: variant.id,
-          url: imageUrl,
-          isPrimary: true,
-        });
-        console.log('Inserted Product Image URL:', imageUrl);
-      }
+    // 9. Handle Image
+    if (imagePath) {
+      const imageUrl = await saveImage(imagePath);
+      await tx.insert(schema.productImages).values({
+        productId: product.id,
+        variantId: defaultVariantId,
+        url: imageUrl,
+        isPrimary: true,
+      });
+      console.log('Inserted Product Image URL:', imageUrl);
     }
 
     // 10. Update product with default variant ID
-    if (defaultVariant) {
       await tx
         .update(schema.products)
-        .set({ defaultVariantId: defaultVariant.id })
+      .set({ defaultVariantId: defaultVariantId })
         .where(eq(schema.products.id, product.id));
       console.log('Updated product with default variant ID.');
-    }
 
     const [finalProduct] = await tx
       .select()
@@ -258,8 +256,8 @@ export async function generateProductDataWithGemini(
         - gender: Exactly one of: "Men", "Women", "Unisex", "Kids".
 
         **Gender Rules:**
-        - Contains "Men" or "Men's" → Men
-        - Contains "Women" or "Women's" → Women
+        - Contains "Men" or "Men’s" → Men
+        - Contains "Women" or "Women’s" → Women
         - Contains "Boy", "Girl", "Youth", "Kids" → Kids
         - Otherwise → only "Unisex" if it truly fits all genders.
 
@@ -296,14 +294,16 @@ export async function generateProductDataWithGemini(
       const responseText = result.response.text();
       const parsedJson = JSON.parse(responseText);
 
-      // ✅ Sanitize hexCode before Zod validation
-      if (parsedJson.hexCode) {
-        parsedJson.hexCode = parsedJson.hexCode.trim();
-        const match = parsedJson.hexCode.match(/#?[0-9a-fA-F]{6}/);
-        parsedJson.hexCode = match
-          ? (match[0].startsWith('#') ? match[0] : `#${match[0]}`)
-          : '#000000'; // fallback color
-      }
+// ✅ Sanitize hexCode before Zod validation
+if (parsedJson.hexCode) {
+  parsedJson.hexCode = parsedJson.hexCode.trim();
+  const match = parsedJson.hexCode.match(/#?[0-9a-fA-F]{6}/);
+  parsedJson.hexCode = match
+    ? (match[0].startsWith('#') ? match[0] : `#${match[0]}`)
+    : '#000000'; // fallback color
+}
+
+
 
       const validatedData = ProductAIOutputSchema.parse(parsedJson);
 
@@ -352,14 +352,14 @@ export function createFallbackProductData(name: string): ProductAIOutput {
 
   // Better gender detection
   if (/\bmen\b|\bmen's\b/i.test(nameLower)) {
-    gender = 'Men';
+  gender = 'Men';
   } else if (/\bwomen\b|\bwomen's\b/i.test(nameLower)) {
-    gender = 'Women';
+  gender = 'Women';
   } else if (/\bkid\b|\bkids\b|\byouth\b|\bboy\b|\bgirl\b/i.test(nameLower)) {
-    gender = 'Kids';
+  gender = 'Kids';
   } else {
-    // Last resort guess: shoes and performance gear often default to Men if not specified
-    gender = 'Men';
+  // Last resort guess: shoes and performance gear often default to Men if not specified
+  gender = 'Men';
   }
 
   const price = 100; // Default price
@@ -373,6 +373,15 @@ export function createFallbackProductData(name: string): ProductAIOutput {
     category = 'Shorts';
   } else if (nameLower.includes('jacket') || nameLower.includes('hoodie')) {
     category = 'Outerwear';
+  }
+  
+  // Basic gender detection
+  if (nameLower.includes('men') || nameLower.includes("men's")) {
+    gender = 'Men';
+  } else if (nameLower.includes('women') || nameLower.includes("women's")) {
+    gender = 'Women';
+  } else if (nameLower.includes('kid') || nameLower.includes('youth')) {
+    gender = 'Kids';
   }
   
   // Basic color detection
