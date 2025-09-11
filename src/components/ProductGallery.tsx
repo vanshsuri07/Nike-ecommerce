@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import { ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ProductDetails } from '@/lib/actions/product';
