@@ -5,16 +5,20 @@ import Image from 'next/image';
 import { ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ProductDetails } from '@/lib/actions/product';
 
+type Variant = ProductDetails['variants'][0];
 type ImageType = ProductDetails['mainImages'][0];
 
 interface ProductGalleryProps {
+  variants: Variant[];
   mainImages: ImageType[];
 }
 
-export default function ProductGallery({ mainImages }: ProductGalleryProps) {
+export default function ProductGallery({ variants, mainImages }: ProductGalleryProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  const galleryImages = mainImages;
+  const galleryImages = mainImages.length > 0
+    ? mainImages
+    : (variants.length > 0 ? variants[0].images : []);
   const activeImage = galleryImages[activeImageIndex];
 
   const handleThumbnailClick = (index: number) => {
