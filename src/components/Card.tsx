@@ -22,7 +22,8 @@ const Card: React.FC<CardProps> = ({ product }) => {
   const defaultVariant = variants.find(v => v.id === defaultVariantId);
   const price = defaultVariant ? defaultVariant.price : undefined;
   // Use first image if available
-  const image = images && images.length > 0 ? images[0].url : undefined;
+  const mainImage = images.find(img => !img.variantId);
+  const image = mainImage ? mainImage.url : (images && images.length > 0 ? images[0].url : undefined);
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();

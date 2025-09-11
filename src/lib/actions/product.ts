@@ -146,8 +146,7 @@ if (filters.color?.length) {
     // When no color filter, get main product images only
     imagesQuery = db.select().from(schema.productImages).where(
         and(
-            inArray(schema.productImages.productId, ids),
-            isNull(schema.productImages.variantId)
+            inArray(schema.productImages.productId, ids)
         )
     ).orderBy(schema.productImages.sortOrder);
 }
