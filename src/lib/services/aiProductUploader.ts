@@ -8,6 +8,21 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../lib/db/schema';
 import { saveImage } from '../utils/imageUtils';
 
+// Helper functions (could be moved to a shared utility file)
+function pick<T>(arr: T[], n: number) {
+  const a = [...arr];
+  const out: T[] = [];
+  for (let i = 0; i < n && a.length; i++) {
+    const idx = Math.floor(Math.random() * a.length);
+    out.push(a.splice(idx, 1)[0]);
+  }
+  return out;
+}
+
+function randInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 // AI Product Uploader Service
 
 export const ProductAIOutputSchema = z.object({
@@ -79,19 +94,12 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
         .returning();
     }
 
-    // 4. Get or create size
-    const sizeSlug = 'one-size';
-    let [size] = await tx
-      .select()
-      .from(schema.sizes)
-      .where(eq(schema.sizes.slug, sizeSlug));
-    if (!size) {
-      console.log(`Size "One Size" not found, creating it...`);
-      [size] = await tx
-        .insert(schema.sizes)
-        .values({ name: 'One Size', slug: sizeSlug })
-        .returning();
+    // 4. Get all available sizes
+    const allSizes = await tx.select().from(schema.sizes);
+    if (allSizes.length === 0) {
+      throw new Error('No sizes found in the database. Please seed the sizes table first.');
     }
+
     // 5. Get or create brand
     const brandSlug = slugify(aiData.brand);
     let [brand] = await tx
@@ -105,6 +113,7 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
         .values({ name: aiData.brand, slug: brandSlug })
         .returning();
     }
+
     // 6. Get or create gender
     const genderSlug = slugify(aiData.gender);
     let [gender] = await tx
@@ -118,6 +127,7 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
         .values({ label: aiData.gender, slug: genderSlug })
         .returning();
     }
+
     // 7. Insert the product
     const [product] = await tx
       .insert(schema.products)
@@ -136,26 +146,36 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
       .returning();
     console.log('Inserted Product ID:', product.id);
 
-    // 8. Insert the product variant
-    const sku = `${slugify(productName)}-${colorSlug}`.substring(0, 50);
-    const [variant] = await tx
-      .insert(schema.productVariants)
-      .values({
-        productId: product.id,
-        colorId: color.id,
-        sizeId: size.id,
-        price: String(aiData.price),
-        sku: sku,
-      })
-      .returning();
-    console.log('Inserted Variant ID:', variant.id);
+    // 8. Insert product variants for a selection of sizes
+    const sizeChoices = pick(allSizes, randInt(3, Math.min(5, allSizes.length))); // Using the pick function from seed.ts
+    const variantIds: string[] = [];
+    let defaultVariantId: string | null = null;
+
+    for (const size of sizeChoices) {
+      const sku = `${slugify(productName)}-${colorSlug}-${size.slug}`.substring(0, 50);
+      const [variant] = await tx
+        .insert(schema.productVariants)
+        .values({
+          productId: product.id,
+          colorId: color.id,
+          sizeId: size.id,
+          price: String(aiData.price),
+          sku: sku,
+        })
+        .returning();
+      variantIds.push(variant.id);
+      if (!defaultVariantId) {
+        defaultVariantId = variant.id;
+      }
+    }
+    console.log(`Inserted ${variantIds.length} variants for product ${product.id}`);
 
     // 9. Handle Image
-    if (imagePath) {
+    if (imagePath && defaultVariantId) {
       const imageUrl = await saveImage(imagePath);
       await tx.insert(schema.productImages).values({
         productId: product.id,
-        variantId: variant.id,
+        variantId: defaultVariantId,
         url: imageUrl,
         isPrimary: true,
       });
@@ -163,11 +183,13 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
     }
 
     // 10. Update product with default variant ID
-    await tx
-      .update(schema.products)
-      .set({ defaultVariantId: variant.id })
-      .where(eq(schema.products.id, product.id));
-    console.log('Updated product with default variant ID.');
+    if (defaultVariantId) {
+      await tx
+        .update(schema.products)
+        .set({ defaultVariantId: defaultVariantId })
+        .where(eq(schema.products.id, product.id));
+      console.log('Updated product with default variant ID.');
+    }
 
     const [finalProduct] = await tx
       .select()

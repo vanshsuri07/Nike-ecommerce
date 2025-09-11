@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { formUrlQuery } from '@/lib/utils/query';
-import { GENDERS, SIZES, COLORS, PRICES } from '@/lib/data';
+import { GENDERS, COLORS, PRICES } from '@/lib/data';
 import { X, SlidersHorizontal } from 'lucide-react';
 
 const FilterGroup = ({ title, children }: { title: string, children: React.ReactNode }) => {
@@ -23,7 +23,17 @@ const FilterGroup = ({ title, children }: { title: string, children: React.React
   );
 };
 
-const Filters = () => {
+interface Size {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+interface FiltersProps {
+  sizes: Size[];
+}
+
+const Filters = ({ sizes }: FiltersProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -63,16 +73,16 @@ const Filters = () => {
       </FilterGroup>
       <FilterGroup title="Size">
         <div className="grid grid-cols-4 gap-2">
-          {SIZES.map((size) => (
-            <label key={size} className="inline-flex items-center gap-2">
+          {sizes.map((size) => (
+            <label key={size.slug} className="inline-flex items-center gap-2">
               <input
                 type="checkbox"
-                value={size}
-                checked={searchParams.get('size')?.split(',').includes(String(size)) || false}
-                onChange={() => handleFilterChange('size', String(size))}
+                value={size.name}
+                checked={searchParams.get('size')?.split(',').includes(String(size.name)) || false}
+                onChange={() => handleFilterChange('size', String(size.name))}
                 className="h-4 w-4 accent-dark-900"
               />
-              {size}
+              {size.name}
             </label>
           ))}
         </div>

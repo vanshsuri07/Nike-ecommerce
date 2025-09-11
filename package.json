@@ -11,6 +11,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx scripts/seed.ts",
+    "db:update-sizes": "tsx scripts/update_product_sizes.ts",
     "ai:upload": "tsx scripts/aiProductUploader.ts"
   },
   "dependencies": {

@@ -1,6 +1,7 @@
 import { getAllProducts, type ProductWithDetails } from '@/lib/actions/product';
 import { parseFilterParams } from '@/lib/utils/query';
 import Card from '@/components/Card';
+import { getAvailableSizes } from '@/lib/actions/filters';
 import Filters from '@/components/Filters';
 import Sort from '@/components/Sort';
 import Link from 'next/link';
@@ -14,6 +15,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
   const resolvedParams = await searchParams; // ✅ Await the searchParams
   const filters = parseFilterParams(resolvedParams);
   const { products: fetchedProducts, totalCount } = await getAllProducts(filters);
+  const availableSizes = await getAvailableSizes();
 
   // Filter out products with null brand and assert type for Card
   const products = fetchedProducts
@@ -72,7 +74,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
       <div className="flex flex-col md:flex-row gap-8">
         <aside className="w-full md:w-1/4 lg:w-1/5">
           <div className="sticky top-24 bg-zinc-200  rounded-lg">
-            <Filters />
+            <Filters sizes={availableSizes} />
           </div>
         </aside>
 

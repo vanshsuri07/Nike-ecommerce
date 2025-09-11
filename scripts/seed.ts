@@ -63,12 +63,17 @@ async function seed() {
     }
 
     const sizeRows = [
-      { name: '7', slug: '7', sortOrder: 0 },
-      { name: '8', slug: '8', sortOrder: 1 },
-      { name: '9', slug: '9', sortOrder: 2 },
-      { name: '10', slug: '10', sortOrder: 3 },
-      { name: '11', slug: '11', sortOrder: 4 },
-      { name: '12', slug: '12', sortOrder: 5 },
+      { name: '5', slug: '5', sortOrder: 0 },
+      { name: '6', slug: '6', sortOrder: 1 },
+      { name: '7', slug: '7', sortOrder: 2 },
+      { name: '8', slug: '8', sortOrder: 3 },
+      { name: '9', slug: '9', sortOrder: 4 },
+      { name: '10', slug: '10', sortOrder: 5 },
+      { name: '11', slug: '11', sortOrder: 6 },
+      { name: '12', slug: '12', sortOrder: 7 },
+      { name: '13', slug: '13', sortOrder: 8 },
+      { name: '14', slug: '14', sortOrder: 9 },
+      { name: '15', slug: '15', sortOrder: 10 },
     ].map((s) => SizeInsertSchema.parse(s));
     for (const row of sizeRows) {
       const exists = await db.select().from(sizes).where(eq(sizes.slug, row.slug)).limit(1);
@@ -146,7 +151,15 @@ async function seed() {
       const retP = await db.insert(products).values(product as TNewProduct).returning();
       const insertedProduct = (retP as ProductRow[])[0];
       const colorChoices = pick(allColors, randInt(2, Math.min(4, allColors.length)));
-      const sizeChoices = pick(allSizes, randInt(3, Math.min(6, allSizes.length)));
+
+      // Create more distinct size ranges for different products
+      const sizeGroups = {
+        small: allSizes.filter(s => parseFloat(s.name) < 8), // Sizes below 8
+        medium: allSizes.filter(s => parseFloat(s.name) >= 8 && parseFloat(s.name) <= 12), // Sizes 8-12
+        large: allSizes.filter(s => parseFloat(s.name) > 12), // Sizes above 12
+      };
+      const groupChoice = ['small', 'medium', 'large'][randInt(0, 2)] as keyof typeof sizeGroups;
+      const sizeChoices = pick(sizeGroups[groupChoice], randInt(3, Math.min(5, sizeGroups[groupChoice].length)));
 
       const variantIds: string[] = [];
       let defaultVariantId: string | null = null;

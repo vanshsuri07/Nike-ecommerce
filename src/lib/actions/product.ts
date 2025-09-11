@@ -143,12 +143,10 @@ if (filters.color?.length) {
         )
     ).orderBy(schema.productImages.sortOrder);
 } else {
-    // When no color filter, get main product images only
+    // When no color filter, get all product images, ensuring at least one image per product if possible.
+    // We'll fetch all and then associate them. The card will pick the first one.
     imagesQuery = db.select().from(schema.productImages).where(
-        and(
-            inArray(schema.productImages.productId, ids),
-            isNull(schema.productImages.variantId)
-        )
+        inArray(schema.productImages.productId, ids)
     ).orderBy(schema.productImages.sortOrder);
 }
     const images = await imagesQuery;
