@@ -19,8 +19,8 @@ async function main() {
     throw new Error('DATABASE_URL is not set in .env file');
   }
 
-  if (!process.env.GOOGLE_API_KEY) {
-    throw new Error('GOOGLE_API_KEY is not set in .env file');
+  if (!process.env.GOOGLE_API_KEYS) {
+    throw new Error('GOOGLE_API_KEYS is not set in .env file');
   }
 
   const pool = new Pool({
@@ -31,9 +31,10 @@ async function main() {
   try {
     const [productName, imageRelativePath] = args;
 
-    if (!productName) {
-      console.error('Error: Product name is required.');
-      process.exit(1);
+    const productNames = process.argv.slice(2);
+     if (productNames.length === 0) {
+    console.error('Please provide at least one product name');
+    process.exit(1);
     }
 
     const imagePath = imageRelativePath

@@ -9,6 +9,9 @@ import { redirect } from 'next/navigation';
 export async function createStripeCheckoutSession() {
   const user = await getCurrentUser();
   const cart = await getCart();
+  if (!user) {
+    redirect('/sign-up');
+  }
 
   if (!cart || cart.items.length === 0) {
     throw new Error('Cart is empty');

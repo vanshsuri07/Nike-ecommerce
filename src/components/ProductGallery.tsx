@@ -25,7 +25,9 @@ const colorClassMap: { [key: string]: string } = {
 };
 
 export default function ProductGallery({ variants, mainImages }: ProductGalleryProps) {
-  const [activeVariantIndex, setActiveVariantIndex] = useState<number | null>(null);
+  const [activeVariantIndex, setActiveVariantIndex] = useState<number | null>(
+    mainImages.length === 0 && variants.length > 0 ? 0 : null
+  );
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Determine the set of images to display
@@ -117,25 +119,18 @@ export default function ProductGallery({ variants, mainImages }: ProductGalleryP
         </div>
       )}
 
-      {variants.length > 0 && (
-        <div className="mt-6">
-          <p className="text-body-medium text-dark-900">Color: <span className="font-bold">{activeVariantIndex !== null ? variants[activeVariantIndex].color.name : 'Default'}</span></p>
-          <div className="flex space-x-3 mt-2">
-            {variants.map((variant, index) => (
-              <button
-                key={variant.id}
-                onClick={() => handleVariantChange(index)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center ring-2 ring-offset-2 ${
-                  index === activeVariantIndex ? 'ring-dark-900' : 'ring-transparent'
-                } ${colorClassMap[variant.color.name] || 'bg-gray-200'}`}
-                aria-label={`Select ${variant.color.name} color`}
-              >
-                {index === activeVariantIndex && <Check className="w-6 h-6 text-white" />}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <div className="mt-6">
+  <p className="text-body-medium text-dark-900">
+    Color:{" "}
+    <span className="font-bold">
+      {variants.length > 0 && variants[0].color?.name
+        ? variants[0].color.name
+        : "Default"}
+    </span>
+  </p>
+</div>
+
+
     </div>
   );
 }

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "dbcc2bd9-ecd0-4b5d-b732-3f5c1ff57053",
+    "productId": "ecf99425-70f7-4657-8591-6fd83d0b832f",
+    "variantId": "c0a3b70b-88c5-4a58-b85b-a91b31a8f7b2",
+    "url": "/uploads/products/7599e8d0df46adcc-shoe-2.webp",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "a6da0ac5-d0ee-47cc-9cca-7f67acee8af5",
+    "productId": "f9e6e622-9b6f-413f-9a73-66cbaecfd041",
+    "variantId": "a2f0cc33-d3e4-4fbd-9eca-e30308b1af8d",
+    "url": "/uploads/products/f30b0de027759b04-shoe-1.jpg",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "047de788-2b04-472c-95d3-6a64480e72eb",
+    "productId": "1fc4c725-1388-496f-94f1-f682b8edeb08",
+    "variantId": "5d7f278a-8117-4ae4-b822-cb8dc9f04e49",
+    "url": "/uploads/products/722fe9587bbe46c2-shoe-3.webp",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "3d979dfa-1d6a-4408-bea1-4938548bfbcb",
+    "productId": "3ffb8d25-9be2-48ce-b62b-91db0170436b",
+    "variantId": "698b92e6-a672-4747-900f-7ed9a471ee7d",
+    "url": "/uploads/products/fe5f32c659ad2f21-shoe-4.webp",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "70a2f34d-edd8-43ff-8429-aea9ca1da669",
+    "productId": "6db3f503-d711-4d30-ac56-468cd9fb87d5",
+    "variantId": "ebefae20-b44a-4f55-958a-bac55d9e8565",
+    "url": "/uploads/products/e25a36f3550eaf2f-shoe-5.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "e48eadc7-e01a-469e-88fb-dd2a1a6a7622",
+    "productId": "353fc02e-2ea0-48ca-badd-b057dd695f95",
+    "variantId": "8db772c2-4f5b-49fc-8698-fa2aae42d493",
+    "url": "/uploads/products/caea9f70bfb0c643-shoe-6.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "c7c421c0-be93-4cf0-8001-79d0ea3036ea",
+    "productId": "50ceea68-375e-4bd0-ba7d-73063097a41f",
+    "variantId": "79a61209-0f81-4157-963e-8ce05c833fcf",
+    "url": "/uploads/products/69fd518f378eec38-shoe-7.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "7de9411f-97b4-4016-880d-641ffbfd5d6d",
+    "productId": "1e60ab3c-5f91-4643-a6b7-313d12f7627c",
+    "variantId": "a141b72e-318e-4a55-95df-b177ac1cbdd9",
+    "url": "/uploads/products/5699441ad971fd81-shoe-8.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "0c57e408-3b2b-4757-8925-5d01d384f7f5",
+    "productId": "38858eed-9c03-48c7-81f4-9bfd35872c36",
+    "variantId": "71ae73f7-6dd8-43d5-b6c5-a707dbfaf236",
+    "url": "/uploads/products/fe309db11252191e-shoe-9.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "9df108b0-0585-4644-a24f-12148de90717",
+    "productId": "d470c3f8-0091-4a9a-b73c-201f7767dfbf",
+    "variantId": "ec234741-fc75-40db-9c3f-ad0497ca4352",
+    "url": "/uploads/products/339db05c9dbcdb11-shoe-10.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "a072aaf8-c5c0-47b9-b4b4-1d686e395ce6",
+    "productId": "c63bb480-bb7d-469b-88bb-d3060501398a",
+    "variantId": "9355eba0-95d3-43b1-aa21-3bbc2d62be3d",
+    "url": "/uploads/products/c05c16323559ce41-shoe-11.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "de5663b7-0cdd-4e36-a6ec-d2ce5cd278a9",
+    "productId": "481287bc-4c97-44a9-8c62-f9da73e1958f",
+    "variantId": "c137e71d-d195-48b7-9896-27fc7a1cbe24",
+    "url": "/uploads/products/2be9f79e82add0e0-shoe-12.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "ed663bf9-2aac-4da1-915d-16f5d359a6ca",
+    "productId": "733a68f2-4044-416b-acba-0d334e98f1ba",
+    "variantId": "ae8c9f45-6431-4e33-9c3d-901f165f5d30",
+    "url": "/uploads/products/1f98b4e7e7cb94b6-shoe-13.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "2c8a5289-053c-45dd-84e6-e08e13091933",
+    "productId": "5a52edd4-714f-4a6e-958d-f5074e918b6f",
+    "variantId": "c16608f3-d1a8-4dc6-9f70-7bcd4048ad0c",
+    "url": "/uploads/products/2322c4a53ecab30b-shoe-14.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  },
+  {
+    "id": "d2fa6fdd-b84d-4b5c-954f-bfd2c77e54bb",
+    "productId": "2250dfd3-8add-45b9-894e-a8e560777251",
+    "variantId": "96eac7c5-0281-4dd2-b1ca-bff62d9db4a9",
+    "url": "/uploads/products/5aed09f118fa30ee-shoe-15.avif",
+    "sortOrder": 0,
+    "isPrimary": true
+  }
+]

@@ -9,6 +9,19 @@ import * as schema from '../../lib/db/schema';
 import { saveImage } from '../utils/imageUtils';
 
 // AI Product Uploader Service
+function pick<T>(arr: T[], n: number) {
+  const a = [...arr];
+  const out: T[] = [];
+  for (let i = 0; i < n && a.length; i++) {
+    const idx = Math.floor(Math.random() * a.length);
+    out.push(a.splice(idx, 1)[0]);
+  }
+  return out;
+}
+
+function randInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 export const ProductAIOutputSchema = z.object({
   description: z.string().min(1, 'Description cannot be empty.'),
@@ -41,13 +54,15 @@ export async function createProductFromAI(
   imagePath?: string,
 ) {
   return db.transaction(async (tx) => {
-    // 1. Generate product data from AI
-    const aiData = await generateProductDataWithGemini(productName, imagePath);
-    console.log('AI Generated Data:', aiData);
-    // Delete these lines from the top level
+// 1. Generate product data from AI
+const aiData = await generateProductDataWithGemini(productName, imagePath);
+console.log('AI Generated Data:', aiData);
+
+// Generate Stripe IDs
 const stripe_product_id = "prod_" + Math.random().toString(36).substr(2, 9);
 const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
-    // 2. Get or create category
+
+// 2. Get or create category
     const categorySlug = slugify(aiData.category);
     let [category] = await tx
       .select()
@@ -80,17 +95,9 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
     }
 
     // 4. Get or create size
-    const sizeSlug = 'one-size';
-    let [size] = await tx
-      .select()
-      .from(schema.sizes)
-      .where(eq(schema.sizes.slug, sizeSlug));
-    if (!size) {
-      console.log(`Size "One Size" not found, creating it...`);
-      [size] = await tx
-        .insert(schema.sizes)
-        .values({ name: 'One Size', slug: sizeSlug })
-        .returning();
+        const allSizes = await tx.select().from(schema.sizes);
+    if (allSizes.length === 0) {
+      throw new Error('No sizes found in the database. Please seed the sizes table first.');
     }
     // 5. Get or create brand
     const brandSlug = slugify(aiData.brand);
@@ -136,26 +143,37 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
       .returning();
     console.log('Inserted Product ID:', product.id);
 
-    // 8. Insert the product variant
-    const sku = `${slugify(productName)}-${colorSlug}`.substring(0, 50);
-    const [variant] = await tx
-      .insert(schema.productVariants)
-      .values({
-        productId: product.id,
-        colorId: color.id,
-        sizeId: size.id,
-        price: String(aiData.price),
-        sku: sku,
-      })
-      .returning();
-    console.log('Inserted Variant ID:', variant.id);
+   // 8. Insert product variants for a selection of sizes
+     // 8. Insert product variants for a selection of sizes
+    const sizeChoices = pick(allSizes, randInt(5, Math.min(5, allSizes.length))); // Using the pick function from seed.ts
+    const variantIds: string[] = [];
+    let defaultVariantId: string | null = null;
+
+    for (const size of sizeChoices) {
+      const sku = `${slugify(productName)}-${colorSlug}-${size.slug}`.substring(0, 50);
+      const [variant] = await tx
+        .insert(schema.productVariants)
+        .values({
+          productId: product.id,
+          colorId: color.id,
+          sizeId: size.id,
+          price: String(aiData.price),
+          sku: sku,
+        })
+        .returning();
+      variantIds.push(variant.id);
+      if (!defaultVariantId) {
+        defaultVariantId = variant.id;
+      }
+    }
+    console.log(`Inserted ${variantIds.length} variants for product ${product.id}`);
 
     // 9. Handle Image
-    if (imagePath) {
+    if (imagePath && defaultVariantId) {
       const imageUrl = await saveImage(imagePath);
       await tx.insert(schema.productImages).values({
         productId: product.id,
-        variantId: variant.id,
+        variantId: defaultVariantId,
         url: imageUrl,
         isPrimary: true,
       });
@@ -163,12 +181,13 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
     }
 
     // 10. Update product with default variant ID
-    await tx
-      .update(schema.products)
-      .set({ defaultVariantId: variant.id })
-      .where(eq(schema.products.id, product.id));
-    console.log('Updated product with default variant ID.');
-
+    if (defaultVariantId) {
+      await tx
+        .update(schema.products)
+        .set({ defaultVariantId: defaultVariantId })
+        .where(eq(schema.products.id, product.id));
+      console.log('Updated product with default variant ID.');
+    }
     const [finalProduct] = await tx
       .select()
       .from(schema.products)
@@ -195,141 +214,131 @@ function getMimeType(filePath: string): string {
   }
 }
 
+// --- API Key Rotation ---
+let currentKeyIndex = 0;
+
+function getNextApiKey(): string {
+  const keys = process.env.GOOGLE_API_KEYS?.split(',').map(k => k.trim()) || [];
+  if (keys.length === 0) {
+    throw new Error('No API keys found in GOOGLE_API_KEYS (comma separated)');
+  }
+  const key = keys[currentKeyIndex % keys.length];
+  currentKeyIndex++;
+  return key;
+}
+
 export async function generateProductDataWithGemini(
   name: string,
   imagePath?: string,
 ): Promise<ProductAIOutput> {
-  const apiKey = process.env.GOOGLE_API_KEY;
-  if (!apiKey) {
-    throw new Error('GOOGLE_API_KEY environment variable is not set.');
-  }
-
-  const genAI = new GoogleGenerativeAI(apiKey);
-  // Use gemini-1.5-flash for higher rate limits and faster response
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-
-  const prompt = `
-    You are an expert in Nike product data.
-    Based on the product name "${name}" ${
-    imagePath ? 'and the provided image' : ''
-  }, generate a JSON object with the following fields:
-    - description: A compelling product description for an e-commerce store.
-    - price: The retail price as a number.
-    - color: The primary color of the product.
-    - hexCode: The hex code for the primary color (e.g., "#000000").
-    - category: The most specific product category (e.g., "Running Shoes", "Basketball Shorts", "Lifestyle T-Shirt").
-    - gender: The target gender - must be one of: "Men", "Women", "Unisex", or "Kids".
-    - brand: The brand name (default to "Nike" unless specified otherwise).
-
-    The output must be a single, valid JSON object and nothing else.
-    Example:
-    {
-      "description": "The Nike Air Max 270 features Nike's largest-ever Max Air unit, providing visible cushioning and all-day comfort in a sleek, modern design.",
-      "price": 150,
-      "color": "Black/Anthracite/White",
-      "hexCode": "#000000",
-      "category": "Lifestyle Shoes",
-      "gender": "Unisex",
-      "brand": "Nike"
-    }
-  `;
-
-  const imageParts = [];
-  if (imagePath) {
-    if (!fs.existsSync(imagePath)) {
-      throw new Error(`Image path does not exist: ${imagePath}`);
-    }
-    const imageBuffer = fs.readFileSync(imagePath);
-    const imageBase64 = imageBuffer.toString('base64');
-    imageParts.push({
-      inlineData: {
-        data: imageBase64,
-        mimeType: getMimeType(imagePath),
-      },
-    });
-  }
-
-  const generationConfig = {
-    temperature: 0.3,
-    maxOutputTokens: 2048,
-    responseMimeType: 'application/json',
-  };
-
-  const safetySettings = [
-    { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-    { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-  ];
-
   let attempts = 0;
-  const maxAttempts = 5; // Increased from 3 to 5
-  
+  const maxAttempts = 5; // total tries across all keys
+
   while (attempts < maxAttempts) {
     try {
       attempts++;
-      console.log(
-        `Attempt ${attempts}/${maxAttempts}: Generating product data for "${name}"...`,
-      );
+
+      // Rotate API key
+      const apiKey = getNextApiKey();
+      console.log(`🔑 Using API Key ${currentKeyIndex}/${process.env.GOOGLE_API_KEYS?.split(',').length || 0}`);
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+      const prompt = `
+        You are an expert in Nike product data.
+        Based on the product name "${name}" ${imagePath ? 'and the provided image' : ''}, generate a JSON object with:
+        - description: A compelling product description.
+        - price: Positive number.
+        - color: Primary color.
+        - hexCode: Hex for primary color.
+        - category: Specific category.
+        - gender: Exactly one of: "Men", "Women", "Unisex", "Kids".
+
+        **Gender Rules:**
+        - Contains "Men" or "Men’s" → Men
+        - Contains "Women" or "Women’s" → Women
+        - Contains "Boy", "Girl", "Youth", "Kids" → Kids
+        - Otherwise → only "Unisex" if it truly fits all genders.
+
+        Output only valid JSON.
+      `;
+
+      const imageParts = [];
+      if (imagePath) {
+        if (!fs.existsSync(imagePath)) throw new Error(`Image path does not exist: ${imagePath}`);
+        const imageBuffer = fs.readFileSync(imagePath);
+        imageParts.push({
+          inlineData: {
+            data: imageBuffer.toString('base64'),
+            mimeType: getMimeType(imagePath),
+          },
+        });
+      }
 
       const result = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: prompt }, ...imageParts] }],
-        generationConfig,
-        safetySettings,
+        generationConfig: {
+          temperature: 0.3,
+          maxOutputTokens: 2048,
+          responseMimeType: 'application/json',
+        },
+        safetySettings: [
+          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        ],
       });
 
-      const response = result.response;
-      const text = response.text();
+      const responseText = result.response.text();
+      const parsedJson = JSON.parse(responseText);
 
-      const parsedJson = JSON.parse(text);
+// ✅ Sanitize hexCode before Zod validation
+if (parsedJson.hexCode) {
+  parsedJson.hexCode = parsedJson.hexCode.trim();
+  const match = parsedJson.hexCode.match(/#?[0-9a-fA-F]{6}/);
+  parsedJson.hexCode = match
+    ? (match[0].startsWith('#') ? match[0] : `#${match[0]}`)
+    : '#000000'; // fallback color
+}
+
+
+
       const validatedData = ProductAIOutputSchema.parse(parsedJson);
 
-      console.log('Successfully generated and validated product data.');
+      console.log('✅ Successfully generated product data.');
       return validatedData;
     } catch (error) {
-      console.error(`Attempt ${attempts}/${maxAttempts} failed:`, error);
-      
-      // Calculate exponential backoff delay
-      let delay = Math.pow(2, attempts - 1) * 5000; // 5s, 10s, 20s, 40s, 80s
-      
-      // Handle specific error types
-      if (error instanceof Error) {
-        if (error.message.includes('429') || error.message.includes('quota')) {
-          console.log('Rate limit hit. Using extended delay...');
-          delay = 60000; // 60 seconds for rate limits
-        } else if (error.message.includes('503') || error.message.includes('overloaded')) {
-          console.log('Service overloaded. Using exponential backoff...');
-          delay = Math.min(delay, 120000); // Cap at 2 minutes
-        } else if (error.message.includes('500')) {
-          console.log('Internal server error. Using moderate delay...');
-          delay = Math.min(delay, 30000); // Cap at 30 seconds
-        }
+      console.error(`❌ Attempt ${attempts}/${maxAttempts} failed:`, error);
+
+      // Quota hit → try next key
+      if (error instanceof Error && (error.message.includes('429') || error.message.includes('quota'))) {
+        console.log('⚠️ Quota limit hit — switching API key...');
+        continue; // try with next key
       }
-      
-      if (attempts >= maxAttempts) {
-        // Provide a more helpful error message
-        let errorMessage = 'Failed to generate product data after multiple attempts.';
-        
-        if (error instanceof Error) {
-          if (error.message.includes('503') || error.message.includes('overloaded')) {
-            errorMessage += ' The Gemini API is currently overloaded. Please try again in a few minutes.';
-          } else if (error.message.includes('429') || error.message.includes('quota')) {
-            errorMessage += ' Rate limit exceeded. Consider upgrading your API plan or wait longer between requests.';
-          } else {
-            errorMessage += ` Last error: ${error.message}`;
-          }
-        }
-        
-        throw new Error(errorMessage);
-      }
-      
-      // Wait before retry with exponential backoff
-      console.log(`Waiting ${delay / 1000} seconds before retry...`);
-      await new Promise((resolve) => setTimeout(resolve, delay));
+
+      // Backoff delay for other errors
+      const delay = Math.min(Math.pow(2, attempts - 1) * 5000, 120000);
+      console.log(`⏳ Waiting ${delay / 1000}s before retry...`);
+      await new Promise(r => setTimeout(r, delay));
     }
   }
-  
-  throw new Error('Exited retry loop unexpectedly.');
+
+  throw new Error('All API keys failed or retries exhausted.');
+}
+
+// --- Fallback Wrapper ---
+export async function generateProductDataWithGeminiAndFallback(
+  name: string,
+  imagePath?: string,
+): Promise<ProductAIOutput> {
+  try {
+    return await generateProductDataWithGemini(name, imagePath);
+  } catch (error) {
+    console.error('⚠️ Gemini failed after all retries. Using fallback.');
+    return createFallbackProductData(name);
+  }
 }
 
 // Alternative: Add a fallback function that creates basic product data
@@ -340,6 +349,19 @@ export function createFallbackProductData(name: string): ProductAIOutput {
   const nameLower = name.toLowerCase();
   let category = 'Lifestyle';
   let gender: 'Men' | 'Women' | 'Unisex' | 'Kids' = 'Unisex';
+
+  // Better gender detection
+  if (/\bmen\b|\bmen's\b/i.test(nameLower)) {
+  gender = 'Men';
+  } else if (/\bwomen\b|\bwomen's\b/i.test(nameLower)) {
+  gender = 'Women';
+  } else if (/\bkid\b|\bkids\b|\byouth\b|\bboy\b|\bgirl\b/i.test(nameLower)) {
+  gender = 'Kids';
+  } else {
+  // Last resort guess: shoes and performance gear often default to Men if not specified
+  gender = 'Men';
+  }
+
   const price = 100; // Default price
   
   // Basic category detection
@@ -385,18 +407,4 @@ export function createFallbackProductData(name: string): ProductAIOutput {
     gender,
     brand: 'Nike'
   };
-}
-
-// Modified main function that uses fallback on repeated failures
-export async function generateProductDataWithGeminiAndFallback(
-  name: string,
-  imagePath?: string,
-): Promise<ProductAIOutput> {
-  try {
-    return await generateProductDataWithGemini(name, imagePath);
-  } catch (error) {
-    console.error('Gemini API failed after all retries. Using fallback data generation...');
-    console.error('Error:', error);
-    return createFallbackProductData(name);
-  }
 }

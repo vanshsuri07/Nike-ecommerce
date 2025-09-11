@@ -65,7 +65,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     </div>
                 </CollapsibleSection>
                 <CollapsibleSection title="Shipping & Returns">
-                    <p className="text-body text-dark-700">Free standard shipping on orders over $50. Returns accepted within 30 days of purchase.</p>
+                    <p className="text-body text-dark-700">
+  Shipping: $5 — Returns accepted within 30 days of purchase.
+</p>
                 </CollapsibleSection>
             </div>
           </div>
