@@ -4,7 +4,7 @@
 import { auth } from './index';
 import { db } from '@/db';
 import * as schema from '@/lib/db/schema';
-import { cookies} from 'next/headers';
+import { cookies, headers} from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 import { signInSchema, signUpSchema } from './validation';
 import { redirect } from 'next/navigation';
@@ -149,7 +149,7 @@ export async function getGuestSession() {
 export async function getCurrentUser() {
   try {
     const session = await auth.api.getSession({
-      headers: new Headers(),
+      headers: await headers(),
     });
     console.log('Full session object:', session);
     return session?.user || null;
