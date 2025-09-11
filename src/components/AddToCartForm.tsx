@@ -26,7 +26,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
     const [isPending, setIsPending] = useState(false);
     const { addCartItem } = useCartStore();
 
-    const uniqueSizes = [...new Set(product.variants.map((v: ProductVariantWithSize) => v.size.name))].sort();
+    const uniqueSizes = [...new Set(product.variants.map((v: ProductVariantWithSize) => v.size.name))].sort((a, b) => Number(a) - Number(b));
 
     const selectedVariant = product.variants.find(
         (v: ProductVariantWithSize) => v.size.name === selectedSize,
