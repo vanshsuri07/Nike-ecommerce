@@ -2,48 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Check, ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ProductDetails } from '@/lib/actions/product';
 
-// Extract the variant type from the ProductDetails type
-type Variant = ProductDetails['variants'][0];
 type ImageType = ProductDetails['mainImages'][0];
 
 interface ProductGalleryProps {
-  variants: Variant[];
   mainImages: ImageType[];
 }
 
-const colorClassMap: { [key: string]: string } = {
-    'Red': 'bg-product-red',
-    'Blue': 'bg-product-blue',
-    'Green': 'bg-product-green',
-    'Orange': 'bg-product-orange',
-    'Black': 'bg-black',
-    'White': 'bg-white',
-    'Gray': 'bg-gray-400',
-};
-
-export default function ProductGallery({ variants, mainImages }: ProductGalleryProps) {
-  const [activeVariantIndex, setActiveVariantIndex] = useState<number | null>(
-    mainImages.length === 0 && variants.length > 0 ? 0 : null
-  );
+export default function ProductGallery({ mainImages }: ProductGalleryProps) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
-  // Determine the set of images to display
-  const galleryImages = activeVariantIndex !== null
-    ? variants[activeVariantIndex].images
-    : mainImages;
-
+  const galleryImages = mainImages;
   const activeImage = galleryImages[activeImageIndex];
-
-  useEffect(() => {
-    setActiveImageIndex(0);
-  }, [activeVariantIndex]);
-
-  const handleVariantChange = (index: number) => {
-    setActiveVariantIndex(index);
-  };
 
   const handleThumbnailClick = (index: number) => {
     setActiveImageIndex(index);
@@ -72,7 +44,7 @@ export default function ProductGallery({ variants, mainImages }: ProductGalleryP
         {activeImage ? (
           <Image
             src={activeImage.url}
-            alt={activeVariantIndex !== null ? `${variants[activeVariantIndex].color.name} product image` : 'Product image'}
+            alt={'Product image'}
             fill
             className="object-cover rounded-lg"
             sizes="(min-width: 1024px) 50vw, 100vw"
@@ -118,19 +90,6 @@ export default function ProductGallery({ variants, mainImages }: ProductGalleryP
           </div>
         </div>
       )}
-
-      <div className="mt-6">
-  <p className="text-body-medium text-dark-900">
-    Color:{" "}
-    <span className="font-bold">
-      {variants.length > 0 && variants[0].color?.name
-        ? variants[0].color.name
-        : "Default"}
-    </span>
-  </p>
-</div>
-
-
     </div>
   );
 }
