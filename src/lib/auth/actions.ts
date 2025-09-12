@@ -55,9 +55,10 @@ export async function signUp(data: FormData) {
       console.log('Guest cart merged.');
     }
 
+    const redirectUrl = (data.get('redirectUrl') as string) || '/';
     console.log('Sign-up successful.');
     // Return success indicator instead of redirecting
-    return redirect('/sign-in');
+    return redirect(redirectUrl);
     
   } catch (error) {
     console.error('Error during sign-up:', error);

@@ -10,7 +10,9 @@ export async function createStripeCheckoutSession() {
   const user = await getCurrentUser();
   const cart = await getCart();
   if (!user) {
-    redirect('/sign-up');
+    const headersList = headers();
+    const redirectUrl = headersList.get('referer') || '/';
+    redirect(`/sign-up?redirect_url=${encodeURIComponent(redirectUrl)}`);
   }
 
   if (!cart || cart.items.length === 0) {
