@@ -15,6 +15,7 @@ import { and, eq } from 'drizzle-orm';
 export async function signUp(data: FormData) {
   console.log('Attempting to sign up...');
   const formData = Object.fromEntries(data);
+  const redirectUrl = (data.get('redirectUrl') as string) || '/';
   const parsed = signUpSchema.safeParse(formData);
 
   if (!parsed.success) {
@@ -55,7 +56,6 @@ export async function signUp(data: FormData) {
       console.log('Guest cart merged.');
     }
 
-    const redirectUrl = (data.get('redirectUrl') as string) || '/';
     console.log('Sign-up successful.');
     // Return success indicator instead of redirecting
     return redirect(redirectUrl);

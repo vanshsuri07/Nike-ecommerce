@@ -98,7 +98,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
           {type === 'signIn'
                 ? "Don't have an account? "
                 : 'Already have an account? '}
-          <Link href={type === 'signIn' ? '/sign-up' : '/sign-in'} className="text-green font-medium hover:underline">
+          <Link href={`${type === 'signIn' ? '/sign-up' : '/sign-in'}${redirectUrl ? `?redirect_url=${redirectUrl}` : ''}`} className="text-green font-medium hover:underline">
                 {type === 'signIn' ? 'Sign Up' : 'Sign In'}
               </Link>
             </p>
