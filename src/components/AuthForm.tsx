@@ -72,13 +72,6 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
     // The server actions will handle redirection on success.
     // If the action returns, it's because of an error.
-    if (result?.error) {
-      const errorMessages = Object.values(result.error).flat();
-      const rawErrorMessage = errorMessages.join(' ');
-      const formattedError = getErrorMessage(type, rawErrorMessage);
-      setError(formattedError);
-      toast.error(formattedError);
-    }
 
   } catch (err) {
     console.error('Auth error:', err);

@@ -184,68 +184,73 @@ export async function mergeGuestCartWithUserCart(
   userId: string,
   guestId: string,
 ) {
-  const guestCart = await db.query.carts.findFirst({
-    where: eq(schema.carts.guestId, guestId),
-    with: {
-      items: true,
-    },
-  });
+  try {
+    const guestCart = await db.query.carts.findFirst({
+      where: eq(schema.carts.guestId, guestId),
+      with: {
+        items: true,
+      },
+    });
 
-  if (!guestCart) {
+    if (!guestCart) {
+      await db.delete(schema.guests).where(eq(schema.guests.id, guestId));
+      const cookieStore = await cookies();
+      cookieStore.delete('guest_session');
+      return;
+    }
+
+    const userCart = await db.query.carts.findFirst({
+      where: eq(schema.carts.userId, userId),
+    });
+
+    if (userCart) {
+      // Merge guest cart items into user cart
+      for (const guestItem of guestCart.items) {
+        const userItem = await db.query.cartItems.findFirst({
+          where: and(
+            eq(schema.cartItems.cartId, userCart.id),
+            eq(
+              schema.cartItems.productVariantId,
+              guestItem.productVariantId,
+            ),
+          ),
+        });
+
+        if (userItem) {
+          // Update existing item quantity
+          await db
+            .update(schema.cartItems)
+            .set({ quantity: userItem.quantity + guestItem.quantity })
+            .where(eq(schema.cartItems.id, userItem.id));
+        } else {
+          // Add new item to user cart
+          await db.insert(schema.cartItems).values({
+            cartId: userCart.id,
+            productVariantId: guestItem.productVariantId,
+            quantity: guestItem.quantity,
+          });
+        }
+      }
+
+      // Clean up guest cart and items
+      await db
+        .delete(schema.cartItems)
+        .where(eq(schema.cartItems.cartId, guestCart.id));
+      await db.delete(schema.carts).where(eq(schema.carts.id, guestCart.id));
+    } else {
+      // Transfer guest cart to user
+      await db
+        .update(schema.carts)
+        .set({ userId: userId, guestId: null })
+        .where(eq(schema.carts.id, guestCart.id));
+    }
+
+    // Clean up guest session
     await db.delete(schema.guests).where(eq(schema.guests.id, guestId));
     const cookieStore = await cookies();
     cookieStore.delete('guest_session');
-    return;
+  } catch (error) {
+    console.error('Error merging guest cart:', error);
+    // Do not re-throw the error. We want the sign-up/sign-in to succeed even if the cart merge fails.
   }
-
-  const userCart = await db.query.carts.findFirst({
-    where: eq(schema.carts.userId, userId),
-  });
-
-  if (userCart) {
-    // Merge guest cart items into user cart
-    for (const guestItem of guestCart.items) {
-      const userItem = await db.query.cartItems.findFirst({
-        where: and(
-          eq(schema.cartItems.cartId, userCart.id),
-          eq(
-            schema.cartItems.productVariantId,
-            guestItem.productVariantId,
-          ),
-        ),
-      });
-
-      if (userItem) {
-        // Update existing item quantity
-        await db
-          .update(schema.cartItems)
-          .set({ quantity: userItem.quantity + guestItem.quantity })
-          .where(eq(schema.cartItems.id, userItem.id));
-      } else {
-        // Add new item to user cart
-        await db.insert(schema.cartItems).values({
-          cartId: userCart.id,
-          productVariantId: guestItem.productVariantId,
-          quantity: guestItem.quantity,
-        });
-      }
-    }
-
-    // Clean up guest cart and items
-    await db
-      .delete(schema.cartItems)
-      .where(eq(schema.cartItems.cartId, guestCart.id));
-    await db.delete(schema.carts).where(eq(schema.carts.id, guestCart.id));
-  } else {
-    // Transfer guest cart to user
-    await db
-      .update(schema.carts)
-      .set({ userId: userId, guestId: null })
-      .where(eq(schema.carts.id, guestCart.id));
-  }
-
-  // Clean up guest session
-  await db.delete(schema.guests).where(eq(schema.guests.id, guestId));
-  const cookieStore = await cookies();
-  cookieStore.delete('guest_session');
 }
