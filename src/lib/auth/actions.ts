@@ -57,7 +57,7 @@ export async function signUp(data: FormData) {
 
     console.log('Sign-up successful.');
     // Return success indicator instead of redirecting
-    return { success: true };
+    return redirect('/sign-in');
     
   } catch (error) {
     console.error('Error during sign-up:', error);
@@ -100,7 +100,7 @@ export async function signIn(data: FormData) {
 
     console.log('Sign-in successful.');
     // Return success indicator with redirect URL instead of redirecting
-    return { success: true, redirectUrl };
+    return redirect(redirectUrl);
     
   } catch (error) {
     console.error('Error during sign-in:', error);

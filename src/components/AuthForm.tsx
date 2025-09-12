@@ -70,23 +70,14 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       return;
     }
 
-    // Handle special redirects (like user not found)
-    // Note: redirectTo property is not available in current auth actions
-    // Remove this check as it's not needed based on the current implementation
-
-    // Success case
-    if (result?.success) {
-      setError(null);
-      toast.success(
-        type === 'signUp'
-          ? 'Account created successfully!'
-          : 'Signed in successfully!'
-      );
-
-      // Handle redirects
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      const redirectTo = (result as any).redirectUrl || (type === 'signUp' ? '/sign-in' : redirectUrl || '/');
-      window.location.href = redirectTo;
+    // The server actions will handle redirection on success.
+    // If the action returns, it's because of an error.
+    if (result?.error) {
+      const errorMessages = Object.values(result.error).flat();
+      const rawErrorMessage = errorMessages.join(' ');
+      const formattedError = getErrorMessage(type, rawErrorMessage);
+      setError(formattedError);
+      toast.error(formattedError);
     }
 
   } catch (err) {
