@@ -1,4 +1,4 @@
-import { pgTable, uuid, integer, numeric, timestamp, pgEnum,text } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, integer, numeric, timestamp, pgEnum,text, boolean } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -18,6 +18,7 @@ export const orders = pgTable('orders', {
   billingAddressId: uuid('billing_address_id').notNull().references(() => addresses.id, { onDelete: 'set null' }),
   stripeSessionId: text('stripe_session_id'), 
   stripePaymentIntentId: text('stripe_payment_intent_id'), // ✅ NEW COLUMN
+  confirmationEmailSent: boolean('confirmation_email_sent').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

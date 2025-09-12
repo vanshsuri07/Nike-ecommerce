@@ -51,8 +51,7 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
             Thank you for your order!
           </h1>
           <p className="text-body text-dark-700 mb-8">
-            Your order has been confirmed. You&apos;ll receive a confirmation email
-            shortly.
+            Your order has been confirmed. A confirmation email has been sent to your inbox.
           </p>
         </div>
         <div className="p-6 border rounded-lg space-y-4 mb-8">

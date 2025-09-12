@@ -1,4 +1,4 @@
-import { createOrder } from '@/lib/actions/orders';
+import { getOrder } from '@/lib/actions/orders';
 import OrderSuccess from '@/components/OrderSuccess';
 import { notFound } from 'next/navigation';
 
@@ -22,7 +22,7 @@ export default async function CheckoutSuccessPage({
 
   try {
     console.log('CheckoutSuccessPage: Fetching order for session:', sessionId);
-    const order = await createOrder(sessionId);
+    const order = await getOrder(sessionId);
     console.log('CheckoutSuccessPage: Order result:', order);
 
     if (!order) {
@@ -31,7 +31,7 @@ export default async function CheckoutSuccessPage({
     }
 
     console.log('CheckoutSuccessPage: Rendering OrderSuccess component');
-    return <OrderSuccess order={{ ...order, items: [] }} />;
+    return <OrderSuccess order={order} />;
 
   } catch (error) {
     console.error('CheckoutSuccessPage: Error fetching order:', error);

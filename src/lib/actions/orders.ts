@@ -5,6 +5,7 @@ import * as schema from '@/lib/db/schema';
 import { stripe } from '@/lib/stripe/client';
 import { eq } from 'drizzle-orm';
 import { clearCart, getCart } from './cart';
+import { sendOrderConfirmationEmail } from './emails';
 
 export async function createOrder(
   stripeSessionId: string,
@@ -142,5 +143,38 @@ export async function createOrder(
 
   await clearCart(cartId);
 
+  // Send confirmation email asynchronously
+  sendOrderConfirmationEmail(newOrder.id);
+
   return newOrder;
+}
+
+export async function getOrder(identifier: string, by: 'orderId' | 'stripeSessionId' = 'stripeSessionId') {
+    const where = by === 'orderId'
+        ? eq(schema.orders.id, identifier)
+        : eq(schema.orders.stripeSessionId, identifier);
+
+    const order = await db.query.orders.findFirst({
+        where,
+        with: {
+            items: {
+                with: {
+                    productVariant: {
+                        with: {
+                            product: {
+                                with:{
+                                    images: true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            user: true,
+            shippingAddress: true,
+            billingAddress: true,
+        }
+    });
+
+    return order;
 }
