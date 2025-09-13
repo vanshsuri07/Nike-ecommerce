@@ -17,18 +17,18 @@ const Page = async () => {
   const products: ProductWithDetails[] = fetchedProducts.filter((p) => p.brand !== null) as ProductWithDetails[];
 
   return (
-    <div className="bg-light-100">
+    <div className="bg-light-100 min-h-screen">
       <Navbar />
       <HeroSection />
       
-      <main className="container mx-auto px-4 py-8 ">
+      <main className="container mx-auto px-4 py-8">
         <div className="text-center mb-12 mt-12">
           <h2 className="text-4xl font-extrabold text-gray-900">Featured Products</h2>
           <p className="text-lg text-gray-600 mt-2">
             Check out our latest and greatest selection of footwear.
           </p>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 auto-rows-fr">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-12">
           {products.map(product => (
             <Card key={product.id} product={product} />
           ))}

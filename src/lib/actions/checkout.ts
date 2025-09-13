@@ -9,10 +9,10 @@ import { redirect } from 'next/navigation';
 export async function createStripeCheckoutSession() {
   const user = await getCurrentUser();
   const cart = await getCart();
-  if (!user) {
-    redirect('/sign-up');
-  }
-
+  // if (!user) {
+  //   redirect('/sign-up');
+  // }
+  
   if (!cart || cart.items.length === 0) {
     throw new Error('Cart is empty');
   }
@@ -39,21 +39,21 @@ export async function createStripeCheckoutSession() {
   });
 
   const session = await stripe.checkout.sessions.create({
-  payment_method_types: ['card'],
-  line_items,
-  mode: 'payment',
-  success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-  cancel_url: `${origin}/cart`,
-  billing_address_collection: 'required',
-  shipping_address_collection: {
+    payment_method_types: ['card'],
+    line_items,
+    mode: 'payment',
+    success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/cart`,
+    billing_address_collection: 'required',
+    shipping_address_collection: {
     allowed_countries: ['US', 'CA', 'GB', 'AU', 'IN'], // Add countries you ship to
-  },
-  ...(user ? { customer_email: user.email } : {}),
-  metadata: {
-    cartId: cart.id,
-    userId: user?.id ?? null,
-  },
-});
+    },
+    ...(user ? { customer_email: user.email } : {}),
+    metadata: {
+      cartId: cart.id,
+      userId: user?.id ?? null,
+    },
+  });
 
   if (!session.url) {
     throw new Error('Failed to create Stripe checkout session');
