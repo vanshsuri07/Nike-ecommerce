@@ -28,6 +28,7 @@ export const orderItems = pgTable('order_items', {
   productVariantId: uuid('product_variant_id').notNull().references(() => productVariants.id, { onDelete: 'no action' }),
   quantity: integer('quantity').notNull(),
   priceAtPurchase: numeric('price_at_purchase', { precision: 10, scale: 2 }).notNull(),
+  
 });
 
 export const ordersRelations = relations(orders, ({ one, many }) => ({

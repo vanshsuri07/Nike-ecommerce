@@ -1,6 +1,7 @@
 import { getOrder } from '@/lib/actions/orders';
 import OrderSuccess from '@/components/OrderSuccess';
 import { notFound } from 'next/navigation';
+import { sendOrderConfirmationEmail } from '@/lib/actions/emails';
 
 export default async function CheckoutSuccessPage({
   searchParams,
@@ -30,12 +31,17 @@ export default async function CheckoutSuccessPage({
       return notFound();
     }
 
+    // ✅ Send confirmation email if not sent already
+    if (!order.confirmationEmailSent) {
+      await sendOrderConfirmationEmail(order.id);
+      console.log('📧 Confirmation email triggered for order:', order.id);
+    }
+
     console.log('CheckoutSuccessPage: Rendering OrderSuccess component');
-    return <OrderSuccess order={order} />;
+    return <OrderSuccess order={order as any} />;
 
   } catch (error) {
     console.error('CheckoutSuccessPage: Error fetching order:', error);
-    // Return a temporary error page instead of crashing
     return (
       <div className="container mx-auto px-4 py-8">
         <h1>Error</h1>

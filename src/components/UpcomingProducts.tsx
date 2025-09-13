@@ -5,16 +5,16 @@ import { motion } from 'framer-motion';
 
 const UpcomingProducts = () => {
   return (
-    <section className="mt-6 py-8 bg-gray-900 text-white">
+    <section className="py-8 bg-gray-900 text-white">
       <div className="container mx-auto px-4">
-        <div className="relative grid grid-cols-1 md:grid-cols-2 items-center gap-6 bg-gray-800 rounded-lg shadow-2xl overflow-visible min-h-[300px]">
-          {/* Background Glow */}
-          <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-green-500/20 rounded-full blur-3xl opacity-50" />
-          <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-blue-500/20 rounded-full blur-3xl opacity-50" />
+        <div className="relative grid grid-cols-1 md:grid-cols-2 items-center gap-6 bg-gray-800 rounded-lg shadow-2xl overflow-hidden min-h-[300px]">
+          {/* Background Glow - Fixed positioning */}
+          <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-green-500/20 rounded-full blur-3xl opacity-50 -translate-x-1/4 -translate-y-1/4" />
+          <div className="absolute bottom-0 right-0 w-1/2 h-1/2 bg-blue-500/20 rounded-full blur-3xl opacity-50 translate-x-1/4 translate-y-1/4" />
 
           {/* Text */}
           <motion.div
-            className="p-6 md:p-8 z-10"
+            className="p-6 md:p-8 z-10 relative"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.5 }}
@@ -36,18 +36,25 @@ const UpcomingProducts = () => {
 
           {/* Image */}
           <motion.div
-            className="relative h-56 md:h-[280px] w-full flex justify-center items-center"
-            initial={{ opacity: 0, scale: 0.8, y: 0 }}
-            animate={{ opacity: 1, scale: 1, y: [0, -15, 0] }}
-            transition={{ duration: 5, ease: "easeInOut", repeat: Infinity }}
+            className="relative h-56 md:h-[280px] w-full flex justify-center items-center z-10"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
           >
-            <Image
-              src="/shoes/shoe-8.avif"
-              alt="Limited Edition Upcoming Shoe"
-              fill
-              style={{ objectFit: "contain" }}
-              className="drop-shadow-2xl -rotate-12"
-            />
+            <motion.div
+              className="relative w-full h-full"
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 5, ease: "easeInOut", repeat: Infinity }}
+            >
+              <Image
+                src="/shoes/shoe-8.avif"
+                alt="Limited Edition Upcoming Shoe"
+                fill
+                style={{ objectFit: "contain" }}
+                className="drop-shadow-2xl -rotate-12"
+              />
+            </motion.div>
           </motion.div>
         </div>
       </div>

@@ -48,7 +48,7 @@ import {
             <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] w-[465px]">
               <Section className="mt-[32px] text-center">
                 <Img
-                  src="https://via.placeholder.com/150" // Placeholder for store logo
+                  src="http://localhost:3000/nikelogo.jpg" // Placeholder for store logo
                   width="150"
                   height="50"
                   alt="Store Logo"
@@ -62,7 +62,7 @@ import {
                 Hi {customerName},
               </Text>
               <Text className="text-black text-[14px] leading-[24px]">
-                We've received your order and will contact you as soon as your
+                We&apos;ve received your order and will contact you as soon as your
                 package is shipped. You can find your purchase information below.
               </Text>
               <Section>
