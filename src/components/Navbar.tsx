@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import CartIndicator from './CartIndicator';
+import Search from './Search';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,11 +24,12 @@ const Navbar: React.FC = () => {
         <Link href="/products?gender=Women" className="text-light-100 hover:text-green text-body">Women</Link>
         <Link href="/products?gender=Kids" className="text-light-100 hover:text-green text-body">Kids</Link>
         <Link href="/products" className="text-light-100 hover:text-green text-body">Collections</Link>
+        <Link href="/wishlist" className="text-light-100 hover:text-green text-body">Wishlist</Link>
         <Link href="/contact" className="text-light-100 hover:text-green text-body">Contact</Link>
       </div>
 
       <div className="hidden md:flex md:items-center md:space-x-8">
-        <span className="text-light-100 text-body">Search</span>
+        <Search />
         <CartIndicator />
       </div>
 
