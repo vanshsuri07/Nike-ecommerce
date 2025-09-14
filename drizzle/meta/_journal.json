@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1757793151921,
+      "tag": "0000_salty_post",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1757794990589,
+      "tag": "0001_flippant_captain_flint",
+      "breakpoints": true
+    }
+  ]
+}

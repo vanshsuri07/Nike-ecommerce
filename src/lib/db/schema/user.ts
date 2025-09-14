@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, boolean } from 'drizzle-orm/pg-core';
 import { sql, relations } from 'drizzle-orm';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -12,10 +12,8 @@ export const user = pgTable('users', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   name: text('name'),
   email: text('email').notNull().unique(),
-  emailVerified: timestamp('email_verified', {
-  mode: 'string',
-  withTimezone: true,
-}).default(sql`null`),
+   emailVerified: boolean('email_verified').default(false),
+
 
   image: text('image'),
   createdAt: timestamp('created_at', { withTimezone: true })

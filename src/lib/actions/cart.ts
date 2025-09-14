@@ -11,8 +11,10 @@ import {
 import { revalidatePath } from 'next/cache';
 
 export async function getCart(cartId?: string) {
+  console.log('Getting cart...', cartId ? `for cartId: ${cartId}` : 'for current user/guest');
+  
   if (cartId) {
-    return await db.query.carts.findFirst({
+    const cart = await db.query.carts.findFirst({
       where: eq(schema.carts.id, cartId),
       with: {
         items: {
@@ -30,15 +32,21 @@ export async function getCart(cartId?: string) {
         },
       },
     });
+    console.log('Cart found by ID:', cart ? 'Yes' : 'No');
+    return cart;
   }
 
   const user = await getCurrentUser();
+  console.log('Current user:', user ? user.id : 'None');
+  
   let guest;
   if (!user) {
     guest = await getGuestSession();
+    console.log('Guest session:', guest ? guest.id : 'None');
   }
 
   if (!user && !guest) {
+    console.log('No user and no guest session - returning null');
     return null;
   }
 
@@ -63,9 +71,35 @@ export async function getCart(cartId?: string) {
     },
   });
 
+  console.log('Cart found:', cart ? `Yes (${cart.items?.length || 0} items)` : 'No');
+  
+  // If user exists but no cart found, check if there's an orphaned cart
+  if (user && !cart) {
+    console.log('User exists but no cart found, checking for recent carts...');
+    const recentCart = await db.query.carts.findFirst({
+      where: eq(schema.carts.userId, user.id),
+      with: {
+        items: {
+          with: {
+            productVariant: {
+              with: {
+                product: {
+                  with: {
+                    images: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    console.log('Recent cart found:', recentCart ? 'Yes' : 'No');
+    return recentCart;
+  }
+
   return cart;
 }
-
 export async function addCartItem(productVariantId: string, quantity: number) {
   const user = await getCurrentUser();
   let guest;

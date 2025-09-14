@@ -1,16 +1,14 @@
 'use server';
 
-
 import { auth } from './index';
 import { db } from '@/db';
 import * as schema from '@/lib/db/schema';
-import { cookies} from 'next/headers';
+import { cookies } from 'next/headers';
 import { v4 as uuidv4 } from 'uuid';
 import { signInSchema, signUpSchema } from './validation';
 import { redirect } from 'next/navigation';
 import { BetterAuthError } from 'better-auth';
 import { and, eq } from 'drizzle-orm';
-
 
 export async function signUp(data: FormData) {
   console.log('Attempting to sign up...');
@@ -29,25 +27,58 @@ export async function signUp(data: FormData) {
     const guest = await getGuestSession();
     
     console.log('Creating user...');
-    // Create user
+    // Create user with proper headers
+    const cookieStore = await cookies();
+    const headers = new Headers();
+    
+    // Get all cookies and set them in headers
+    cookieStore.getAll().forEach(cookie => {
+      headers.append('cookie', `${cookie.name}=${cookie.value}`);
+    });
+
     await auth.api.signUpEmail({
       body: {
         name: parsed.data.name,
         email: parsed.data.email,
         password: parsed.data.password,
       },
+      headers,
     });
 
     console.log('User created. Signing in...');
-    // Sign them in immediately
+    // Sign them in immediately with proper headers
     const session = await auth.api.signInEmail({
       body: {
         email: parsed.data.email,
         password: parsed.data.password,
       },
+      headers,
     });
 
     console.log("User signed in:", session);
+
+    // Set the session token in cookies
+    if (session?.token) {
+      cookieStore.set('better-auth.session_token', session.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+      });
+    }
+    if (session?.user) {
+  await db
+    .insert(schema.user)
+    .values({
+      id: session.user.id,             // keep BetterAuth UUID
+      name: session.user.name ?? '',
+      email: session.user.email,
+      emailVerified: false,           // or use session.user.emailVerified if available
+      image: session.user.image ?? null,
+    })
+    .onConflictDoNothing({ target: schema.user.id }); 
+}
 
     if (guest && session?.user) {
       console.log('Merging guest cart with user cart...');
@@ -56,7 +87,6 @@ export async function signUp(data: FormData) {
     }
 
     console.log('Sign-up successful.');
-    // Return success indicator instead of redirecting
     return { success: true };
     
   } catch (error) {
@@ -71,13 +101,15 @@ export async function signUp(data: FormData) {
 }
 
 export async function signIn(data: FormData) {
-  console.log('Attempting to sign in...');
+  console.log('🚀 [SIGNIN] Starting sign-in process...');
   const formData = Object.fromEntries(data);
   const redirectUrl = (data.get('redirectUrl') as string) || '/';
+  console.log('📝 [SIGNIN] Form data:', { email: formData.email, redirectUrl });
+  
   const parsed = signInSchema.safeParse(formData);
 
   if (!parsed.success) {
-    console.error('Sign-in validation failed:', parsed.error);
+    console.error('❌ [SIGNIN] Validation failed:', parsed.error);
     return {
       error: parsed.error.flatten().fieldErrors,
     };
@@ -86,27 +118,42 @@ export async function signIn(data: FormData) {
   const { email, password } = parsed.data;
 
   try {
-    console.log('Sign-in validation successful. Getting guest session...');
+    console.log('🎭 [SIGNIN] Getting guest session...');
     const guest = await getGuestSession();
-    console.log('Signing in user...');
-    const user = await auth.api.signInEmail({ body: { email, password } });
-    console.log('User signed in:', user);
+    console.log('🔍 [SIGNIN] Guest session:', guest ? `ID: ${guest.id}` : 'None');
     
-    if (guest && user) {
-      console.log('Merging guest cart with user cart...');
-      await mergeGuestCartWithUserCart(user.user.id, guest.id);
-      console.log('Guest cart merged.');
-    }
+    // Use the working API endpoint that sets cookies properly
+    console.log('🔑 [SIGNIN] Making sign-in request to Better Auth API...');
+    const baseUrl = process.env.BETTER_AUTH_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
 
-    console.log('Sign-in successful.');
-    // Return success indicator with redirect URL instead of redirecting
-    return { success: true, redirectUrl };
-    
-  } catch (error) {
-    console.error('Error during sign-in:', error);
-    if (error instanceof BetterAuthError) {
-      if (error.message.includes('user') && error.message.includes('not found')) {
-        console.log('User not found. Returning redirect info...');
+    console.log('📨 [SIGNIN] API Response:', {
+      status: response.status,
+      ok: response.ok,
+      hasSetCookie: response.headers.has('set-cookie'),
+      cookies: response.headers.get('set-cookie')?.slice(0, 100) + '...'
+    });
+
+    const result = await response.json();
+    console.log('🔍 [SIGNIN] Response body:', {
+      hasUser: !!result.user,
+      hasToken: !!result.token,
+      userId: result.user?.id
+    });
+
+    if (!response.ok) {
+      console.error('❌ [SIGNIN] Sign-in failed:', result);
+      if (result.error?.message?.includes('user') || result.message?.includes('not found')) {
+        console.log('👤 [SIGNIN] User not found, redirecting to sign-up...');
         const url = new URLSearchParams();
         url.append('email', email);
         if (redirectUrl) {
@@ -119,37 +166,96 @@ export async function signIn(data: FormData) {
       }
       return {
         success: false,
-        error: { _errors: [error.message] },
+        error: { _errors: [result.error?.message || result.message || 'Sign-in failed'] },
       };
     }
-    throw error;
+
+    // The cookies should be set automatically by the API response
+    console.log('✅ [SIGNIN] Sign-in successful, cookies should be set by API response');
+
+    if (guest && result.user) {
+      console.log('🛒 [SIGNIN] Merging guest cart with user cart...');
+      await mergeGuestCartWithUserCart(result.user.id, guest.id);
+      console.log('✅ [SIGNIN] Cart merge completed');
+    } else {
+      console.log('⚠️ [SIGNIN] Cart merge skipped:', {
+        hasGuest: !!guest,
+        hasUser: !!result.user
+      });
+    }
+
+    console.log('🎉 [SIGNIN] Sign-in process completed');
+    return { success: true, redirectUrl };
+    
+  } catch (error) {
+    console.error('💥 [SIGNIN] Error during sign-in:', error);
+    return {
+      success: false,
+      error: { _errors: ['Sign-in failed. Please try again.'] },
+    };
   }
 }
-
 export async function signOut() {
-  await auth.api.signOut({ headers: {} });
+  const cookieStore = await cookies();
+  const headers = new Headers();
+  
+  // Get all cookies and set them in headers
+  cookieStore.getAll().forEach(cookie => {
+    headers.append('cookie', `${cookie.name}=${cookie.value}`);
+  });
+  
+  await auth.api.signOut({ headers });
+  
+  // Clear the session cookie
+  cookieStore.delete('better-auth.session_token');
+  
   return redirect('/');
 }
 
 export async function getGuestSession() {
+  console.log('🎭 [GUEST] Getting guest session...');
   const cookieStore = await cookies();
   const guestSessionToken = cookieStore.get('guest_session')?.value;
-  if (!guestSessionToken) return null;
+  console.log('🍪 [GUEST] Guest session cookie:', guestSessionToken ? `Found: ${guestSessionToken.slice(0, 8)}...` : 'Not found');
+  
+  if (!guestSessionToken) {
+    console.log('❌ [GUEST] No guest session token found');
+    return null;
+  }
 
   const guest = await db.query.guests.findFirst({
     where: eq(schema.guests.sessionToken, guestSessionToken),
   });
 
+  console.log('🔍 [GUEST] Database lookup result:', {
+    found: !!guest,
+    id: guest?.id,
+    token: guest?.sessionToken?.slice(0, 8) + '...',
+    expiresAt: guest?.expiresAt,
+    isExpired: guest ? guest.expiresAt < new Date() : 'N/A'
+  });
+
   if (!guest || guest.expiresAt < new Date()) {
+    console.log('⚠️ [GUEST] Guest session expired or not found');
     return null;
   }
 
+  console.log('✅ [GUEST] Valid guest session found:', guest.id);
   return guest;
 }
+
 export async function getCurrentUser() {
   try {
+    const cookieStore = await cookies();
+    const headers = new Headers();
+    
+    // Get all cookies and set them in headers
+    cookieStore.getAll().forEach(cookie => {
+      headers.append('cookie', `${cookie.name}=${cookie.value}`);
+    });
+    
     const session = await auth.api.getSession({
-      headers: new Headers(),
+      headers,
     });
     console.log('Full session object:', session);
     return session?.user || null;
@@ -158,6 +264,7 @@ export async function getCurrentUser() {
     return null;
   }
 }
+
 export async function createGuestSession() {
   const sessionToken = uuidv4();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days

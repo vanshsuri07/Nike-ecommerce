@@ -5,10 +5,13 @@ import SocialProviders from './SocialProviders';
 import { useSearchParams } from 'next/navigation';
 import { signUp, signIn } from '@/lib/auth/actions'; // Import your server actions
 import { toast } from 'sonner';
+import { signInClient, signUpClient } from '@/lib/auth/client';
+import { handlePostAuthActions } from '@/lib/auth/post-auth-action';
 
 interface AuthFormProps {
   type: 'signIn' | 'signUp';
 }
+
 
 const AuthForm = ({ type }: AuthFormProps) => {
   const searchParams = useSearchParams();
@@ -24,58 +27,72 @@ const AuthForm = ({ type }: AuthFormProps) => {
   const [error, setError] = React.useState<string | null>(null);
   const [isPending, setIsPending] = React.useState(false);
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setError(null);
-  setIsPending(true);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    setIsPending(true);
 
-  // Helper function to get appropriate error message
-  const getErrorMessage = (type: string, errorMessage: string) => {
-    const lowerError = errorMessage.toLowerCase();
+    console.log(`🚀 [AUTH-FORM] Starting ${type} process...`);
 
-    if (type === 'signUp') {
-      if (lowerError.includes('email') || lowerError.includes('already') ||
-          lowerError.includes('exists') || lowerError.includes('duplicate')) {
-        return 'Email already exists. Please use a different email.';
+    // Helper function to get appropriate error message
+    const getErrorMessage = (type: string, errorMessage: string) => {
+      const lowerError = errorMessage.toLowerCase();
+
+      if (type === 'signUp') {
+        if (lowerError.includes('email') || lowerError.includes('already') ||
+            lowerError.includes('exists') || lowerError.includes('duplicate')) {
+          return 'Email already exists. Please use a different email.';
+        }
+        return 'Failed to create account. Please try again.';
+      } else {
+        if (lowerError.includes('email') || lowerError.includes('password') ||
+            lowerError.includes('invalid') || lowerError.includes('credentials')) {
+          return 'Email or password is incorrect.';
+        }
+        return 'Sign-in failed. Please try again.';
       }
-      return 'Failed to create account. Please try again.';
-    } else {
-      if (lowerError.includes('email') || lowerError.includes('password') ||
-          lowerError.includes('invalid') || lowerError.includes('credentials')) {
-        return 'Email or password is incorrect.';
+    };
+
+    try {
+      const formData = new FormData(e.currentTarget);
+      const formEmail = formData.get('email') as string;
+      const formPassword = formData.get('password') as string;
+      const formName = formData.get('name') as string;
+
+      console.log('📝 [AUTH-FORM] Form data:', { 
+        email: formEmail, 
+        name: type === 'signUp' ? formName : 'N/A',
+        type 
+      });
+
+      let result;
+      
+      if (type === 'signUp') {
+        console.log('📝 [AUTH-FORM] Calling client sign-up...');
+        
+        // Step 1: Sign up the user
+        result = await signUpClient(formName, formEmail, formPassword);
+        console.log('✅ [AUTH-FORM] Sign-up successful, user should be signed in');
+        
+        // Step 2: Call server action to handle cart merging
+        console.log('🛒 [AUTH-FORM] Handling cart merge...');
+        const serverResult = await handlePostAuthActions('signUp', formEmail, result.user.id);
+        console.log('🔍 [AUTH-FORM] Server merge result:', serverResult);
+        
+      } else {
+        console.log('🔑 [AUTH-FORM] Calling client sign-in...');
+        
+        // Step 1: Sign in the user
+        result = await signInClient(formEmail, formPassword);
+        console.log('✅ [AUTH-FORM] Sign-in successful');
+        
+        // Step 2: Call server action to handle cart merging
+        console.log('🛒 [AUTH-FORM] Handling cart merge...');
+        const serverResult = await handlePostAuthActions('signIn', formEmail, result.user.id);
+        console.log('🔍 [AUTH-FORM] Server merge result:', serverResult);
       }
-      return 'Sign-in failed. Please try again.';
-    }
-  };
 
-  try {
-    const formData = new FormData(e.currentTarget);
-    if (redirectUrl) {
-      formData.append('redirectUrl', redirectUrl);
-    }
-
-    const result = type === 'signUp' 
-      ? await signUp(formData) 
-      : await signIn(formData);
-
-    console.log('Auth result:', result);
-
-    // Check if there's an error
-    if (result?.error) {
-      const errorMessages = Object.values(result.error).flat();
-      const rawErrorMessage = errorMessages.join(' ');
-      const formattedError = getErrorMessage(type, rawErrorMessage);
-      setError(formattedError);
-      toast.error(formattedError);
-      return;
-    }
-
-    // Handle special redirects (like user not found)
-    // Note: redirectTo property is not available in current auth actions
-    // Remove this check as it's not needed based on the current implementation
-
-    // Success case
-    if (result?.success) {
+      // Success case
       setError(null);
       toast.success(
         type === 'signUp'
@@ -83,22 +100,26 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
           : 'Signed in successfully!'
       );
 
+      console.log('🎉 [AUTH-FORM] Authentication successful, redirecting...');
+      
       // Handle redirects
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      const redirectTo = (result as any).redirectUrl || (type === 'signUp' ? '/sign-in' : redirectUrl || '/');
+      const redirectTo = redirectUrl || '/';
+      console.log('🔄 [AUTH-FORM] Redirecting to:', redirectTo);
       window.location.href = redirectTo;
-    }
 
-  } catch (err) {
-    console.error('Auth error:', err);
-    const errorMessage = (err as Error)?.message || 'An unexpected error occurred';
-    const formattedError = getErrorMessage(type, errorMessage);
-    setError(formattedError);
-    toast.error(formattedError);
-  } finally {
-    setIsPending(false);
-  }
-};
+    } catch (err) {
+      console.error('💥 [AUTH-FORM] Auth error:', err);
+      const errorMessage = (err as Error)?.message || 'An unexpected error occurred';
+      const formattedError = getErrorMessage(type, errorMessage);
+      setError(formattedError);
+      toast.error(formattedError);
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  // Rest of your component JSX remains the same...
+
 
   return (
     <div className="space-y-6">
