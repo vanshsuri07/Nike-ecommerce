@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Check, ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
+import {  ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { ProductDetails } from '@/lib/actions/product';
 
 // Extract the variant type from the ProductDetails type
@@ -14,15 +14,15 @@ interface ProductGalleryProps {
   mainImages: ImageType[];
 }
 
-const colorClassMap: { [key: string]: string } = {
-    'Red': 'bg-product-red',
-    'Blue': 'bg-product-blue',
-    'Green': 'bg-product-green',
-    'Orange': 'bg-product-orange',
-    'Black': 'bg-black',
-    'White': 'bg-white',
-    'Gray': 'bg-gray-400',
-};
+// const colorClassMap: { [key: string]: string } = {
+//     'Red': 'bg-product-red',
+//     'Blue': 'bg-product-blue',
+//     'Green': 'bg-product-green',
+//     'Orange': 'bg-product-orange',
+//     'Black': 'bg-black',
+//     'White': 'bg-white',
+//     'Gray': 'bg-gray-400',
+// };
 
 export default function ProductGallery({ variants, mainImages }: ProductGalleryProps) {
   const [activeVariantIndex, setActiveVariantIndex] = useState<number | null>(
@@ -34,16 +34,17 @@ export default function ProductGallery({ variants, mainImages }: ProductGalleryP
   const galleryImages = activeVariantIndex !== null
     ? variants[activeVariantIndex].images
     : mainImages;
-
+ 
   const activeImage = galleryImages[activeImageIndex];
-
+  console.log(setActiveVariantIndex);
   useEffect(() => {
     setActiveImageIndex(0);
   }, [activeVariantIndex]);
 
-  const handleVariantChange = (index: number) => {
-    setActiveVariantIndex(index);
-  };
+  // const handleVariantChange = (index: number) => {
+  //   setActiveVariantIndex(index);
+  //   console.log(handleVariantChange);
+  // };
 
   const handleThumbnailClick = (index: number) => {
     setActiveImageIndex(index);

@@ -3,7 +3,6 @@ import React from 'react';
 import Link from 'next/link';
 import SocialProviders from './SocialProviders';
 import { useSearchParams } from 'next/navigation';
-import { signUp, signIn } from '@/lib/auth/actions'; // Import your server actions
 import { toast } from 'sonner';
 import { signInClient, signUpClient } from '@/lib/auth/client';
 import { handlePostAuthActions } from '@/lib/auth/post-auth-action';
@@ -178,7 +177,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           <input
             type="email"
             name="email"
-            placeholder="johndoe@gmail.com"
+            placeholder="Enter your email"
             defaultValue={email || ''}
             required
             disabled={isPending}
@@ -199,8 +198,8 @@ const AuthForm = ({ type }: AuthFormProps) => {
   placeholder="minimum 8 characters"
   required
   disabled={isPending}
-  className="w-full rounded-xl border border-light-300 bg-light-100 px-4 py-3 pr-12 text-lg text-dark-900 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-dark-900/10"
-/>
+  className="w-full px-4 py-3 border border-light-400 rounded-md focus:outline-none focus:ring-2 focus:ring-green disabled:opacity-50"
+          />
 
 
 

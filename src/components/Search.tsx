@@ -1,38 +1,53 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Button } from './ui/button';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
 
+export default function SearchBar() {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
 
-export default function Search() {
-    const router = useRouter();
-    const [query, setQuery] = useState('');
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      router.push(`/products?search=${encodeURIComponent(query)}`);
+      setOpen(false); // close input after searching
+    }
+  };
 
-     const handleSearch = (e: React.FormEvent) => {
-        console.log('handleSearch called');
-        e.preventDefault();
-        console.log('query:', query);
-        if (query.trim()) {
-            console.log('redirecting to:', `/search?q=${query.trim()}`);
-            router.push(`/search?q=${query.trim()}`);
-        }
-    };
-
-     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log('handleInputChange called, value:', e.target.value);
-        setQuery(e.target.value);
-    };
-    return (
-        <form onSubmit={handleSearch} className="flex items-center space-x-2">
-            <input
-                type="text"
-                value={query}
-                onChange={handleInputChange}
-                placeholder="Search products..."
-                className="text-black"
-            />
-            <Button type="submit">Search</Button>
+  return (
+    <div className="relative">
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="text-white hover:text-green"
+        >
+          Search
+        </button>
+      ) : (
+        <form
+          onSubmit={handleSearch}
+          className="flex items-center space-x-2 absolute right-0 bg-black p-2 rounded-md shadow-md"
+        >
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search products..."
+            className="text-white border rounded-md px-2 py-1"
+          />
+          <Button type="submit">Go</Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setOpen(false)}
+          >
+            ✕
+          </Button>
         </form>
-    );
+      )}
+    </div>
+  );
 }

@@ -6,7 +6,8 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-black text-light-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8">
+
           <div className="md:col-span-1">
             <Link href="/" passHref className="text-light-100">
                 <Image src="/logo.svg" alt="Logo" width={60} height={30} />
@@ -50,7 +51,8 @@ const Footer: React.FC = () => {
               </ul>
             </div>
           </div>
-          <div className="flex space-x-4 text-light-100">
+          <div className="flex space-x-4 justify-center md:justify-end text-light-100">
+
             <Link href="#" passHref>
               <Image src="/x.svg" alt="X" width={24} height={24} />
             </Link>
@@ -63,7 +65,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
         <div className="border-t border-dark-700 mt-8 pt-4 flex flex-col md:flex-row justify-between items-center text-footnote text-dark-500">
-          <div className="flex items-center">
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
             <span>&#x1F310; Croatia</span>
             <span className="ml-4">&copy; {new Date().getFullYear()} Nike, Inc. All Rights Reserved</span>
           </div>

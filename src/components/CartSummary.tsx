@@ -35,36 +35,43 @@ export default function CartSummary({ }: CartSummaryProps) {
   const total = subtotal + shipping;
 
   return (
-    <div className="p-6 border rounded-lg space-y-4">
-      <h2 className="text-heading-3 text-dark-900">Order Summary</h2>
-      <div className="flex justify-between">
-        <p className="text-body text-dark-700">Subtotal</p>
-        <p className="text-body text-dark-900">${subtotal.toFixed(2)}</p>
-      </div>
-      <div className="flex justify-between">
-        <p className="text-body text-dark-700">Shipping</p>
-        <p className="text-body text-dark-900">${shipping.toFixed(2)}</p>
-      </div>
-      <hr />
-      <div className="flex justify-between">
-        <p className="text-body-medium text-dark-900">Total</p>
-        <p className="text-body-medium text-dark-900">${total.toFixed(2)}</p>
-      </div>
-      <form
-        action={handleCheckout}
-        className="w-full"
-      >
-        <Button
-          className="w-full"
-          disabled={items.length === 0 || isPending}
-        >
-          {isPending ? (
-            <Loader className="w-5 h-5 animate-spin" />
-          ) : (
-            'Checkout'
-          )}
-        </Button>
-      </form>
-    </div>
+   <div className="p-4 sm:p-6 border rounded-lg space-y-3 sm:space-y-4 bg-white shadow-md">
+  <h2 className="text-lg sm:text-xl font-bold text-dark-900">Order Summary</h2>
+
+  {/* Subtotal */}
+  <div className="flex justify-between text-sm sm:text-base">
+    <p className="text-dark-700">Subtotal</p>
+    <p className="font-medium text-dark-900">${subtotal.toFixed(2)}</p>
+  </div>
+
+  {/* Shipping */}
+  <div className="flex justify-between text-sm sm:text-base">
+    <p className="text-dark-700">Shipping</p>
+    <p className="font-medium text-dark-900">${shipping.toFixed(2)}</p>
+  </div>
+
+  <hr className="border-gray-200" />
+
+  {/* Total */}
+  <div className="flex justify-between text-base sm:text-lg font-semibold">
+    <p className="text-dark-900">Total</p>
+    <p className="text-dark-900">${total.toFixed(2)}</p>
+  </div>
+
+  {/* Checkout Button */}
+  <form action={handleCheckout} className="w-full">
+    <Button
+      className="w-full mt-2 sm:mt-3 bg-black hover:bg-dark-900 text-white font-semibold py-2 sm:py-3 rounded-lg transition"
+      disabled={items.length === 0 || isPending}
+    >
+      {isPending ? (
+        <Loader className="w-5 h-5 animate-spin" />
+      ) : (
+        "Checkout"
+      )}
+    </Button>
+  </form>
+</div>
+
   );
 }

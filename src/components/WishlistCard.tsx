@@ -8,6 +8,7 @@ import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
+
 interface WishlistCardProps {
     product: ProductWithDetails;
     userId: string;
@@ -27,6 +28,7 @@ export default function WishlistCard({ product, userId }: WishlistCardProps) {
 
     return (
         <div className="relative">
+            
             <Card product={product} />
             <div className="absolute top-2 right-2">
                 <Button
@@ -38,6 +40,7 @@ export default function WishlistCard({ product, userId }: WishlistCardProps) {
                     {isPending ? 'Removing...' : 'Remove'}
                 </Button>
             </div>
+            
         </div>
     );
 }

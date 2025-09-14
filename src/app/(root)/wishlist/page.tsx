@@ -3,6 +3,8 @@ import WishlistCard from '@/components/WishlistCard';
 import { getCurrentUser } from '@/lib/auth/actions';
 import { unstable_noStore as noStore } from 'next/cache';
 import Link from 'next/link';
+import Footer from '@/components/Footer';
+import Navbar from '@/components/Navbar';
 
 export default async function WishlistPage() {
     noStore();
@@ -26,6 +28,8 @@ export default async function WishlistPage() {
     const wishlist = await getWishlist(user.id);
 
     return (
+        <>
+        <Navbar />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">Your Wishlist</h1>
             {wishlist.length === 0 ? (
@@ -38,5 +42,7 @@ export default async function WishlistPage() {
                 </div>
             )}
         </div>
+        <Footer />
+        </>
     );
 }

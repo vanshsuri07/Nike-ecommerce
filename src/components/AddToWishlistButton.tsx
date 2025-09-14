@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Button } from './ui/button';
 import { addToWishlist } from '@/lib/actions/product';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/hooks/use-current-user';

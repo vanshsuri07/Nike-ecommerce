@@ -68,35 +68,39 @@ export default function Cart({ initialCart, user }: CartProps) {
                   <h3 className="text-body-medium text-dark-900">
                     {item.productVariant.product.name}
                   </h3>
-                  <p className="text-caption text-dark-700">
-                    {item.productVariant.product.name}
-                  </p>
+                  
                   <p className="text-body text-dark-900">
                     ${parseFloat(item.productVariant.price).toFixed(2)}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-4">
-                <input
-                  type="number"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleQuantityChange(item.id, parseInt(e.target.value))
-                  }
-                  className="w-16 p-2 border rounded-md text-center"
-                  min="1"
-                />
-                <p className="text-body-medium text-dark-900">
-                  ${(parseFloat(item.productVariant.price) * item.quantity).toFixed(2)}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveItem(item.id)}
-                >
-                  <Trash2 className="h-5 w-5 text-dark-700" />
-                </Button>
-              </div>
+              <div className="flex flex-col items-end gap-2">
+  {/* Quantity input */}
+  <input
+    type="number"
+    value={item.quantity}
+    onChange={(e) =>
+      handleQuantityChange(item.id, parseInt(e.target.value || "1", 10))
+    }
+    className="w-16 p-2 border rounded-md text-center"
+    min="1"
+  />
+
+  {/* Price + Remove in a row */}
+  <div className="flex items-center gap-3">
+    <p className="text-body-medium text-dark-900">
+      ${(parseFloat(item.productVariant.price) * item.quantity).toFixed(2)}
+    </p>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => handleRemoveItem(item.id)}
+    >
+      <Trash2 className="h-5 w-5 text-dark-700" />
+    </Button>
+  </div>
+</div>
+
             </div>
           ))}
         </div>

@@ -146,7 +146,7 @@ export async function createProductFromAI(
 
     // 8. Insert product variants
     const sizeChoices = pick(allSizes, randInt(5, Math.min(5, allSizes.length)));
-    let defaultVariant: any = null;
+    let defaultVariant: typeof schema.productVariants.$inferSelect | null = null;
 
     for (const size of sizeChoices) {
       const sku = `${slugify(productName)}-${colorSlug}-${size.slug}`.substring(0, 50);
@@ -336,21 +336,21 @@ export async function generateProductDataWithGeminiAndFallback(
   try {
     return await generateProductDataWithGemini(name, imagePath);
   } catch (error) {
-    console.error('⚠️ Gemini failed after all retries. Using fallback.');
+    console.error('⚠️ Gemini failed after all retries. Using fallback.',error);
     return createFallbackProductData(name);
   }
 }
 
 // Alternative: Add a fallback function that creates basic product data
+// Alternative: Add a fallback function that creates basic product data
 export function createFallbackProductData(name: string): ProductAIOutput {
   console.log('Using fallback product data generation...');
-  
-  // Extract basic info from product name
+
   const nameLower = name.toLowerCase();
   let category = 'Lifestyle';
-  let gender: 'Men' | 'Women' | 'Unisex' | 'Kids' = 'Unisex';
+  let gender: 'Men' | 'Women' | 'Unisex' | 'Kids';
 
-  // Better gender detection
+  // 🎯 Explicit gender detection (still wins if keywords present)
   if (/\bmen\b|\bmen's\b/i.test(nameLower)) {
     gender = 'Men';
   } else if (/\bwomen\b|\bwomen's\b/i.test(nameLower)) {
@@ -358,12 +358,18 @@ export function createFallbackProductData(name: string): ProductAIOutput {
   } else if (/\bkid\b|\bkids\b|\byouth\b|\bboy\b|\bgirl\b/i.test(nameLower)) {
     gender = 'Kids';
   } else {
-    // Last resort guess: shoes and performance gear often default to Men if not specified
-    gender = 'Men';
+    // 🎯 Equal probability if not specified
+    const genders: ('Men' | 'Women' | 'Unisex' | 'Kids')[] = [
+      'Men',
+      'Women',
+      'Unisex',
+      'Kids',
+    ];
+    gender = genders[Math.floor(Math.random() * genders.length)];
   }
 
   const price = 100; // Default price
-  
+
   // Basic category detection
   if (nameLower.includes('shoe') || nameLower.includes('force') || nameLower.includes('max')) {
     category = 'Lifestyle Shoes';
@@ -374,7 +380,7 @@ export function createFallbackProductData(name: string): ProductAIOutput {
   } else if (nameLower.includes('jacket') || nameLower.includes('hoodie')) {
     category = 'Outerwear';
   }
-  
+
   // Basic color detection
   let color = 'White';
   let hexCode = '#FFFFFF';
@@ -388,7 +394,7 @@ export function createFallbackProductData(name: string): ProductAIOutput {
     color = 'Red';
     hexCode = '#CC0000';
   }
-  
+
   return {
     description: `The ${name} offers classic Nike style and comfort. Perfect for everyday wear with premium materials and iconic design.`,
     price,
@@ -396,6 +402,6 @@ export function createFallbackProductData(name: string): ProductAIOutput {
     hexCode,
     category,
     gender,
-    brand: 'Nike'
+    brand: 'Nike',
   };
 }

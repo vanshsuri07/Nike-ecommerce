@@ -68,7 +68,7 @@ export async function signUpClient(name: string, email: string, password: string
     }
 
     const signUpResult = await signUpResponse.json();
-    console.log('✅ [CLIENT-SIGNUP] Sign-up successful');
+    console.log('✅ [CLIENT-SIGNUP] Sign-up successful',signUpResult);
 
     // Then sign in to get the session cookie
     console.log('🔑 [CLIENT-SIGNUP] Auto sign-in after sign-up...');

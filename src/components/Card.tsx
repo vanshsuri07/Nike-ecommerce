@@ -38,14 +38,11 @@ const image = images && images.length > 0 ? images[0].url : undefined;  const ha
   };
 
   return (
-    <article className="group flex flex-col ...">
+    <article className="group flex flex-col rounded-lg shadow-md overflow-hidden bg-white">
   <div className="relative">
     <Link href={`/products/${id}`} passHref>
-
-  {/* Optionally show a badge if you have a bestseller flag in the future */}
-
       {image && (
-        <div className="relative h-64 w-full overflow-hidden rounded-t-xl">
+        <div className="relative w-full h-48 md:h-64">
           <Image
             src={image}
             alt={name}
@@ -57,24 +54,31 @@ const image = images && images.length > 0 ? images[0].url : undefined;  const ha
     </Link>
   </div>
 
-  <div className="flex flex-col justify-between flex-grow p-5">
+  <div className="flex flex-col justify-between flex-grow p-4 md:p-5">
     <div className="mb-3">
       <Link href={`/products/${id}`} passHref>
-        <h3 className="text-heading-3 text-dark-900 font-semibold hover:underline">
+        <h3 className="text-lg md:text-xl font-semibold text-dark-900 hover:underline">
           {name}
         </h3>
       </Link>
-      <p className="text-body text-dark-700 mt-1">{category?.name}</p>
-  {/* Optionally show color info if you add it to the product type */}
+      <p className="text-sm text-dark-700 mt-1">{category?.name}</p>
     </div>
+
     <div className="flex justify-between items-center mt-4">
-  <span className="text-lead text-dark-900 font-bold">{price ? `$${price}` : '—'}</span>
-      <Button onClick={handleAddToCart} disabled={!defaultVariantId}>
+      <span className="text-base md:text-lg font-bold text-dark-900">
+        {price ? `$${price}` : '—'}
+      </span>
+      <Button
+        onClick={handleAddToCart}
+        disabled={!defaultVariantId}
+        className="px-3 py-1 md:px-4 md:py-2 md:text-sm"
+      >
         Add to Cart
       </Button>
     </div>
   </div>
 </article>
+
 
   );
 };

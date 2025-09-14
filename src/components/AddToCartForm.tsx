@@ -2,11 +2,9 @@
 
 import { useState } from 'react';
 import SizePicker from '@/components/SizePicker';
-import { Loader, ShoppingBag, HeartIcon } from 'lucide-react';
+import { Loader, ShoppingBag} from 'lucide-react';
 import { useCartStore } from '@/store/cart.store';
 import { toast } from 'sonner';
-import AddToWishlistButton from './AddToWishlistButton';
-
 // Define a type for product variant with size
 type ProductVariantWithSize = {
     id: string;

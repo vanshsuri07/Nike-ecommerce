@@ -2,7 +2,7 @@
 
 import { db } from '@/db';
 import * as schema from '@/lib/db/schema';
-import { and, asc, desc, eq, gte, lte, inArray, sql, count, min, SQL, isNull, InferSelectModel, not, or } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, lte, inArray, sql, count, min, SQL,InferSelectModel, not, or } from 'drizzle-orm';
 import { ProductFilters } from '@/lib/utils/query';
 
 // Explicit type for the returned product structure to ensure type safety

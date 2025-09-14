@@ -69,62 +69,83 @@ const availableSizes = await getAvailableSizes();
   };
 
   return (
+    <>
+    <Navbar />
   <div>
-   <Navbar />
+   
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row gap-8">
-        <aside className="w-full md:w-1/4 lg:w-1/5">
-          <div className="sticky top-24 bg-zinc-200  rounded-lg">
-            <Filters sizes={availableSizes} />
-          </div>
-        </aside>
+       <aside className="w-full md:w-1/4 lg:w-1/5 relative z-20">
+  <div className="sticky top-24 bg-zinc-200 rounded-lg p-4 shadow-md">
+    <Filters sizes={availableSizes} />
+  </div>
+</aside>
 
-        <section className="w-full md:w-3/4 lg:w-4/5">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-heading-2">Step Into Style</h1>
-            <div className="flex items-center gap-4">
-              <p className="text-body text-dark-700">{totalCount} Results</p>
-              <Sort />
-            </div>
-          </div>
+<section className="w-full md:w-3/4 lg:w-4/5 relative z-10">
+  {/* Header */}
+  <div className="mb-6">
+    <h1 className="text-heading-2 text-center md:text-left mb-3 md:mb-0">
+      Step Into Style
+    </h1>
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <p className="text-body text-dark-700">{totalCount} Results</p>
+      <Sort />
+    </div>
+  </div>
 
-          {activeFilters.length > 0 && (
-            <div className="flex items-center flex-wrap gap-2 mb-4">
-              <span className="text-body-medium">Active Filters:</span>
-              {activeFilters.map(({ key, value }) => (
-                <div key={`${key}-${value}`} className="flex items-center gap-1 px-3 py-1 bg-light-300 rounded-full text-caption">
-                  <span>{value}</span>
-                  <Link href={createRemoveFilterHref(key, value)} className="text-dark-500 hover:text-dark-900">
-                    &times;
-                  </Link>
-                </div>
-              ))}
-              <Link href="/products" className="text-caption text-red underline hover:text-dark-900">
-                Clear All
-              </Link>
-            </div>
-          )}
+  {/* Active Filters */}
+  {activeFilters.length > 0 && (
+    <div className="flex items-center flex-wrap gap-2 mb-6 relative z-30">
+      <span className="text-body-medium">Active Filters:</span>
+      {activeFilters.map(({ key, value }) => (
+        <div
+          key={`${key}-${value}`}
+          className="flex items-center gap-1 px-3 py-1 bg-light-300 rounded-full text-caption shadow-sm"
+        >
+          <span>{value}</span>
+          <Link
+            href={createRemoveFilterHref(key, value)}
+            className="text-dark-500 hover:text-dark-900 font-bold"
+          >
+            &times;
+          </Link>
+        </div>
+      ))}
+      <Link
+        href="/products"
+        className="text-caption text-red underline hover:text-dark-900"
+      >
+        Clear All
+      </Link>
+    </div>
+  )}
 
-          {products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {products.map((product) => (
-                <Card key={product.id} product={product} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-20">
-              <h2 className="text-heading-3">No Products Found</h2>
-              <p className="text-body text-dark-700 mt-2">
-                Try adjusting your filters or
-                <Link href="/products" className="text-red underline ml-1">clearing them</Link>
-                .
-              </p>
-            </div>
-          )}
-        </section>
+  {/* Product Grid */}
+  {products.length > 0 ? (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+      {products.map((product) => (
+        <Card key={product.id} product={product} />
+      ))}
+    </div>
+  ) : (
+    <div className="text-center py-20">
+      <h2 className="text-heading-3">No Products Found</h2>
+      <p className="text-body text-dark-700 mt-2">
+        Try adjusting your filters or
+        <Link href="/products" className="text-red underline ml-1">
+          clearing them
+        </Link>
+        .
+      </p>
+    </div>
+  )}
+</section>
+
+
       </div>
     </div>
     <Footer />
     </div>
+    </>
   );
 }

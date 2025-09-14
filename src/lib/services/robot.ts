@@ -102,6 +102,7 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
     const size = allSizes[Math.floor(Math.random() * allSizes.length)];
     // 5. Get or create brand
     const brandSlug = slugify(aiData.brand);
+    console.log(size);
     let [brand] = await tx
       .select()
       .from(schema.brands)
@@ -336,7 +337,7 @@ export async function generateProductDataWithGeminiAndFallback(
   try {
     return await generateProductDataWithGemini(name, imagePath);
   } catch (error) {
-    console.error('⚠️ Gemini failed after all retries. Using fallback.');
+    console.error('⚠️ Gemini failed after all retries. Using fallback.',error);
     return createFallbackProductData(name);
   }
 }

@@ -29,7 +29,8 @@ const UpcomingProducts = () => {
             <p className="text-gray-300 mb-4 text-sm md:text-base">
               Unveiling a new era of performance. This exclusive drop is engineered for the ultimate athlete.
             </p>
-            <button className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-transform hover:scale-105 text-sm">
+            <button className="bg-green-500 hover:bg-green-600 text-white font-bold rounded-full transition-transform hover:scale-105 
+              text-xs px-4 py-2 md:text-sm md:px-6 md:py-3">
               Get Notified
             </button>
           </motion.div>
