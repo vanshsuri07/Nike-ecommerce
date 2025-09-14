@@ -9,30 +9,28 @@ export default function Search() {
     const router = useRouter();
     const [query, setQuery] = useState('');
 
-     const handleSearch = (e: React.FormEvent) => {
-        console.log('handleSearch called');
+    const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('query:', query);
         if (query.trim()) {
-            console.log('redirecting to:', `/search?q=${query.trim()}`);
             router.push(`/search?q=${query.trim()}`);
+            setQuery(''); // Clear input after search
         }
     };
 
-     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        console.log('handleInputChange called, value:', e.target.value);
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuery(e.target.value);
     };
+
     return (
-        <form onSubmit={handleSearch} className="flex items-center space-x-2">
+        <form onSubmit={handleSearch} className="flex w-full items-center space-x-2">
             <input
                 type="text"
                 value={query}
                 onChange={handleInputChange}
                 placeholder="Search products..."
-                className="text-black"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-black placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
             />
-            <Button type="submit">Search</Button>
+            <Button type="submit" size="sm">Search</Button>
         </form>
     );
 }
