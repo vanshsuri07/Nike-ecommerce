@@ -80,22 +80,22 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
       />
       <div className="max-w-2xl mx-auto">
         <div className="text-center">
-          <h1 className="text-heading-2 text-dark-900 mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold text-dark-900 mb-2">
             Thank you for your order!
           </h1>
-          <p className="text-body text-dark-700 mb-8">
+          <p className="text-base text-dark-700 mb-8">
             Your order has been confirmed. A confirmation email has been sent to your inbox.
           </p>
         </div>
         <div className="p-6 border rounded-lg space-y-4 mb-8">
-          <h2 className="text-heading-3 text-dark-900">Order Summary</h2>
+          <h2 className="text-2xl font-semibold text-dark-900">Order Summary</h2>
           <div className="flex justify-between">
-            <p className="text-body text-dark-700">Order ID</p>
-            <p className="text-body text-dark-900">{order.id}</p>
+            <p className="text-sm text-dark-700">Order ID</p>
+            <p className="text-sm font-medium text-dark-900">{order.id}</p>
           </div>
           <div className="flex justify-between">
-            <p className="text-body text-dark-700">Total</p>
-            <p className="text-body-medium text-dark-900">${total}</p>
+            <p className="text-sm text-dark-700">Total</p>
+            <p className="text-base font-semibold text-dark-900">${total}</p>
           </div>
           <hr />
           
@@ -128,15 +128,15 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
                       }}
                     />
                     <div>
-                      <h3 className="text-body-medium text-dark-900">
+                      <h3 className="text-base font-medium text-dark-900">
                         {item.productVariant.product.name}
                       </h3>
-                      <p className="text-caption text-dark-700">
+                      <p className="text-sm text-dark-700">
                         Quantity: {item.quantity}
                       </p>
                     </div>
                   </div>
-                  <p>${Number(item.priceAtPurchase).toFixed(2)}</p>
+                  <p className="text-base font-semibold">${Number(item.priceAtPurchase).toFixed(2)}</p>
                 </div>
               );
             })}

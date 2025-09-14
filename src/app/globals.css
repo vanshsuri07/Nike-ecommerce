@@ -1,6 +1,8 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
+@layer base {
   /* Dark shades */
   --color-dark-900: #111111;
   --color-dark-700: #757575;

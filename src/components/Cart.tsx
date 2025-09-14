@@ -48,58 +48,56 @@ export default function Cart({ initialCart, user }: CartProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2">
-        <div className="space-y-4">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center justify-between p-4 border rounded-lg"
-            >
-              <div className="flex items-center space-x-4">
-                <Image
-                  src={item.productVariant.product.images[0]?.url || '/shoe-placeholder.png'}
-                  alt={item.productVariant.product.name}
-                  width={80}
-                  height={80}
-                  className="rounded-md"
-                />
-                <div>
-                  <h3 className="text-body-medium text-dark-900">
-                    {item.productVariant.product.name}
-                  </h3>
-                  <p className="text-caption text-dark-700">
-                    {item.productVariant.product.name}
-                  </p>
-                  <p className="text-body text-dark-900">
-                    ${parseFloat(item.productVariant.price).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <input
-                  type="number"
-                  value={item.quantity}
-                  onChange={(e) =>
-                    handleQuantityChange(item.id, parseInt(e.target.value))
-                  }
-                  className="w-16 p-2 border rounded-md text-center"
-                  min="1"
-                />
-                <p className="text-body-medium text-dark-900">
-                  ${(parseFloat(item.productVariant.price) * item.quantity).toFixed(2)}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div className="lg:col-span-2 space-y-4">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg"
+          >
+            <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+              <Image
+                src={item.productVariant.product.images[0]?.url || '/shoe-placeholder.png'}
+                alt={item.productVariant.product.name}
+                width={80}
+                height={80}
+                className="rounded-md object-cover"
+              />
+              <div>
+                <h3 className="text-base font-semibold text-dark-900">
+                  {item.productVariant.product.name}
+                </h3>
+                <p className="text-sm text-dark-700">
+                  Size: {item.productVariant.size.name} / Color: {item.productVariant.color.name}
                 </p>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveItem(item.id)}
-                >
-                  <Trash2 className="h-5 w-5 text-dark-700" />
-                </Button>
+                <p className="text-sm text-dark-900 font-medium">
+                  ${parseFloat(item.productVariant.price).toFixed(2)}
+                </p>
               </div>
             </div>
-          ))}
-        </div>
+            <div className="flex items-center space-x-4 w-full sm:w-auto justify-end">
+              <input
+                type="number"
+                value={item.quantity}
+                onChange={(e) =>
+                  handleQuantityChange(item.id, parseInt(e.target.value))
+                }
+                className="w-16 p-2 border rounded-md text-center"
+                min="1"
+              />
+              <p className="text-base font-semibold text-dark-900 w-20 text-right">
+                ${(parseFloat(item.productVariant.price) * item.quantity).toFixed(2)}
+              </p>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleRemoveItem(item.id)}
+              >
+                <Trash2 className="h-5 w-5 text-dark-700" />
+              </Button>
+            </div>
+          </div>
+        ))}
       </div>
       <div className="lg:col-span-1">
         <CartSummary user={user} />

@@ -28,29 +28,28 @@ const HeroSection = () => {
 
 
   return (
-    <div className="relative w-full h-[450px] overflow-hidden">
+    <div className="relative w-full h-auto py-20 overflow-hidden">
       {/* Video Background */}
       <video
-  ref={(video) => {
-    if (video) video.playbackRate = 0.6;
-  }}
-  className="absolute inset-0 w-full h-full object-fill"
-  autoPlay
-  loop
-  muted
-  playsInline
->
-  <source src="/Streamflow2.mp4" type="video/mp4" />
-</video>
- 
- 
+        ref={(video) => {
+          if (video) video.playbackRate = 0.6;
+        }}
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        loop
+        muted
+        playsInline
+      >
+        <source src="/Streamflow2.mp4" type="video/mp4" />
+      </video>
+
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/40" />
 
       {/* Content Grid */}
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 h-full w-full px-6 md:px-16">
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 h-full w-full px-4 sm:px-6 lg:px-8">
         {/* Left Side: Text */}
-        <div className="flex flex-col justify-center items-center md:items-start text-white pb-25 ml-16">
+        <div className="flex flex-col justify-center items-center md:items-start text-white md:ml-16">
           <motion.h1
             className="font-semibold leading-tight text-center md:text-left"
             initial="hidden"
@@ -64,21 +63,21 @@ const HeroSection = () => {
             }}
           >
             <motion.span
-              className="block text-3xl sm:text-4xl md:text-5xl lg:text-8xl"
+              className="block text-4xl sm:text-5xl md:text-6xl lg:text-8xl"
               variants={headingVariants}
               custom={0}
             >
               Unleash
             </motion.span>
             <motion.span
-              className="block text-3xl sm:text-4xl md:text-5xl lg:text-8xl"
+              className="block text-4xl sm:text-5xl md:text-6xl lg:text-8xl"
               variants={headingVariants}
               custom={1}
             >
               Your
             </motion.span>
             <motion.span
-              className="block text-3xl sm:text-4xl md:text-5xl lg:text-8xl text-green-500"
+              className="block text-4xl sm:text-5xl md:text-6xl lg:text-8xl text-green-500"
               variants={headingVariants}
               custom={2}
             >
@@ -86,7 +85,7 @@ const HeroSection = () => {
             </motion.span>
           </motion.h1>
           <motion.button
-            className="mt-4 bg-green-600 hover:bg-green-700 transition px-6 py-2 text-base rounded-full font-semibold"
+            className="mt-6 bg-green-600 hover:bg-green-700 transition px-8 py-3 text-lg rounded-full font-semibold"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.5 }}
@@ -96,8 +95,8 @@ const HeroSection = () => {
         </div>
 
         {/* Right Side: 3D Model */}
-        <div className="hidden md:flex justify-center items-center">
-          <div className="w-full h-[600px]">
+        <div className="flex justify-center items-center h-[300px] md:h-[600px]">
+          <div className="w-full h-full">
             <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
               <OrbitControls
                 enableZoom={false}
@@ -109,20 +108,17 @@ const HeroSection = () => {
               <ambientLight intensity={1.5} />
               <directionalLight position={[5, 5, 5]} intensity={2} />
               <Suspense fallback={<Loader />}>
- 
-
-
-               <Float floatIntensity={1} speed={1}>
-  <PresentationControls
-  global
-  snap
-  rotation={[0, 0.3, 0]}
-  polar={[-0.4, 0.4]}
-  azimuth={[-1, 1]}
->
-  <Model />
-</PresentationControls>
-</Float>
+                <Float floatIntensity={1} speed={1}>
+                  <PresentationControls
+                    global
+                    snap
+                    rotation={[0, 0.3, 0]}
+                    polar={[-0.4, 0.4]}
+                    azimuth={[-1, 1]}
+                  >
+                    <Model />
+                  </PresentationControls>
+                </Float>
               </Suspense>
             </Canvas>
           </div>

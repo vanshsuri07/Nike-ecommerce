@@ -18,7 +18,7 @@ export default function CollapsibleSection({ title, children, isOpen: defaultOpe
         onClick={() => setIsOpen(!isOpen)}
         className="flex justify-between items-center w-full py-6 text-left"
       >
-        <h3 className="text-heading-3 text-dark-900">{title}</h3>
+        <h3 className="text-xl sm:text-2xl font-semibold text-dark-900">{title}</h3>
         <ChevronDown
           className={`w-6 h-6 text-dark-900 transition-transform ${
             isOpen ? 'rotate-180' : ''

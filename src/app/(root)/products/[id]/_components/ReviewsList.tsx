@@ -21,13 +21,13 @@ export async function ReviewsList({ productId }: ReviewsListProps) {
                 <Star key={i} className={`w-5 h-5 ${i < Math.round(averageRating) ? 'text-orange-400 fill-orange-400' : 'text-dark-500'}`} />
             ))}
         </div>
-        <p className="ml-2 text-body text-dark-700">({reviews.length} Reviews)</p>
+        <p className="ml-2 text-sm text-dark-700">({reviews.length} Reviews)</p>
       </div>
 
       <div className="mt-12">
         <CollapsibleSection title={`Reviews (${reviews.length})`}>
             {reviews.length === 0 ? (
-                <p className="text-body text-dark-700">No reviews yet.</p>
+                <p className="text-sm text-dark-700">No reviews yet.</p>
             ) : (
                 <div className="space-y-8">
                     {reviews.slice(0, 10).map((review) => (
@@ -38,7 +38,7 @@ export async function ReviewsList({ productId }: ReviewsListProps) {
                             {review.author.charAt(0)}
                         </div>
                         <div className="ml-4">
-                            <p className="text-body-medium text-dark-900">{review.author}</p>
+                            <p className="text-base font-medium text-dark-900">{review.author}</p>
                             <div className="flex items-center mt-1">
                             {[...Array(5)].map((_, i) => (
                                 <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-orange-400 fill-orange-400' : 'text-dark-500'}`} />
@@ -46,8 +46,8 @@ export async function ReviewsList({ productId }: ReviewsListProps) {
                             </div>
                         </div>
                         </div>
-                        {review.title && <h3 className="mt-4 text-body-medium text-dark-900">{review.title}</h3>}
-                        <p className="mt-2 text-body text-dark-700">{review.content}</p>
+                        {review.title && <h3 className="mt-4 text-base font-medium text-dark-900">{review.title}</h3>}
+                        <p className="mt-2 text-sm text-dark-700">{review.content}</p>
                     </div>
                     ))}
                 </div>

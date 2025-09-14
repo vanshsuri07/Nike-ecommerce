@@ -144,7 +144,7 @@ const Filters = ({ sizes }: FiltersProps) => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-heading-3">Filters</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold">Filters</h2>
               <button onClick={() => setIsDrawerOpen(false)}>
                 <X size={24} />
               </button>
@@ -156,7 +156,7 @@ const Filters = ({ sizes }: FiltersProps) => {
 
       {/* Desktop Sidebar */}
    <div className="hidden md:block -mt-4 sticky top-20 self-start">
-  <h2 className="text-heading-3 text-white bg-black w-full mb-3 px-4 py-2 rounded-lg">
+  <h2 className="text-xl sm:text-2xl text-white bg-black w-full mb-3 px-4 py-2 rounded-lg">
     Filters
   </h2>
   {renderFilters()}

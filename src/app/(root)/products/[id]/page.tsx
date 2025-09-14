@@ -49,11 +49,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           <div className="mt-8 lg:mt-0">
-            <p className="text-body text-dark-700">{product.brand.name}</p>
-            <h1 className="text-heading-2 text-dark-900 mt-1">{product.name}</h1>
+            <p className="text-sm text-dark-700">{product.brand.name}</p>
+            <h1 className="text-3xl sm:text-4xl font-bold text-dark-900 mt-1">{product.name}</h1>
 
             <div className="flex items-center mt-4">
-              <p className="text-heading-3 text-dark-900">${displayPrice}</p>
+              <p className="text-2xl sm:text-3xl font-semibold text-dark-900">${displayPrice}</p>
               {/* Compare at price logic can be added here from variant salePrice */}
             </div>
 

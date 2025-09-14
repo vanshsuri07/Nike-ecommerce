@@ -37,18 +37,31 @@ export default async function CheckoutSuccessPage({
       console.log('📧 Confirmation email triggered for order:', order.id);
     }
 
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+
     console.log('CheckoutSuccessPage: Rendering OrderSuccess component');
-    return <OrderSuccess order={order as any} />;
+    return (
+      <div>
+        <Navbar />
+        <OrderSuccess order={order as any} />
+        <Footer />
+      </div>
+    );
 
   } catch (error) {
     console.error('CheckoutSuccessPage: Error fetching order:', error);
     return (
-      <div className="container mx-auto px-4 py-8">
-        <h1>Error</h1>
-        <p>There was an error processing your order. Please contact support.</p>
-        <pre className="bg-gray-100 p-4 mt-4 text-xs overflow-auto">
-          {error instanceof Error ? error.message : 'Unknown error'}
-        </pre>
+      <div>
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-dark-900 mb-8">Error</h1>
+          <p>There was an error processing your order. Please contact support.</p>
+          <pre className="bg-gray-100 p-4 mt-4 text-xs overflow-auto">
+            {error instanceof Error ? error.message : 'Unknown error'}
+          </pre>
+        </div>
+        <Footer />
       </div>
     );
   }

@@ -81,7 +81,7 @@ const availableSizes = await getAvailableSizes();
 
         <section className="w-full md:w-3/4 lg:w-4/5">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-heading-2">Step Into Style</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold">Step Into Style</h1>
             <div className="flex items-center gap-4">
               <p className="text-body text-dark-700">{totalCount} Results</p>
               <Sort />

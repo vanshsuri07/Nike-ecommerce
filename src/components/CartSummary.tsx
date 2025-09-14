@@ -35,20 +35,20 @@ export default function CartSummary({ }: CartSummaryProps) {
   const total = subtotal + shipping;
 
   return (
-    <div className="p-6 border rounded-lg space-y-4">
-      <h2 className="text-heading-3 text-dark-900">Order Summary</h2>
+    <div className="p-6 border rounded-lg space-y-4 sticky top-24">
+      <h2 className="text-2xl font-semibold text-dark-900">Order Summary</h2>
       <div className="flex justify-between">
-        <p className="text-body text-dark-700">Subtotal</p>
-        <p className="text-body text-dark-900">${subtotal.toFixed(2)}</p>
+        <p className="text-sm text-dark-700">Subtotal</p>
+        <p className="text-sm font-medium text-dark-900">${subtotal.toFixed(2)}</p>
       </div>
       <div className="flex justify-between">
-        <p className="text-body text-dark-700">Shipping</p>
-        <p className="text-body text-dark-900">${shipping.toFixed(2)}</p>
+        <p className="text-sm text-dark-700">Shipping</p>
+        <p className="text-sm font-medium text-dark-900">${shipping.toFixed(2)}</p>
       </div>
       <hr />
       <div className="flex justify-between">
-        <p className="text-body-medium text-dark-900">Total</p>
-        <p className="text-body-medium text-dark-900">${total.toFixed(2)}</p>
+        <p className="text-base font-semibold text-dark-900">Total</p>
+        <p className="text-base font-semibold text-dark-900">${total.toFixed(2)}</p>
       </div>
       <form
         action={handleCheckout}
