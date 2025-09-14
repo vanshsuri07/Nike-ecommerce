@@ -3,6 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState } from 'react';
 import CartIndicator from './CartIndicator';
+import Search from './Search';
+import SearchPage from '@/app/(root)/search/page';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,24 +14,30 @@ const Navbar: React.FC = () => {
     <header className="sticky top-0 bg-black z-50">
   <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
     <div className="flex items-center justify-between h-16">
-      <div className="flex-shrink-0">
-        <Link href="/" passHref className="text-light-100">
-          <Image src="/nikelogo.jpg" alt="Logo" width={90} height={40} />
-        </Link>
-      </div>
+  {/* Left - Logo */}
+  <div className="flex-shrink-0">
+    <Link href="/" passHref className="text-light-100">
+      <Image src="/nikelogo.jpg" alt="Logo" width={90} height={40} />
+    </Link>
+  </div>
 
-      <div className="hidden md:flex md:items-center md:space-x-8">
-        <Link href="/products?gender=Men" className="text-light-100 hover:text-green text-body">Men</Link>
-        <Link href="/products?gender=Women" className="text-light-100 hover:text-green text-body">Women</Link>
-        <Link href="/products?gender=Kids" className="text-light-100 hover:text-green text-body">Kids</Link>
-        <Link href="/products" className="text-light-100 hover:text-green text-body">Collections</Link>
-        <Link href="/contact" className="text-light-100 hover:text-green text-body">Contact</Link>
-      </div>
+  {/* Middle - Nav Items */}
+  <div className="hidden md:flex md:items-center md:space-x-8 absolute left-1/2 transform -translate-x-1/2">
+    <Link href="/products?gender=Men" className="text-light-100 hover:text-green text-body">Men</Link>
+    <Link href="/products?gender=Women" className="text-light-100 hover:text-green text-body">Women</Link>
+    <Link href="/products?gender=Kids" className="text-light-100 hover:text-green text-body">Kids</Link>
+    <Link href="/products" className="text-light-100 hover:text-green text-body">Collections</Link>
+    <Link href="/wishlist" className="text-light-100 hover:text-green text-body">Wishlist</Link>
+    <Link href="/contact" className="text-light-100 hover:text-green text-body">Contact</Link>
+  </div>
 
-      <div className="hidden md:flex md:items-center md:space-x-8">
-        <span className="text-light-100 text-body">Search</span>
-        <CartIndicator />
-      </div>
+  {/* Right - Search + Cart */}
+  <div className="hidden md:flex md:items-center md:space-x-8">
+    <Search />
+    <CartIndicator />
+  </div>
+</div>
+
 
       {/* Mobile Menu Button */}
       <div className="md:hidden flex items-center">
@@ -52,7 +60,7 @@ const Navbar: React.FC = () => {
           </svg>
         </button>
       </div>
-    </div>
+    
 
     {/* Mobile Menu */}
     {isOpen && (

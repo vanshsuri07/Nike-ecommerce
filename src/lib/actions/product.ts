@@ -375,3 +375,79 @@ export async function getRecommendedProducts(productId: string): Promise<Recomme
       defaultVariantId: p.defaultVariantId || undefined,
   }));
 }
+
+export async function getWishlist(userId: string): Promise<ProductWithDetails[]> {
+    const wishlistItems = await db.query.wishlists.findMany({
+        where: eq(schema.wishlists.userId, userId),
+        with: {
+            product: {
+                with: {
+                    brand: true,
+                    category: true,
+                    gender: true,
+                    variants: {
+                        with: {
+                            color: true,
+                            size: true,
+                        },
+                    },
+                    images: true,
+                },
+            },
+        },
+    });
+
+    if (!wishlistItems) {
+        return [];
+    }
+
+    const products = wishlistItems.map((item) => item.product);
+
+    const finalProducts = products.map(p => {
+        const prices: number[] = p.variants.map((v: any) => parseFloat(v.price));
+        const minPrice = prices.length ? Math.min(...prices) : 0;
+        const maxPrice = prices.length ? Math.max(...prices) : 0;
+        return {
+            ...p,
+            minPrice: minPrice.toString(),
+            maxPrice: maxPrice.toString(),
+        } as ProductWithDetails;
+    });
+
+    return finalProducts;
+}
+
+export async function isProductInWishlist(userId: string, productId: string): Promise<boolean> {
+    const wishlistItem = await db.query.wishlists.findFirst({
+        where: and(
+            eq(schema.wishlists.userId, userId),
+            eq(schema.wishlists.productId, productId)
+        ),
+    });
+
+    return !!wishlistItem;
+}
+
+export async function addToWishlist(userId: string, productId: string) {
+    const alreadyInWishlist = await isProductInWishlist(userId, productId);
+
+    if (alreadyInWishlist) {
+        return { error: 'Product already in wishlist' };
+    }
+
+    await db.insert(schema.wishlists).values({
+        userId,
+        productId,
+    });
+
+    return { success: 'Product added to wishlist' };
+}
+
+export async function removeFromWishlist(userId: string, productId: string) {
+    await db.delete(schema.wishlists).where(
+        and(
+            eq(schema.wishlists.userId, userId),
+            eq(schema.wishlists.productId, productId)
+        )
+    );
+}

@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import SizePicker from '@/components/SizePicker';
-import { Loader, ShoppingBag } from 'lucide-react';
+import { Loader, ShoppingBag, HeartIcon } from 'lucide-react';
 import { useCartStore } from '@/store/cart.store';
 import { toast } from 'sonner';
+import AddToWishlistButton from './AddToWishlistButton';
 
 // Define a type for product variant with size
 type ProductVariantWithSize = {
@@ -53,6 +54,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
             setIsPending(false);
         }
     };
+    
 
     return (
         <>
@@ -64,7 +66,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
                 />
             </div>
 
-            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="">
                 <button
                     onClick={handleAddToCart}
                     className="w-full bg-dark-900 text-light-100 py-4 px-8 rounded-full text-body-medium flex items-center justify-center hover:bg-dark-700 transition-colors disabled:opacity-50"
@@ -79,10 +81,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
                         </>
                     )}
                 </button>
-                <button className="w-full bg-light-200 text-dark-900 py-4 px-8 rounded-full text-body-medium flex items-center justify-center ring-1 ring-light-400 hover:ring-dark-900 transition-colors">
-                    <ShoppingBag className="w-6 h-6 mr-2" />
-                    Favorite
-                </button>
+               
             </div>
         </>
     );

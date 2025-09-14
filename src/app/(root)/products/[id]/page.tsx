@@ -9,6 +9,9 @@ import { ReviewsList } from './_components/ReviewsList';
 import { RecommendedProductsGrid } from './_components/RecommendedProductsGrid';
 import { RecommendedSkeleton } from './_components/RecommendedSkeleton';
 import AddToCartForm from '@/components/AddToCartForm';
+import AddToWishlistButton from '@/components/AddToWishlistButton';
+import { getCurrentUser } from '@/lib/auth/actions';
+import { isProductInWishlist } from '@/lib/actions/product';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -22,6 +25,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // Await the params Promise
   const { id } = await params;
   const product = await getProduct(id);
+  const user = await getCurrentUser();
+  const inWishlist = user ? await isProductInWishlist(user.id, id) : false;
 
   if (!product) {
     return <ProductNotFound />;
@@ -55,10 +60,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <Suspense fallback={<div className="mt-4 h-24" />}>
               <ReviewsList productId={product.id} />
             </Suspense>
-
+            <div className='mt-8 space-y-4'>
             <AddToCartForm product={product} />
-
-            <div className="mt-12">
+            <AddToWishlistButton productId={product.id} initialInWishlist={inWishlist} />
+            </div>
+          <div className="mt-12">
                 <CollapsibleSection title="Description" isOpen={true}>
                     <div className="prose text-body text-dark-700">
                         {product.description}
