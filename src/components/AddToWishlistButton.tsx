@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from 'react';
 import { Button } from './ui/button';
-import { addToWishlist, isProductInWishlist } from '@/lib/actions/product';
+import { addToWishlist } from '@/lib/actions/product';
 import { toast } from 'sonner';
 import { useCurrentUser } from '@/hooks/use-current-user';
 import { useRouter } from 'next/navigation';
+import { HeartIcon } from 'lucide-react';
 
 interface AddToWishlistButtonProps {
     productId: string;
@@ -35,18 +36,30 @@ export default function AddToWishlistButton({ productId, initialInWishlist }: Ad
         });
     };
 
-    return (
-        <Button
-            onClick={handleAddToWishlist}
-            disabled={isPending || inWishlist}
-            variant="outline"
-            className="w-full mt-2"
-        >
-            {isPending
-                ? 'Adding...'
-                : inWishlist
-                ? 'In Wishlist'
-                : 'Add to Wishlist'}
-        </Button>
-    );
+return (
+    <button
+      onClick={handleAddToWishlist}
+      disabled={isPending || inWishlist} // 🔹 disable if already in wishlist
+      className={`w-full py-4 px-8 rounded-full text-body-medium flex items-center justify-center ring-1 transition-colors
+        ${
+          inWishlist
+            ? 'bg-light-200 text-dark-900 ring-light-400 cursor-not-allowed'
+            : 'bg-light-200 text-dark-900 ring-light-400 hover:ring-dark-900'
+        }`}
+    >
+      {isPending ? (
+        'Adding...'
+      ) : inWishlist ? (
+        <>
+          In Wishlist
+          <HeartIcon className="w-6 h-6 ml-2 text-red-500 fill-red-500" />
+        </>
+      ) : (
+        <>
+          Add to Wishlist
+          <HeartIcon className="w-6 h-6 ml-2" />
+        </>
+      )}
+    </button>
+  );
 }

@@ -60,11 +60,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <Suspense fallback={<div className="mt-4 h-24" />}>
               <ReviewsList productId={product.id} />
             </Suspense>
-
+            <div className='mt-8 space-y-4'>
             <AddToCartForm product={product} />
             <AddToWishlistButton productId={product.id} initialInWishlist={inWishlist} />
-
-            <div className="mt-12">
+            </div>
+          <div className="mt-12">
                 <CollapsibleSection title="Description" isOpen={true}>
                     <div className="prose text-body text-dark-700">
                         {product.description}
