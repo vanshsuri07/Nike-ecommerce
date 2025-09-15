@@ -47,6 +47,6 @@ const Model: React.FC = (props) => {
   );
 };
 
-useGLTF.preload("/model/shoemodel.glb");
+useGLTF.preload("/models/shoemodel.glb");
 
 export default Model;

@@ -29,7 +29,7 @@ const headingVariants: Variants = {
 };
 
 
-useGLTF.preload("/model/shoemodel.glb");
+useGLTF.preload("/models/shoemodel.glb");
 
 const HeroSection = () => {
   return (
