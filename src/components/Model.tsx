@@ -16,7 +16,7 @@ type GLTFResult = GLTF & {
 const Model: React.FC = (props) => {
   const group = useRef<THREE.Group>(null);
   const { nodes, materials } = useGLTF(
-    "/Model/shoemodel.glb"
+    "/model/shoemodel.glb"
   ) as unknown as GLTFResult;
 
 

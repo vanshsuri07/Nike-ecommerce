@@ -48,7 +48,7 @@ import {
             <Container className="border border-solid border-[#eaeaea] rounded my-[40px] mx-auto p-[20px] w-[465px]">
               <Section className="mt-[32px] text-center">
                 <Img
-                  src="http://localhost:3000/nikelogo.jpg" // Placeholder for store logo
+                  src="https://nike-ecommerce-five.vercel.app/nikelogo.png" // Placeholder for store logo
                   width="150"
                   height="50"
                   alt="Store Logo"

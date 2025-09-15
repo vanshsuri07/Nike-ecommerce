@@ -16,7 +16,7 @@ const Navbar: React.FC = () => {
           {/* Left - Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="text-light-100">
-              <Image src="/nikelogo.jpg" alt="Logo" width={90} height={40} />
+              <Image src="/nikelogo.png" alt="Logo" width={90} height={40} />
             </Link>
           </div>
 

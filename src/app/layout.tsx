@@ -11,6 +11,9 @@ const jost = Jost({
 export const metadata: Metadata = {
   title: "Nike",
   description: "An e-commerce platform for Nike shoes",
+  icons: {
+    icon: "/public/favicon.ico", // Path to your favicon in /public
+  },
 };
 
 export default function RootShell({

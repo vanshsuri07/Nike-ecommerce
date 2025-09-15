@@ -8,6 +8,7 @@ import {
   Float,
   OrbitControls,
   PresentationControls,
+  useGLTF,
 } from "@react-three/drei";
 import Loader from "./Loader";
 import Image from "next/image";
@@ -26,6 +27,9 @@ const headingVariants: Variants = {
     },
   }),
 };
+
+
+useGLTF.preload("/model/shoemodel.glb");
 
 const HeroSection = () => {
   return (
