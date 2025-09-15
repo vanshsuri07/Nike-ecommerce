@@ -40,18 +40,20 @@ const image = images && images.length > 0 ? images[0].url : undefined;  const ha
   return (
     <article className="group flex flex-col rounded-lg shadow-md overflow-hidden bg-white">
   <div className="relative">
-    <Link href={`/products/${id}`} passHref>
-      {image && (
-        <div className="relative w-full h-48 md:h-64">
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-        </div>
-      )}
-    </Link>
+   <Link href={`/products/${id}`} passHref>
+  {image && (
+    <div className="relative w-full aspect-[4/3] sm:aspect-[3/4] md:aspect-[16/9]">
+      <Image
+        src={image}
+        alt={name}
+        fill
+        className="object-cover transition-transform duration-500 group-hover:scale-110"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        priority={false}
+      />
+    </div>
+  )}
+</Link>
   </div>
 
   <div className="flex flex-col justify-between flex-grow p-4 md:p-5">
