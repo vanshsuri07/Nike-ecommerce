@@ -50,13 +50,15 @@ return (
         'Adding...'
       ) : inWishlist ? (
         <>
+        <HeartIcon className="w-6 h-6 ml-2 text-red-500 fill-red-500" />
           In Wishlist
-          <HeartIcon className="w-6 h-6 ml-2 text-red-500 fill-red-500" />
+          
         </>
       ) : (
         <>
+        <HeartIcon className="w-6 h-6 ml-2" />
           Add to Wishlist
-          <HeartIcon className="w-6 h-6 ml-2" />
+          
         </>
       )}
     </button>
