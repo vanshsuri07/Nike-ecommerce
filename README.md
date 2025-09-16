@@ -1,10 +1,18 @@
 # 🏷️ Nike E-Commerce AI Platform 👟
 
+
+
 AI-powered e-commerce platform for Nike sneakers — built with **Next.js 15**, **Stripe**, and **Neon Database**, featuring **AI-driven product generation**.
+<p align="center">
+  <img src="https://github.com/vanshsuri07/Nike-ecommerce/blob/main/public/Screenshot1.png" width="65%" />
+   &nbsp;&nbsp;&nbsp;
+  <img src="https://github.com/vanshsuri07/Nike-ecommerce/blob/main/public/screenshothome.png" width="20%" />
+</p>
 
-![App Screenshot](Screenshot1.png)
+---
 
-👉 [Live Demo](https://nike-ecommerce-five.vercel.app/)
+## 🚀 Live Demo  
+👉 [Click here to try it out](https://nike-ecommerce-five.vercel.app/)
 
 ---
 
@@ -93,14 +101,19 @@ Just provide a shoe name + image, and the AI generates:
 ## 📸 Screenshots
 
 ### 👤 Auth Page
-![Sign Screenshot](https://github.com/<username>/<repo>/raw/main/public/screenshotsign.png)
+<p align="center">
+  <img src="https://github.com/vanshsuri07/Nike-ecommerce/blob/main/public/screenshot-sign.png" width="600"/>
+</p>
 
 ### 🛒 Cart Page
-![Product Screenshot](https://github.com/<username>/<repo>/raw/main/public/screenshotcart.png)
+<p align="center">
+  <img src="https://github.com/vanshsuri07/Nike-ecommerce/blob/main/public/screenshotcart.png" width="600"/>
+</p>
 
 ### 🤖 AI Product Generator
-![AI Screenshot](https://github.com/<username>/<repo>/raw/main/public/screenshotai.png)
-
+<p align="center">
+  <img src="https://github.com/vanshsuri07/Nike-ecommerce/blob/main/public/screenshotai.png" width="600"/>
+</p>
 
 
  ## 📜 License
