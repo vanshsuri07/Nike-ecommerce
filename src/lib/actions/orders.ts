@@ -240,43 +240,46 @@ export async function getOrderByStripeSessionId(sessionId: string) {
   }
 }
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export async function getOrder(sessionId: string) {
   console.log('Getting order for session:', sessionId);
-  
-  // First try to get existing order
-  const existingOrder = await getOrderByStripeSessionId(sessionId);
 
-  if (existingOrder) {
-    console.log('Found existing order:', existingOrder.id);
-    return existingOrder;
+  for (let i = 0; i < 3; i++) {
+    console.log(`Attempt ${i + 1} to get order...`);
+    const order = await getOrderByStripeSessionId(sessionId);
+    if (order) {
+      console.log('Found order:', order.id);
+      return order;
+    }
+    // Wait for a second before retrying
+    await sleep(1000);
   }
 
-  console.log('No existing order found, creating new one...');
-  
-  // If no existing order, create one
+  console.log('No existing order found after retries, creating new one...');
+
   try {
     const newOrder = await createOrder(sessionId);
     console.log('Created new order:', newOrder.id);
-    
-    // Return the order with full relations
+
     const fullOrder = await db.query.orders.findFirst({
       where: eq(schema.orders.id, newOrder.id),
       with: {
         user: true,
         shippingAddress: true,
         billingAddress: true,
-       items: {
+        items: {
           with: {
             productVariant: {
               with: {
                 product: true,
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
-    
+
     return fullOrder;
   } catch (error) {
     console.error('Error creating order:', error);
