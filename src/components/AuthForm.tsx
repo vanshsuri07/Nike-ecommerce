@@ -31,6 +31,8 @@ const AuthForm = ({ type }: AuthFormProps) => {
     setError(null);
     setIsPending(true);
 
+    console.log(`🚀 [AUTH-FORM] Starting ${type} process...`);
+
     // Helper function to get appropriate error message
     const getErrorMessage = (type: string, errorMessage: string) => {
       const lowerError = errorMessage.toLowerCase();
@@ -56,21 +58,37 @@ const AuthForm = ({ type }: AuthFormProps) => {
       const formPassword = formData.get('password') as string;
       const formName = formData.get('name') as string;
 
+      console.log('📝 [AUTH-FORM] Form data:', { 
+        email: formEmail, 
+        name: type === 'signUp' ? formName : 'N/A',
+        type 
+      });
+
       let result;
       
       if (type === 'signUp') {
+        console.log('📝 [AUTH-FORM] Calling client sign-up...');
+        
         // Step 1: Sign up the user
         result = await signUpClient(formName, formEmail, formPassword);
+        console.log('✅ [AUTH-FORM] Sign-up successful, user should be signed in');
         
         // Step 2: Call server action to handle cart merging
-        await handlePostAuthActions('signUp', formEmail, result.user.id);
+        console.log('🛒 [AUTH-FORM] Handling cart merge...');
+        const serverResult = await handlePostAuthActions('signUp', formEmail, result.user.id);
+        console.log('🔍 [AUTH-FORM] Server merge result:', serverResult);
         
       } else {
+        console.log('🔑 [AUTH-FORM] Calling client sign-in...');
+        
         // Step 1: Sign in the user
         result = await signInClient(formEmail, formPassword);
+        console.log('✅ [AUTH-FORM] Sign-in successful');
         
         // Step 2: Call server action to handle cart merging
-        await handlePostAuthActions('signIn', formEmail, result.user.id);
+        console.log('🛒 [AUTH-FORM] Handling cart merge...');
+        const serverResult = await handlePostAuthActions('signIn', formEmail, result.user.id);
+        console.log('🔍 [AUTH-FORM] Server merge result:', serverResult);
       }
 
       // Success case
@@ -80,15 +98,16 @@ const AuthForm = ({ type }: AuthFormProps) => {
           ? 'Account created successfully!'
           : 'Signed in successfully!'
       );
+
+      console.log('🎉 [AUTH-FORM] Authentication successful, redirecting...');
       
       // Handle redirects
       const redirectTo = redirectUrl || '/';
+      console.log('🔄 [AUTH-FORM] Redirecting to:', redirectTo);
       window.location.href = redirectTo;
 
     } catch (err) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('💥 [AUTH-FORM] Auth error:', err);
-      }
+      console.error('💥 [AUTH-FORM] Auth error:', err);
       const errorMessage = (err as Error)?.message || 'An unexpected error occurred';
       const formattedError = getErrorMessage(type, errorMessage);
       setError(formattedError);
@@ -97,6 +116,9 @@ const AuthForm = ({ type }: AuthFormProps) => {
       setIsPending(false);
     }
   };
+
+  // Rest of your component JSX remains the same...
+
 
   return (
     <div className="space-y-6">
@@ -112,6 +134,15 @@ const AuthForm = ({ type }: AuthFormProps) => {
 
       <h1 className="mt-3 text-heading-3 text-dark-900 text-center">{title}</h1>
       <p className="text-lead text-dark-700 mt-2 mb-8">{subtitle}</p>
+      </div>
+      <SocialProviders variant={type === 'signIn' ? 'sign-in' : 'sign-up'} />
+
+      <div className="flex items-center gap-4">
+        <hr className="h-px w-full border-0 bg-light-300" />
+        <span className="shrink-0 text-caption text-dark-700">
+          Or {type === "signIn" ? "sign in" : "sign up"} with
+        </span>
+        <hr className="h-px w-full border-0 bg-light-300" />
       </div>
 
       <form
@@ -177,6 +208,9 @@ const AuthForm = ({ type }: AuthFormProps) => {
             </div>
             {type === 'signIn' && (
           <div className="text-right mb-6">
+            <Link href="#" className="text-green font-medium hover:underline">
+                  Forgot password?
+                </Link>
               </div>
             )}
             <button

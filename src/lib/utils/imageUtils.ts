@@ -36,5 +36,7 @@ export async function saveImage(tempImagePath: string): Promise<string> {
   // Return the relative path for use in the database/URL
   const relativePath = `/uploads/products/${uniqueFilename}`;
 
+  console.log(`Image successfully saved to public folder: ${relativePath}`);
+
   return relativePath;
 }

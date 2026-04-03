@@ -9,7 +9,7 @@ export const auth = betterAuth({
     schema: { user, session, account, verifications },
   }),
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-  secret: process.env.BETTER_AUTH_SECRET,
+  secret: process.env.BETTER_AUTH_SECRET || "your-secret-key-change-this-in-production",
   user: {
     modelName: "user",
   },

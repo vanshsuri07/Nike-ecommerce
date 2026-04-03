@@ -15,9 +15,7 @@ export function useCurrentUser() {
                     setUser(data);
                 }
             } catch (error) {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.error('Failed to fetch user:', error);
-                }
+                console.error('Failed to fetch user:', error);
             }
         }
 

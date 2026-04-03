@@ -19,6 +19,11 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
     height: 0,
   });
   
+  // Debug: Log the entire order structure
+  console.log('🔍 FULL ORDER OBJECT:', JSON.stringify(order, null, 2));
+  console.log('🔍 ORDER ITEMS:', order.items);
+  console.log('🔍 FIRST ITEM:', order.items[0]);
+  
   useEffect(() => {
     clearCart();
   }, [clearCart]);
@@ -40,22 +45,28 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
 
   // Helper function to get a working image URL
   const getImageUrl = (imageUrl?: string) => {
+    console.log('🖼️ getImageUrl called with:', imageUrl);
+    
     if (!imageUrl) {
+      console.log('❌ No imageUrl provided, using placeholder');
       return '/shoe-placeholder.png';
     }
     
     // If it's already a full URL, use it
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      console.log('✅ Full URL detected, returning:', imageUrl);
       return imageUrl;
     }
     
     // For relative URLs that start with /, they should work as-is from /public
     if (imageUrl.startsWith('/')) {
+      console.log('✅ Relative URL with leading slash, returning:', imageUrl);
       return imageUrl;
     }
     
     // For relative URLs without leading slash, add it
     const finalUrl = `/${imageUrl}`;
+    console.log('✅ Added leading slash, returning:', finalUrl);
     return finalUrl;
   };
  
@@ -90,6 +101,14 @@ export default function OrderSuccess({ order }: OrderSuccessProps) {
           
           <div className="space-y-4">
             {order.items.map((item) => {
+              // Debug: Log the entire item structure
+              console.log('🔍 Order item structure:', {
+                id: item.id,
+                productVariant: item.productVariant,
+                product: item.productVariant?.product,
+                images: item.productVariant?.product?.images,
+              });
+
               return (
                 <div
                   key={item.id}

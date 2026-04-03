@@ -20,6 +20,7 @@ export async function POST(request: Request) {
   const { name, email, message } = validation.data;
 
   try {
+    // TODO: move this to a separate file
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
@@ -30,15 +31,9 @@ export async function POST(request: Request) {
       },
     });
 
-    const recipientEmail = process.env.CONTACT_EMAIL || process.env.EMAIL_USER;
-
-    if (!recipientEmail) {
-      throw new Error('CONTACT_EMAIL is not set');
-    }
-
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: recipientEmail,
+      to: "your-email@example.com", // TODO: Replace with your email address
       subject: "New Contact Form Submission",
       html: `<p>Name: ${name}</p><p>Email: ${email}</p><p>Message: ${message}</p>`,
     };
@@ -47,9 +42,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(error);
-    }
+    console.error(error);
     return NextResponse.json(
       { error: "Failed to send message" },
       { status: 500 }

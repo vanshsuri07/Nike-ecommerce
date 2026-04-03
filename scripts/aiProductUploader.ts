@@ -9,11 +9,9 @@ async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 1 || args.length > 2) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(
-        'Usage: npm run ai:upload -- "<product-name>" [path/to/image.jpg]',
-      );
-    }
+    console.error(
+      'Usage: npm run ai:upload -- "<product-name>" [path/to/image.jpg]',
+    );
     process.exit(1);
   }
 
@@ -28,16 +26,14 @@ async function main() {
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
   });
-  const db: NodePgDatabase<typeof schema> = drizzle(pool, { schema, logger: false });
+  const db: NodePgDatabase<typeof schema> = drizzle(pool, { schema, logger: true });
 
   try {
     const [productName, imageRelativePath] = args;
 
     const productNames = process.argv.slice(2);
      if (productNames.length === 0) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('Please provide at least one product name');
-    }
+    console.error('Please provide at least one product name');
     process.exit(1);
     }
 
@@ -45,30 +41,37 @@ async function main() {
       ? path.resolve(process.cwd(), imageRelativePath)
       : undefined;
 
-    // Pass the db instance to the service function
-    await createProductFromAI(db, productName, imagePath);
-  } catch (error) {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error('\n❌ Product upload failed.');
+    console.log(`Starting AI product upload for: "${productName}"`);
+    if (imagePath) {
+      console.log(`Using image: ${imagePath}`);
     }
+
+    // Pass the db instance to the service function
+    const newProduct = await createProductFromAI(db, productName, imagePath);
+
+    console.log('\n✅ Product upload successful!');
+    console.log('---------------------------------');
+    console.log('Product Name:', newProduct.name);
+    console.log('Product ID:', newProduct.id);
+    console.log('Description:', newProduct.description);
+    console.log('Price:', newProduct.price);
+    console.log('Default Variant ID:', newProduct.defaultVariantId);
+    console.log('---------------------------------');
+  } catch (error) {
+    console.error('\n❌ Product upload failed.');
     if (error instanceof Error) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('Error:', error.message);
-      }
+      console.error('Error:', error.message);
     } else {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('An unknown error occurred:', error);
-      }
+      console.error('An unknown error occurred:', error);
     }
     process.exit(1);
   } finally {
+    console.log('Closing database connection...');
     await pool.end();
   }
 }
 
 main().catch((error) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.error('An unexpected error occurred in the CLI script:', error);
-  }
+  console.error('An unexpected error occurred in the CLI script:', error);
   process.exit(1);
 });

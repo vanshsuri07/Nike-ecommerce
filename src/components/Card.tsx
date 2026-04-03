@@ -17,6 +17,8 @@ const Card: React.FC<CardProps> = ({ product }) => {
 
   const { name, category, id, defaultVariantId, images, variants } = product;
   const { addCartItem } = useCartStore();
+  // Change the debug line to this:
+console.log('Product images for', name, ':', images.map(img => img.url));
 
   // Get price from default variant if available
   const defaultVariant = variants.find(v => v.id === defaultVariantId);

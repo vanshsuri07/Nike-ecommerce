@@ -18,12 +18,8 @@ type VariantRow = typeof productVariants.$inferSelect;
 
 type RGBHex = `#${string}`;
 
-const log = (..._args: unknown[]) => {};
-const err = (...args: unknown[]) => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.error('[seed:error]', ...args);
-  }
-};
+const log = (...args: unknown[]) => console.log('[seed]', ...args);
+const err = (...args: unknown[]) => console.error('[seed:error]', ...args);
 
 function pick<T>(arr: T[], n: number) {
   const a = [...arr];
