@@ -16,7 +16,9 @@ class ErrorBoundary extends React.Component<React.PropsWithChildren<object>, Sta
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('3D Model Error:', error, errorInfo);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('3D Model Error:', error, errorInfo);
+    }
   }
 
   render() {

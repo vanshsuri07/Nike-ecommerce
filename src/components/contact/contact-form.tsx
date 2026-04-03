@@ -34,7 +34,9 @@ const ContactForm = () => {
       }
     } catch (error) {
       toast.error("An error occurred. Please try again later.");
-      console.error("Error sending contact form:", error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error("Error sending contact form:", error);
+      }
     } finally {
       setLoading(false);
     }

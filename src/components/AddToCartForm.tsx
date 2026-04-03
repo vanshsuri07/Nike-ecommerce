@@ -47,7 +47,9 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
             toast.success('Added to cart');
         } catch (error) {
             toast.error('Failed to add to cart. Please try again.');
-            console.error('Error adding to cart:', error);
+            if (process.env.NODE_ENV !== 'production') {
+                console.error('Error adding to cart:', error);
+            }
         } finally {
             setIsPending(false);
         }

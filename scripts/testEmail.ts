@@ -11,16 +11,16 @@ const transporter = nodemailer.createTransport({
 
 async function main() {
   try {
-    const info = await transporter.sendMail({
+    await transporter.sendMail({
       from: process.env.GMAIL_EMAIL,
-      to: "sonw80594@gmail.com", // send to yourself first
+      to: process.env.TEST_EMAIL_TO || process.env.GMAIL_EMAIL,
       subject: "✅ Gmail test email",
       text: "This email is sent using Gmail + Nodemailer!",
     });
-
-    console.log("Email sent:", info.messageId);
   } catch (error) {
-    console.error("Error sending email:", error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error("Error sending email:", error);
+    }
   }
 }
 

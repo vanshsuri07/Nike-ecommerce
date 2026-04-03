@@ -12,7 +12,6 @@ async function syncProducts() {
   for (const p of allProducts) {
     // Skip if already synced
     if (p.stripeProductId && p.stripePriceId) {
-      console.log(`Skipping ${p.name}, already synced.`);
       continue;
     }
 
@@ -38,11 +37,11 @@ async function syncProducts() {
         stripePriceId: stripePrice.id,
       })
     .where(eq(products.id, p.id));
-
-    console.log(`✅ Synced product: ${p.name}`);
   }
-
-  console.log("🎉 Sync complete");
 }
 
-syncProducts().catch(console.error);
+syncProducts().catch((error) => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(error);
+  }
+});

@@ -31,7 +31,6 @@ export async function sendOrderConfirmationEmail(orderId: string) {
     }
 
     if (order.confirmationEmailSent) {
-      console.log(`📧 Email already sent for order: ${orderId}`);
       return;
     }
 
@@ -84,8 +83,9 @@ export async function sendOrderConfirmationEmail(orderId: string) {
       .set({ confirmationEmailSent: true })
       .where(eq(orders.id, orderId));
 
-    console.log(`✅ Confirmation email sent for order: ${orderId}`);
   } catch (error) {
-    console.error(`❌ Error sending confirmation email:`, error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error(`❌ Error sending confirmation email:`, error);
+    }
   }
 }

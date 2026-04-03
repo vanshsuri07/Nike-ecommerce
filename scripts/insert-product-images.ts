@@ -32,9 +32,10 @@ async function insertSizes() {
         [uuidv4(), size.name, size.slug, size.sort_order]
       );
     }
-    console.log("✅ Sizes 5–14 inserted successfully!");
   } catch (err) {
-    console.error("❌ Error inserting sizes:", err);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error("❌ Error inserting sizes:", err);
+    }
   } finally {
     client.release();
     process.exit();

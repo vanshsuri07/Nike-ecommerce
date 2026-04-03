@@ -56,7 +56,6 @@ export async function createProductFromAI(
   return db.transaction(async (tx) => {
 // 1. Generate product data from AI
 const aiData = await generateProductDataWithGemini(productName, imagePath);
-console.log('AI Generated Data:', aiData);
 
 // Generate Stripe IDs
 const stripe_product_id = "prod_" + Math.random().toString(36).substr(2, 9);
@@ -69,7 +68,6 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
       .from(schema.categories)
       .where(eq(schema.categories.slug, categorySlug));
     if (!category) {
-      console.log(`Category "${aiData.category}" not found, creating it...`);
       [category] = await tx
         .insert(schema.categories)
         .values({ name: aiData.category, slug: categorySlug })
@@ -83,7 +81,6 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
       .from(schema.colors)
       .where(eq(schema.colors.slug, colorSlug));
     if (!color) {
-      console.log(`Color "${aiData.color}" not found, creating it...`);
       [color] = await tx
         .insert(schema.colors)
         .values({
@@ -102,13 +99,11 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
     const size = allSizes[Math.floor(Math.random() * allSizes.length)];
     // 5. Get or create brand
     const brandSlug = slugify(aiData.brand);
-    console.log(size);
     let [brand] = await tx
       .select()
       .from(schema.brands)
       .where(eq(schema.brands.slug, brandSlug));
     if (!brand) {
-      console.log(`Brand "${aiData.brand}" not found, creating it...`);
       [brand] = await tx
         .insert(schema.brands)
         .values({ name: aiData.brand, slug: brandSlug })
@@ -121,7 +116,6 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
       .from(schema.genders)
       .where(eq(schema.genders.slug, genderSlug));
     if (!gender) {
-      console.log(`Gender "${aiData.gender}" not found, creating it...`);
       [gender] = await tx
         .insert(schema.genders)
         .values({ label: aiData.gender, slug: genderSlug })
@@ -143,7 +137,6 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
         image: imagePath ? await saveImage(imagePath) : null,
       })
       .returning();
-    console.log('Inserted Product ID:', product.id);
 
    // 8. Insert product variants for a selection of sizes
      // 8. Insert product variants for a selection of sizes
@@ -168,7 +161,6 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
         defaultVariantId = variant.id;
       }
     }
-    console.log(`Inserted ${variantIds.length} variants for product ${product.id}`);
 
     // 9. Handle Image
     if (imagePath) {
@@ -179,7 +171,6 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
         url: imageUrl,
         isPrimary: true,
       });
-      console.log('Inserted Product Image URL:', imageUrl);
     }
 
     // 10. Update product with default variant ID
@@ -187,7 +178,6 @@ const stripe_price_id = "price_" + Math.random().toString(36).substr(2, 9);
         .update(schema.products)
       .set({ defaultVariantId: defaultVariantId })
         .where(eq(schema.products.id, product.id));
-      console.log('Updated product with default variant ID.');
 
     const [finalProduct] = await tx
       .select()
@@ -241,7 +231,6 @@ export async function generateProductDataWithGemini(
 
       // Rotate API key
       const apiKey = getNextApiKey();
-      console.log(`🔑 Using API Key ${currentKeyIndex}/${process.env.GOOGLE_API_KEYS?.split(',').length || 0}`);
 
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
@@ -308,20 +297,19 @@ if (parsedJson.hexCode) {
 
       const validatedData = ProductAIOutputSchema.parse(parsedJson);
 
-      console.log('✅ Successfully generated product data.');
       return validatedData;
     } catch (error) {
-      console.error(`❌ Attempt ${attempts}/${maxAttempts} failed:`, error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error(`❌ Attempt ${attempts}/${maxAttempts} failed:`, error);
+      }
 
       // Quota hit → try next key
       if (error instanceof Error && (error.message.includes('429') || error.message.includes('quota'))) {
-        console.log('⚠️ Quota limit hit — switching API key...');
         continue; // try with next key
       }
 
       // Backoff delay for other errors
       const delay = Math.min(Math.pow(2, attempts - 1) * 5000, 120000);
-      console.log(`⏳ Waiting ${delay / 1000}s before retry...`);
       await new Promise(r => setTimeout(r, delay));
     }
   }
@@ -337,14 +325,15 @@ export async function generateProductDataWithGeminiAndFallback(
   try {
     return await generateProductDataWithGemini(name, imagePath);
   } catch (error) {
-    console.error('⚠️ Gemini failed after all retries. Using fallback.',error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('⚠️ Gemini failed after all retries. Using fallback.',error);
+    }
     return createFallbackProductData(name);
   }
 }
 
 // Alternative: Add a fallback function that creates basic product data
 export function createFallbackProductData(name: string): ProductAIOutput {
-  console.log('Using fallback product data generation...');
   
   // Extract basic info from product name
   const nameLower = name.toLowerCase();

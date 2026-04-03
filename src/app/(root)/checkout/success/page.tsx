@@ -8,40 +8,31 @@ export default async function CheckoutSuccessPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  console.log('CheckoutSuccessPage: Starting...');
-  
   const params = await searchParams;
-  console.log('CheckoutSuccessPage: Params:', params);
-  
   const sessionId = params.session_id;
-  console.log('CheckoutSuccessPage: Session ID:', sessionId);
 
   if (!sessionId || typeof sessionId !== 'string') {
-    console.log('CheckoutSuccessPage: Invalid session ID, returning notFound');
     return notFound();
   }
 
   try {
-    console.log('CheckoutSuccessPage: Fetching order for session:', sessionId);
     const order = await getOrder(sessionId);
-    console.log('CheckoutSuccessPage: Order result:', order);
 
     if (!order) {
-      console.log('CheckoutSuccessPage: No order found, returning notFound');
       return notFound();
     }
 
     // ✅ Send confirmation email if not sent already
     if (!order.confirmationEmailSent) {
       await sendOrderConfirmationEmail(order.id);
-      console.log('📧 Confirmation email triggered for order:', order.id);
     }
 
-    console.log('CheckoutSuccessPage: Rendering OrderSuccess component');
     return <OrderSuccess order={order as any} />;
 
   } catch (error) {
-    console.error('CheckoutSuccessPage: Error fetching order:', error);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('CheckoutSuccessPage: Error fetching order:', error);
+    }
     return (
       <div className="container mx-auto px-4 py-8">
         <h1>Error</h1>
