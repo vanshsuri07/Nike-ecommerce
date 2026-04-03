@@ -34,7 +34,7 @@
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.542.0",
     "maath": "^0.10.8",
-    "next": "15.5.2",
+    "next": "^15.5.9",
     "nodemailer": "^7.0.6",
     "pg": "^8.16.3",
     "query-string": "^9.2.2",
