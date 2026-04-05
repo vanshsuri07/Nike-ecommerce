@@ -4,6 +4,7 @@ import { useCartStore } from '@/store/cart.store';
 import { Button } from '@/components/ui/button';
 import { TUser } from '@/lib/db/schema';
 import { createStripeCheckoutSession } from '@/lib/actions/checkout';
+import { logger } from '@/lib/logger';
 import { useTransition } from 'react';
 import { Loader } from 'lucide-react';
 import { toast } from 'sonner';
@@ -22,7 +23,7 @@ export default function CartSummary({ }: CartSummaryProps) {
         await createStripeCheckoutSession();
       } catch (error) {
         toast.error('Failed to create checkout session. Please try again.');
-        console.error('Error creating checkout session:', error);
+        logger.error('Error creating checkout session:', error);
       }
     });
   };

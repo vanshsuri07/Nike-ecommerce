@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { signInClient, signUpClient } from '@/lib/auth/client';
 import { handlePostAuthActions } from '@/lib/auth/post-auth-action';
+import { logger } from '@/lib/logger';
 
 interface AuthFormProps {
   type: 'signIn' | 'signUp';
@@ -86,9 +87,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
       window.location.href = redirectTo;
 
     } catch (err) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('💥 [AUTH-FORM] Auth error:', err);
-      }
+      logger.error('💥 [AUTH-FORM] Auth error:', err);
       const errorMessage = (err as Error)?.message || 'An unexpected error occurred';
       const formattedError = getErrorMessage(type, errorMessage);
       setError(formattedError);

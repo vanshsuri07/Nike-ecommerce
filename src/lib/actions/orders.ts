@@ -5,13 +5,12 @@ import * as schema from '@/lib/db/schema';
 import { stripe } from '@/lib/stripe/client';
 import { eq } from 'drizzle-orm';
 import { clearCart, getCart } from './cart';
+import { logger } from '@/lib/logger';
 
 export async function createOrder(
   stripeSessionId: string,
   userId?: string,
 ) {
-  console.log('Creating order for session:', stripeSessionId);
-  
   const session = await stripe.checkout.sessions.retrieve(stripeSessionId, {
     expand: ['line_items.data.price.product', 'customer'],
   });
@@ -19,8 +18,6 @@ export async function createOrder(
   if (!session) {
     throw new Error('Stripe session not found');
   }
-
-  console.log('Session retrieved:', session.id, session.payment_status);
 
   const paymentIntentId = session.payment_intent as string;
 
@@ -30,7 +27,6 @@ export async function createOrder(
   });
 
   if (existingOrderBySession) {
-    console.log(`Order already exists for session: ${stripeSessionId}`);
     return existingOrderBySession;
   }
 
@@ -41,7 +37,6 @@ export async function createOrder(
     });
 
     if (existingOrderByPayment) {
-      console.log(`Order already exists for payment intent: ${paymentIntentId}`);
       return existingOrderByPayment;
     }
   }
@@ -53,7 +48,6 @@ export async function createOrder(
     throw new Error('Cart ID not found in Stripe session metadata');
   }
 
-  console.log('Getting cart:', cartId);
   const cart = await getCart(cartId);
 
   if (!cart) {
@@ -63,8 +57,6 @@ export async function createOrder(
   // Extract customer data from Stripe session
   const customerEmail = session.customer_details?.email || 'unknown@example.com';
   const customerName = session.customer_details?.name || 'Unknown Customer';
-  
-  console.log('Customer details:', { customerEmail, customerName });
   
   // Get shipping details
   const shippingDetails = (session as any).shipping_details;
@@ -76,7 +68,6 @@ export async function createOrder(
   });
 
   if (!realUser) {
-    console.log('Creating new user:', customerEmail);
     [realUser] = await db.insert(schema.user).values({
       email: customerEmail,
       name: customerName,
@@ -145,14 +136,10 @@ export async function createOrder(
     userId: realUser.id,
   };
 
-  console.log('Creating order with values:', orderValues);
-
   const [newOrder] = await db
     .insert(schema.orders)
     .values(orderValues)
     .returning();
-
-  console.log('Order created:', newOrder.id);
 
   const orderItems = cart.items.map((item) => ({
     orderId: newOrder.id,
@@ -162,17 +149,13 @@ export async function createOrder(
   }));
 
   await db.insert(schema.orderItems).values(orderItems);
-  console.log('Order items created:', orderItems.length);
 
   await clearCart(cartId);
-  console.log('Cart cleared:', cartId);
 
   return newOrder;
 }
 
 export async function getOrderByStripeSessionId(sessionId: string) {
-  console.log('Looking for order with session ID:', sessionId);
-  
   try {
     // First try to get the order directly by session ID
     const order = await db.query.orders.findFirst({
@@ -194,22 +177,15 @@ export async function getOrderByStripeSessionId(sessionId: string) {
     });
 
     if (order) {
-      console.log('Found order by session ID:', order.id);
       return order;
     }
 
-    console.log('No order found by session ID, trying payment intent...');
-    
     // If not found, try to retrieve the session and check by payment intent
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    console.log('Session payment_intent:', session.payment_intent);
-    console.log('Session status:', session.status);
-    console.log('Session payment_status:', session.payment_status);
     
     const paymentIntentId = session.payment_intent as string;
 
     if (!paymentIntentId) {
-      console.log('No payment intent found in session');
       return null;
     }
 
@@ -231,32 +207,25 @@ export async function getOrderByStripeSessionId(sessionId: string) {
       }
     });
 
-    console.log('Found order by payment intent:', !!orderByPaymentIntent);
     return orderByPaymentIntent;
     
   } catch (error) {
-    console.error('Error in getOrderByStripeSessionId:', error);
+    logger.error('Error in getOrderByStripeSessionId:', error);
     return null;
   }
 }
 
 export async function getOrder(sessionId: string) {
-  console.log('Getting order for session:', sessionId);
-  
   // First try to get existing order
   const existingOrder = await getOrderByStripeSessionId(sessionId);
 
   if (existingOrder) {
-    console.log('Found existing order:', existingOrder.id);
     return existingOrder;
   }
 
-  console.log('No existing order found, creating new one...');
-  
   // If no existing order, create one
   try {
     const newOrder = await createOrder(sessionId);
-    console.log('Created new order:', newOrder.id);
     
     // Return the order with full relations
     const fullOrder = await db.query.orders.findFirst({
@@ -279,7 +248,7 @@ export async function getOrder(sessionId: string) {
     
     return fullOrder;
   } catch (error) {
-    console.error('Error creating order:', error);
+    logger.error('Error creating order:', error);
     throw error;
   }
 }

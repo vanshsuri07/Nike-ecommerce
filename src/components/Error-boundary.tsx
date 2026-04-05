@@ -1,5 +1,6 @@
 // components/ErrorBoundary.tsx
 import React from 'react';
+import { logger } from '@/lib/logger';
 
 interface State {
   hasError: boolean;
@@ -16,7 +17,7 @@ class ErrorBoundary extends React.Component<React.PropsWithChildren<object>, Sta
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('3D Model Error:', error, errorInfo);
+    logger.error('3D Model Error:', error, errorInfo);
   }
 
   render() {

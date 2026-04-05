@@ -5,6 +5,7 @@ import SizePicker from '@/components/SizePicker';
 import { Loader, ShoppingBag} from 'lucide-react';
 import { useCartStore } from '@/store/cart.store';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 // Define a type for product variant with size
 type ProductVariantWithSize = {
     id: string;
@@ -47,7 +48,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
             toast.success('Added to cart');
         } catch (error) {
             toast.error('Failed to add to cart. Please try again.');
-            console.error('Error adding to cart:', error);
+            logger.error('Error adding to cart:', error);
         } finally {
             setIsPending(false);
         }

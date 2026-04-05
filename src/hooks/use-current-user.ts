@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { TUser } from '@/lib/db/schema/user';
+import { logger } from '@/lib/logger';
 
 export function useCurrentUser() {
     const [user, setUser] = useState<TUser | null>(null);
@@ -15,7 +16,7 @@ export function useCurrentUser() {
                     setUser(data);
                 }
             } catch (error) {
-                console.error('Failed to fetch user:', error);
+                logger.error('Failed to fetch user:', error);
             }
         }
 

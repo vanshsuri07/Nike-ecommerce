@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters long"),
@@ -20,7 +21,6 @@ export async function POST(request: Request) {
   const { name, email, message } = validation.data;
 
   try {
-    // TODO: move this to a separate file
     const transporter = nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port: Number(process.env.EMAIL_PORT),
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: "your-email@example.com", // TODO: Replace with your email address
+      to: "your-email@example.com",
       subject: "New Contact Form Submission",
       html: `<p>Name: ${name}</p><p>Email: ${email}</p><p>Message: ${message}</p>`,
     };
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     return NextResponse.json(
       { error: "Failed to send message" },
       { status: 500 }
