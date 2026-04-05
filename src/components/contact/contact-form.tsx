@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 
 const ContactForm = () => {
   const [name, setName] = useState("");
@@ -34,7 +35,7 @@ const ContactForm = () => {
       }
     } catch (error) {
       toast.error("An error occurred. Please try again later.");
-      console.error("Error sending contact form:", error);
+      logger.error("Error sending contact form:", error);
     } finally {
       setLoading(false);
     }

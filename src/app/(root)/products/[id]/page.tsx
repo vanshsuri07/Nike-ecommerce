@@ -33,7 +33,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   const uniqueSizes = [...new Set(product.variants.map(v => v.size.name))].sort();
-  console.log('Unique sizes:', uniqueSizes);
   // A more robust solution would be to find the price of the default variant
   // or the minimum price, but this is fine for now.
   const displayPrice = product.variants[0]?.price || '0.00';

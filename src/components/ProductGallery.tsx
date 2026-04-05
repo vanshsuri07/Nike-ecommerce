@@ -36,7 +36,6 @@ export default function ProductGallery({ variants, mainImages }: ProductGalleryP
     : mainImages;
  
   const activeImage = galleryImages[activeImageIndex];
-  console.log(setActiveVariantIndex);
   useEffect(() => {
     setActiveImageIndex(0);
   }, [activeVariantIndex]);

@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { orders, user as userSchema } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { transporter } from '@/lib/email/client';
+import { logger } from '@/lib/logger';
 import OrderConfirmationEmail from '@/components/emails/OrderConfirmationEmail';
 import { render } from '@react-email/render';
 import { stripe } from '@/lib/stripe/client';
@@ -31,7 +32,6 @@ export async function sendOrderConfirmationEmail(orderId: string) {
     }
 
     if (order.confirmationEmailSent) {
-      console.log(`📧 Email already sent for order: ${orderId}`);
       return;
     }
 
@@ -46,7 +46,7 @@ export async function sendOrderConfirmationEmail(orderId: string) {
         const session = await stripe.checkout.sessions.retrieve(order.stripeSessionId);
         user = { ...user, email: session.customer_email ?? undefined } as any;
       } catch (err) {
-        console.error('❌ Could not fetch email from Stripe:', err);
+        logger.error('❌ Could not fetch email from Stripe:', err);
       }
     }
 
@@ -83,9 +83,7 @@ export async function sendOrderConfirmationEmail(orderId: string) {
       .update(orders)
       .set({ confirmationEmailSent: true })
       .where(eq(orders.id, orderId));
-
-    console.log(`✅ Confirmation email sent for order: ${orderId}`);
   } catch (error) {
-    console.error(`❌ Error sending confirmation email:`, error);
+    logger.error(`❌ Error sending confirmation email:`, error);
   }
 }
